@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface SlideModalProps {
   isOpen: boolean;
@@ -15,6 +16,13 @@ export default function SlideModal({
   title,
   children,
 }: SlideModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   useEffect(() => {
     // Prevent body scroll when modal is open
     if (isOpen) {
@@ -27,7 +35,9 @@ export default function SlideModal({
     };
   }, [isOpen]);
 
-  return (
+  if (!mounted) return null;
+
+  const content = (
     <>
       {/* Backdrop */}
       {isOpen && (
@@ -39,7 +49,7 @@ export default function SlideModal({
 
       {/* Slide Modal */}
       <div
-        className={`fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
+        className={`fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -71,4 +81,6 @@ export default function SlideModal({
       </div>
     </>
   );
+
+  return createPortal(content, document.body);
 }
