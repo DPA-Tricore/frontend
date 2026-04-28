@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/v1/api';
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 class AxiosClient {
   private instance: AxiosInstance;
