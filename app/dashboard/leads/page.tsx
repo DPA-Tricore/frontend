@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { axiosClient } from '@/lib/api/axios-client';
+import SlideModal from '@/components/slide-modal';
 
 interface Lead {
   id: string;
@@ -89,10 +90,10 @@ export default function LeadsPage() {
           <p className="text-gray-600 mt-2">Track and manage your sales pipeline</p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => setShowForm(true)}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
-          {showForm ? 'Cancel' : '+ Add Lead'}
+          + Add Lead
         </button>
       </div>
 
@@ -103,85 +104,93 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {/* Add Lead Form */}
-      {showForm && (
-        <div className="mb-8 p-6 bg-white rounded-lg border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4">Create New Lead</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="John"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Lead Type
-                </label>
-                <select
-                  name="leadType"
-                  value={formData.leadType}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="PROSPECT">Prospect</option>
-                  <option value="WARM_LEAD">Warm Lead</option>
-                  <option value="QUALIFIED_LEAD">Qualified Lead</option>
-                  <option value="OPPORTUNITY">Opportunity</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="NEW">New</option>
-                  <option value="CONTACTED">Contacted</option>
-                  <option value="QUALIFIED">Qualified</option>
-                  <option value="IN_NEGOTIATION">In Negotiation</option>
-                  <option value="CONVERTED">Converted</option>
-                  <option value="LOST">Lost</option>
-                  <option value="UNRESPONSIVE">Unresponsive</option>
-                </select>
-              </div>
-            </div>
+      {/* Add Lead Modal */}
+      <SlideModal
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title="Create New Lead"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              First Name
+            </label>
+            <input
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="John"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Last Name
+            </label>
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Doe"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Lead Type
+            </label>
+            <select
+              name="leadType"
+              value={formData.leadType}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="PROSPECT">Prospect</option>
+              <option value="WARM_LEAD">Warm Lead</option>
+              <option value="QUALIFIED_LEAD">Qualified Lead</option>
+              <option value="OPPORTUNITY">Opportunity</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Status
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="NEW">New</option>
+              <option value="CONTACTED">Contacted</option>
+              <option value="QUALIFIED">Qualified</option>
+              <option value="IN_NEGOTIATION">In Negotiation</option>
+              <option value="CONVERTED">Converted</option>
+              <option value="LOST">Lost</option>
+              <option value="UNRESPONSIVE">Unresponsive</option>
+            </select>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="flex-1 px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex-1 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               Create Lead
             </button>
-          </form>
-        </div>
-      )}
+          </div>
+        </form>
+      </SlideModal>
 
       {/* Leads List */}
       {loading ? (
