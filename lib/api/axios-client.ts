@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { storageService } from '@/lib/services/storage';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -19,7 +20,7 @@ class AxiosClient {
     this.instance.interceptors.request.use(
       (config) => {
         if (typeof window !== 'undefined') {
-          const token = localStorage.getItem('accessToken');
+          const token = storageService.getAccessToken();
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
@@ -36,8 +37,7 @@ class AxiosClient {
         if (error.response?.status === 401) {
           // Handle unauthorized - clear token and redirect to login
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
+            storageService.clearAuth();
             window.location.href = '/login';
           }
         }

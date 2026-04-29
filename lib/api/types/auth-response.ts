@@ -7,4 +7,5 @@ export interface SignupResponse {
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken?: string;
 }

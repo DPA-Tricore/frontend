@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { authAPI } from '@/lib/api/auth';
 import { SignupRequest, LoginRequest } from '@/lib/api/types/auth-request';
+import { storageService } from '@/lib/services/storage';
 
 export interface User {
   id: string;
@@ -26,20 +27,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user is already logged in on mount
+  // Restore user session from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      // You can add logic here to validate the token with the backend
-      // For now, we'll just keep them logged in if token exists
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    const restoreSession = () => {
+      try {
+        const storedUser = storageService.getUser();
+        const token = storageService.getAccessToken();
+
+        // Only restore session if both user and token exist
+        if (storedUser && token) {
+          setUser(storedUser);
+        }
+      } catch (err) {
+        console.error('Failed to restore session:', err);
+        // Clear corrupted data
+        storageService.clearAuth();
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    restoreSession();
   }, []);
 
   const signup = useCallback(async (data: SignupRequest) => {
@@ -47,12 +58,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       const response = await authAPI.signup(data);
-      setUser({
+      const userData: User = {
         id: response.id!,
         email: response.email!,
         createdAt: response.createdAt!,
         isActive: response.isActive!,
-      });
+      };
+      setUser(userData);
+      storageService.setUser(userData);
       // Note: Signup doesn't return a token, user needs to login
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred';
@@ -69,9 +82,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authAPI.login(data);
       const accessToken = response.accessToken;
+      const refreshToken = response.refreshToken;
 
-      // Store token
-      localStorage.setItem('accessToken', accessToken);
+      // Store tokens in localStorage
+      storageService.setAccessToken(accessToken);
+      if (refreshToken) {
+        storageService.setRefreshToken(refreshToken);
+      }
 
       // Decode JWT to get user info (simple decoding without verification)
       const decoded = JSON.parse(atob(accessToken.split('.')[1]));
@@ -83,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      storageService.setUser(userData);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
@@ -98,13 +115,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       await authAPI.logout();
-      setUser(null);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Logout failed';
       setError(message);
     } finally {
+      // Clear user state and storage regardless of logout API result
+      setUser(null);
+      storageService.clearAuth();
       setIsLoading(false);
     }
   }, []);
