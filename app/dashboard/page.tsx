@@ -1,15 +1,1 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
-export default function DashboardPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Redirect to leads page by default
-    router.replace('/dashboard/leads');
-  }, [router]);
-
-  return null;
-}
+export { default } from './leads/dashboard/page';

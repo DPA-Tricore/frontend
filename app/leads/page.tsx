@@ -41,7 +41,9 @@ export default function LeadsPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10); // Fixed limit for pagination testing
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'firstName' | 'lastName' | 'status' | 'leadType'>('createdAt');
+  const [sortBy, setSortBy] = useState<
+    'createdAt' | 'firstName' | 'lastName' | 'status' | 'leadType'
+  >('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState('');
   const [leadTypeFilter, setLeadTypeFilter] = useState('');
@@ -67,11 +69,11 @@ export default function LeadsPage() {
       });
 
       const response = await axiosClient.get<PaginatedResponse>(`/leads?${params}`);
-      
-      if (response.data.data) {
+
+      if ((response.data as any).data) {
         // Handle paginated response
-        setLeads(response.data.data);
-        setMeta(response.data.meta);
+        setLeads((response.data as any).data);
+        setMeta((response.data as any).meta);
       } else {
         // Handle legacy response format
         setLeads(response.data as any);
@@ -106,7 +108,7 @@ export default function LeadsPage() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -155,32 +157,23 @@ export default function LeadsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Leads Management</h1>
           <p className="text-gray-600 mt-2">Track and manage your sales pipeline</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className={colors.button.primary}
-        >
+        <button onClick={() => setShowForm(true)} className={colors.button.primary}>
           + Add Lead
         </button>
       </div>
 
       {/* Error Message */}
-      {error && (
+      {error ? (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
           {error}
         </div>
-      )}
+      ) : null}
 
       {/* Add Lead Modal */}
-      <SlideModal
-        isOpen={showForm}
-        onClose={() => setShowForm(false)}
-        title="Create New Lead"
-      >
+      <SlideModal isOpen={showForm} onClose={() => setShowForm(false)} title="Create New Lead">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              First Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
             <input
               type="text"
               name="firstName"
@@ -192,9 +185,7 @@ export default function LeadsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Last Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
             <input
               type="text"
               name="lastName"
@@ -206,9 +197,7 @@ export default function LeadsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Lead Type
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Lead Type</label>
             <select
               name="leadType"
               value={formData.leadType}
@@ -222,9 +211,7 @@ export default function LeadsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select
               name="status"
               value={formData.status}
@@ -241,17 +228,10 @@ export default function LeadsPage() {
             </select>
           </div>
           <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className={colors.button.secondary}
-            >
+            <button type="button" onClick={() => setShowForm(false)} className={colors.button.secondary}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className={colors.button.primary}
-            >
+            <button type="submit" className={colors.button.primary}>
               Create Lead
             </button>
           </div>
@@ -323,24 +303,36 @@ export default function LeadsPage() {
       </div>
 
       {/* Results Count */}
-      {meta && (
+      {meta ? (
         <div className="mb-4 text-sm text-gray-600">
-          Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of {meta.total} leads
+          Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of {meta.total}{' '}
+          leads
         </div>
-      )}
+      ) : null}
 
       {/* Leads List */}
       {loading ? (
         <div className="text-center py-12">
-          <svg className={`animate-spin h-8 w-8 mx-auto ${colors.text.primary} mb-4`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg
+            className={`animate-spin h-8 w-8 mx-auto ${colors.text.primary} mb-4`}
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           <p className="text-gray-600">Loading leads...</p>
         </div>
       ) : leads.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-600">No leads found. {search ? 'Try adjusting your search.' : 'Create your first lead to get started!'}</p>
+          <p className="text-gray-600">
+            No leads found. {search ? 'Try adjusting your search.' : 'Create your first lead to get started!'}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -348,26 +340,38 @@ export default function LeadsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('firstName')}>
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('firstName')}
+                  >
                     <div className="flex items-center gap-2">
                       Name
                       <SortIcon field="firstName" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('leadType')}>
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('leadType')}
+                  >
                     <div className="flex items-center gap-2">
                       Lead Type
                       <SortIcon field="leadType" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('status')}
+                  >
                     <div className="flex items-center gap-2">
                       Status
                       <SortIcon field="status" />
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Source</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('createdAt')}>
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('createdAt')}
+                  >
                     <div className="flex items-center gap-2">
                       Created
                       <SortIcon field="createdAt" />
@@ -388,7 +392,11 @@ export default function LeadsPage() {
                       <span className="text-sm text-gray-600">{lead.leadType}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          lead.status,
+                        )}`}
+                      >
                         {lead.status}
                       </span>
                     </td>
@@ -401,9 +409,7 @@ export default function LeadsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className={colors.button.text}>
-                        Edit
-                      </button>
+                      <button className={colors.button.text}>Edit</button>
                     </td>
                   </tr>
                 ))}
@@ -412,7 +418,7 @@ export default function LeadsPage() {
           </div>
 
           {/* Pagination */}
-          {meta && meta.totalPages > 1 && (
+          {meta && meta.totalPages > 1 ? (
             <div className="flex justify-between items-center mt-6">
               <div className="text-sm text-gray-600">
                 Page {meta.page} of {meta.totalPages}
@@ -429,7 +435,7 @@ export default function LeadsPage() {
                 {/* Generate page numbers */}
                 <div className="flex gap-1">
                   {(() => {
-                    const pages = [];
+                    const pages: React.ReactNode[] = [];
                     const maxPagesToShow = 7;
                     let startPage = Math.max(1, meta.page - Math.floor(maxPagesToShow / 2));
                     const endPage = Math.min(meta.totalPages, startPage + maxPagesToShow - 1);
@@ -447,13 +453,13 @@ export default function LeadsPage() {
                           className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
                         >
                           1
-                        </button>
+                        </button>,
                       );
                       if (startPage > 2) {
                         pages.push(
                           <span key="dots-start" className="px-2 py-2 text-gray-500">
                             ...
-                          </span>
+                          </span>,
                         );
                       }
                     }
@@ -464,10 +470,12 @@ export default function LeadsPage() {
                         <button
                           key={i}
                           onClick={() => setPage(i)}
-                        className={i === meta.page ? colors.pagination.active : colors.pagination.inactive}
+                          className={
+                            i === meta.page ? colors.pagination.active : colors.pagination.inactive
+                          }
                         >
                           {i}
-                        </button>
+                        </button>,
                       );
                     }
 
@@ -477,7 +485,7 @@ export default function LeadsPage() {
                         pages.push(
                           <span key="dots-end" className="px-2 py-2 text-gray-500">
                             ...
-                          </span>
+                          </span>,
                         );
                       }
                       pages.push(
@@ -487,7 +495,7 @@ export default function LeadsPage() {
                           className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
                         >
                           {meta.totalPages}
-                        </button>
+                        </button>,
                       );
                     }
 
@@ -504,9 +512,10 @@ export default function LeadsPage() {
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
   );
 }
+

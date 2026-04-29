@@ -17,9 +17,14 @@ import {
 
 const menuItems = [
   {
+    name: 'Dashboard',
+    icon: BarChart3,
+    href: '/dashboard',
+  },
+  {
     name: 'Leads',
     icon: TrendingUp,
-    href: '/dashboard/leads',
+    href: '/leads',
   },
   {
     name: 'Policies',
