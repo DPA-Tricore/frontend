@@ -1,0 +1,95 @@
+/**
+ * Global Color Palette - Apple-like Design System
+ * Reusable across the entire application
+ */
+
+export const colors = {
+  // Primary (Dark Charcoal - Apple-like)
+  primary: {
+    base: 'bg-gray-900',
+    hover: 'hover:bg-gray-800',
+    text: 'text-gray-900',
+    textHover: 'hover:text-gray-700',
+    light: 'bg-gray-800',
+    lightHover: 'hover:bg-gray-700',
+  },
+
+  // Secondary (Neutral Grays)
+  secondary: {
+    light: 'bg-gray-50',
+    hover: 'hover:bg-gray-100',
+    border: 'border-gray-300',
+    text: 'text-gray-600',
+    textDark: 'text-gray-700',
+  },
+
+  // Interactive States
+  button: {
+    primary: 'px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm font-medium',
+    secondary: 'px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors',
+    text: 'text-sm text-gray-900 hover:text-gray-700 font-medium transition-colors',
+  },
+
+  // Status Colors (for badges)
+  status: {
+    new: 'bg-blue-100 text-blue-800',
+    contacted: 'bg-yellow-100 text-yellow-800',
+    qualified: 'bg-green-100 text-green-800',
+    negotiation: 'bg-purple-100 text-purple-800',
+    converted: 'bg-emerald-100 text-emerald-800',
+    lost: 'bg-red-100 text-red-800',
+    unresponsive: 'bg-gray-100 text-gray-800',
+  },
+
+  // Pagination
+  pagination: {
+    active: 'px-3 py-2 rounded-lg text-sm font-medium bg-gray-900 text-white',
+    inactive: 'px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100',
+    button: 'px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed',
+  },
+
+  // Text
+  text: {
+    primary: 'text-gray-900',
+    secondary: 'text-gray-600',
+    muted: 'text-gray-500',
+    white: 'text-white',
+  },
+
+  // Background
+  background: {
+    primary: 'bg-white',
+    secondary: 'bg-gray-50',
+    dark: 'bg-gray-900',
+  },
+
+  // Border
+  border: {
+    light: 'border-gray-200',
+    default: 'border-gray-300',
+    dark: 'border-gray-400',
+  },
+};
+
+/**
+ * Helper function to combine multiple color classes
+ */
+export const combineColors = (...colorClasses: (string | undefined)[]): string => {
+  return colorClasses.filter(Boolean).join(' ');
+};
+
+/**
+ * Get status color by status value
+ */
+export const getStatusColor = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    NEW: colors.status.new,
+    CONTACTED: colors.status.contacted,
+    QUALIFIED: colors.status.qualified,
+    IN_NEGOTIATION: colors.status.negotiation,
+    CONVERTED: colors.status.converted,
+    LOST: colors.status.lost,
+    UNRESPONSIVE: colors.status.unresponsive,
+  };
+  return statusMap[status] || colors.status.unresponsive;
+};
