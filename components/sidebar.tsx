@@ -13,6 +13,8 @@ import {
   BarChart3,
   ChevronLeft,
   LogOut,
+  Settings,
+  CheckSquare,
 } from 'lucide-react';
 
 const menuItems = [
@@ -25,6 +27,11 @@ const menuItems = [
     name: 'Leads',
     icon: TrendingUp,
     href: '/leads',
+  },
+  {
+    name: 'Tasks',
+    icon: CheckSquare,
+    href: '/tasks',
   },
   {
     name: 'Policies',
@@ -51,6 +58,11 @@ const menuItems = [
     icon: BarChart3,
     href: '/dashboard/reports',
   },
+  {
+    name: 'Settings',
+    icon: Settings,
+    href: '/dashboard/settings',
+  },
 ];
 
 export default function Sidebar() {
@@ -68,23 +80,21 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`bg-white border-r border-gray-200 text-gray-900 min-h-screen flex flex-col transition-all duration-300 ${
+      className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white min-h-screen flex flex-col transition-all duration-300 ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* Logo/Header */}
-      <div className="px-6 py-8 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-6 py-8 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2">
         {!isCollapsed && (
-          <>
-            <div>
-              <h1 className="text-2xl font-bold">DPA</h1>
-              <p className="text-sm text-gray-500 mt-1">Insurance CRM</p>
-            </div>
-          </>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">DPA</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Insurance CRM</p>
+          </div>
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1 hover:bg-gray-100 rounded transition-colors"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-900 dark:text-white flex-shrink-0"
           title={isCollapsed ? 'Expand' : 'Collapse'}
         >
           <ChevronLeft
@@ -103,10 +113,10 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors block ${
                 isActive
                   ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               title={isCollapsed ? item.name : ''}
             >
@@ -118,11 +128,11 @@ export default function Sidebar() {
       </nav>
 
       {/* User Profile */}
-      <div className="px-4 py-4 border-t border-gray-200">
+      <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
         {!isCollapsed && (
-          <div className="mb-4 px-4 py-3 bg-gray-100 rounded-lg">
-            <p className="text-sm text-gray-500">Logged in as</p>
-            <p className="text-sm font-medium truncate">{user?.email}</p>
+          <div className="mb-4 px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Logged in as</p>
+            <p className="text-sm font-medium truncate text-gray-900 dark:text-white">{user?.email}</p>
           </div>
         )}
         <button

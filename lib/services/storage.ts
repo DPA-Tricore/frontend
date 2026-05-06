@@ -14,6 +14,7 @@ class StorageService {
   private readonly TOKEN_KEY = 'accessToken';
   private readonly USER_KEY = 'user';
   private readonly REFRESH_TOKEN_KEY = 'refreshToken';
+  private readonly THEME_KEY = 'theme';
 
   /**
    * Check if running in browser environment
@@ -117,6 +118,32 @@ class StorageService {
    */
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
+  }
+
+  /**
+   * Get theme preference from localStorage
+   */
+  getTheme(): 'light' | 'dark' | null {
+    if (!this.isBrowser()) return null;
+    try {
+      const theme = localStorage.getItem(this.THEME_KEY);
+      return (theme as 'light' | 'dark') || null;
+    } catch (error) {
+      console.error('Error reading theme from localStorage:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Set theme preference in localStorage
+   */
+  setTheme(theme: 'light' | 'dark'): void {
+    if (!this.isBrowser()) return;
+    try {
+      localStorage.setItem(this.THEME_KEY, theme);
+    } catch (error) {
+      console.error('Error writing theme to localStorage:', error);
+    }
   }
 }
 
