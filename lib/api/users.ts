@@ -4,6 +4,7 @@ export interface UserResponseDto {
   id: string;
   email: string;
   isActive: boolean;
+  role?: 'SUPER_ADMIN' | 'ADMIN' | 'USER';
   createdAt: Date;
 }
 

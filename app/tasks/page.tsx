@@ -5,6 +5,7 @@ import { axiosClient } from '@/lib/api/axios-client';
 import { tasksApi, TaskResponseDto } from '@/lib/api/tasks';
 import { usersApi, UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
+import VoiceRecorder from '@/components/voice-recorder';
 import { colors, getStatusColor } from '@/lib/theme/colors';
 
 interface PaginationMeta {
@@ -88,6 +89,7 @@ export default function TasksPage() {
     assignedToId: '',
     dueDate: '',
   });
+  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
 
   // Load users for dropdown
   useEffect(() => {
@@ -157,6 +159,7 @@ export default function TasksPage() {
         assignedToId: '',
         dueDate: '',
       });
+      setVoiceBlob(null);
       setShowForm(false);
       setPage(1);
       fetchTasks();
@@ -313,8 +316,19 @@ export default function TasksPage() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Voice Note (Optional)</label>
+            <VoiceRecorder 
+              onVoiceRecorded={(blob) => setVoiceBlob(blob)}
+              onVoiceCleared={() => setVoiceBlob(null)}
+            />
+          </div>
+
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={() => setShowForm(false)} className={colors.button.secondary}>
+            <button type="button" onClick={() => {
+              setShowForm(false);
+              setVoiceBlob(null);
+            }} className={colors.button.secondary}>
               Cancel
             </button>
             <button type="submit" className={colors.button.primary}>
