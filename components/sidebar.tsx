@@ -91,7 +91,7 @@ export default function Sidebar() {
       }`}
     >
       {/* Logo/Header */}
-      <div className="py-8 px-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+      <div className="relative py-8 px-4 border-b border-gray-200 dark:border-gray-700 flex items-center min-h-24">
         {/* Hamburger Button - Always Visible */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -101,10 +101,10 @@ export default function Sidebar() {
           <Menu size={24} />
         </button>
 
-        {/* Logo/Title */}
+        {/* Logo/Title - Absolutely Positioned */}
         <div
-          className={`transition-opacity duration-300 overflow-hidden ${
-            isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+          className={`absolute top-1/2 left-16 -translate-y-1/2 transition-opacity ${
+            isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 delay-300'
           }`}
         >
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap">DPA</h1>
