@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { leadsApi, LeadResponseDto } from '@/lib/api/leads';
 import { colors, getStatusColor } from '@/lib/theme/colors';
+import ReminderWidget from '@/components/reminder-widget';
 
 type LeadLike = Omit<LeadResponseDto, 'createdAt'> & {
   createdAt: string | Date;
@@ -328,7 +329,7 @@ export default function LeadDashboardPage() {
         <StatCard label="Total Customer" value={loading ? '—' : String(metrics.totalCustomer)} subLabel="Converted" />
       </div>
 
-      {/* Charts */}
+      {/* Charts & Reminders */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <section className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -343,21 +344,25 @@ export default function LeadDashboardPage() {
           )}
         </section>
 
-        <section className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900">Sale Overview</h2>
-          <div className="mt-4">
-            {loading ? (
-              <div className="h-56 animate-pulse bg-gray-100 rounded-lg" />
-            ) : (
-              <SaleOverview
-                totalLead={metrics.totalLead}
-                totalSale={metrics.totalSale}
-                totalRevenue={metrics.totalRevenue}
-                deltaPercent={metrics.deltaPercent}
-              />
-            )}
-          </div>
-        </section>
+        <div className="flex flex-col gap-6">
+          <section className="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900">Sale Overview</h2>
+            <div className="mt-4">
+              {loading ? (
+                <div className="h-56 animate-pulse bg-gray-100 rounded-lg" />
+              ) : (
+                <SaleOverview
+                  totalLead={metrics.totalLead}
+                  totalSale={metrics.totalSale}
+                  totalRevenue={metrics.totalRevenue}
+                  deltaPercent={metrics.deltaPercent}
+                />
+              )}
+            </div>
+          </section>
+
+          <ReminderWidget limit={3} />
+        </div>
       </div>
 
       {/* Recent sales table */}

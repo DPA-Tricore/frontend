@@ -15,6 +15,7 @@ import {
   LogOut,
   Settings,
   CheckSquare,
+  Bell,
 } from 'lucide-react';
 
 const menuItems = [
@@ -32,6 +33,11 @@ const menuItems = [
     name: 'Tasks',
     icon: CheckSquare,
     href: '/tasks',
+  },
+  {
+    name: 'Reminders',
+    icon: Bell,
+    href: '/dashboard/reminders',
   },
   {
     name: 'Policies',

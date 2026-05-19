@@ -1,5 +1,31 @@
 import { axiosClient } from '@/lib/api/axios-client';
 
+export enum ContactType {
+  EMAIL = 'EMAIL',
+  PHONE = 'PHONE',
+  FACEBOOK = 'FACEBOOK',
+  TELEGRAM = 'TELEGRAM',
+  WEBSITE = 'WEBSITE',
+  LINKEDIN = 'LINKEDIN',
+  TWITTER = 'TWITTER',
+  INSTAGRAM = 'INSTAGRAM',
+  WHATSAPP = 'WHATSAPP',
+  OTHER = 'OTHER',
+}
+
+export interface ContactResponseDto {
+  id: string;
+  leadId: string;
+  type: ContactType;
+  value: string;
+  isPrimary: boolean;
+  isVerified: boolean;
+  doNotContact: boolean;
+  lastUsedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface LeadResponseDto {
   id: string;
   firstName: string;
@@ -20,6 +46,7 @@ export interface LeadResponseDto {
   lastContactedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  contacts?: ContactResponseDto[];
 }
 
 export interface PaginationMeta {

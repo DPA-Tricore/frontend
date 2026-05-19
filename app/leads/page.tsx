@@ -5,6 +5,18 @@ import { axiosClient } from '@/lib/api/axios-client';
 import SlideModal from '@/components/slide-modal';
 import { colors, getStatusColor } from '@/lib/theme/colors';
 
+interface Contact {
+  id: string;
+  type: string;
+  value: string;
+  isPrimary: boolean;
+  isVerified: boolean;
+  doNotContact: boolean;
+  lastUsedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 interface Lead {
   id: string;
   firstName: string;
@@ -13,6 +25,7 @@ interface Lead {
   status: string;
   email?: string;
   source?: string;
+  contacts?: Contact[];
   createdAt?: string;
 }
 
@@ -29,6 +42,17 @@ interface PaginatedResponse {
   data: Lead[];
   meta: PaginationMeta;
 }
+
+const getPrimaryContact = (contacts?: Contact[]): Contact | null => {
+  if (!contacts || contacts.length === 0) return null;
+  return contacts.find((c) => c.isPrimary) || contacts[0] || null;
+};
+
+const getContactDisplay = (contact: Contact | null): string => {
+  if (!contact) return '—';
+  const typeLabel = contact.type.toLowerCase();
+  return `${typeLabel}: ${contact.value}`;
+};
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -368,6 +392,7 @@ export default function LeadsPage() {
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Source</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Contact</th>
                   <th
                     className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('createdAt')}
@@ -402,6 +427,11 @@ export default function LeadsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm text-gray-600">{lead.source || '—'}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">
+                        {getContactDisplay(getPrimaryContact(lead.contacts))}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm text-gray-600">
