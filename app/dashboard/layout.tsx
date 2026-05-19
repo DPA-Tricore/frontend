@@ -1,8 +1,9 @@
 'use client';
 
 import { useAuth } from '@/context/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from '@/components/sidebar';
 import Header from '@/components/header';
 
@@ -12,6 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isLoading, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -45,7 +47,17 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         <main className="flex-1 overflow-auto">
-          {children}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

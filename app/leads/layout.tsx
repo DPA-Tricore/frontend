@@ -1,12 +1,14 @@
 'use client';
 
 import { useAuth } from '@/context/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from '@/components/sidebar';
 
 export default function LeadsLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -43,7 +45,19 @@ export default function LeadsLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
