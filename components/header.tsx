@@ -20,14 +20,7 @@ export default function Header({ onMenuClick, title }: HeaderProps) {
       <div className="px-6 py-4 flex items-center justify-between">
         {/* Left side */}
         <div className="flex items-center gap-4">
-          {onMenuClick && (
-            <button
-              onClick={onMenuClick}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <Menu size={24} className="text-gray-900 dark:text-white" />
-            </button>
-          )}
+          
           {title && (
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               {title}
