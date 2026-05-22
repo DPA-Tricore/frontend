@@ -7,23 +7,23 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-primary mb-2">
             Settings
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted">
             Manage your preferences and application settings
           </p>
         </div>
 
         {/* Settings Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="surface rounded-xl border border-[var(--border)] shadow-sm">
           {/* Appearance Section */}
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+          <div className="p-6">
+              <h2 className="text-lg font-semibold text-primary mb-6">
               Appearance
             </h2>
 
@@ -36,10 +36,10 @@ export default function SettingsPage() {
                   <Sun size={24} className="text-orange-500" />
                 )}
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-primary">
                     Dark Mode
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted">
                     {theme === 'dark'
                       ? 'Dark mode is enabled'
                       : 'Light mode is active'}
@@ -71,8 +71,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-sm text-blue-900 dark:text-blue-200">
+        <div className="callout mt-6 p-4 rounded-lg">
+          <p className="text-sm">
             💡 <span className="font-medium">Tip:</span> Your preferences are saved
             automatically and will be restored when you return.
           </p>

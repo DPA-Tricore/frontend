@@ -72,9 +72,9 @@ function StatCard({
   subLabel?: string;
 }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5">
-      <div className="text-sm text-gray-600 font-medium">{label}</div>
-      <div className="mt-2 text-2xl font-bold text-gray-900">{value}</div>
+    <div className="surface rounded-lg border border-gray-200 p-5">
+      <div className="text-sm text-muted font-medium">{label}</div>
+      <div className="mt-2 text-2xl font-bold text-primary">{value}</div>
       {subLabel ? <div className="mt-1 text-sm text-emerald-600">{subLabel}</div> : null}
     </div>
   );
@@ -97,15 +97,15 @@ function RevenueInsightChart({
                 className="w-full bg-gray-900/90 rounded-t-lg"
                 style={{ height: `${h}%`, minHeight: h === 0 ? 6 : undefined }}
               />
-              <div className="mt-3 text-xs text-gray-500 text-center">{s.label}</div>
+              <div className="mt-3 text-xs text-muted text-center">{s.label}</div>
             </div>
           );
         })}
       </div>
 
       <div className="mt-5 flex items-center justify-between">
-        <div className="text-sm text-gray-600">Revenue insight</div>
-        <div className="text-sm font-medium text-gray-900">Peak: {formatMoney(max)}</div>
+        <div className="text-sm text-muted">Revenue insight</div>
+        <div className="text-sm font-medium text-primary">Peak: {formatMoney(max)}</div>
       </div>
     </div>
   );
@@ -133,9 +133,9 @@ function SaleOverview({
     <div>
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-sm text-gray-600 font-medium">Sales Growth</div>
+          <div className="text-sm text-muted font-medium">Sales Growth</div>
           <div className="mt-1 flex items-center gap-2">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-primary">
               {deltaPercent === null ? '—' : `${deltaPercent > 0 ? '+' : ''}${deltaPercent.toFixed(1)}%`}
             </div>
             {deltaPercent === null ? null : (
@@ -150,8 +150,8 @@ function SaleOverview({
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm text-gray-600 font-medium">Total Revenue</div>
-          <div className="mt-1 text-lg font-bold text-gray-900">{formatMoney(totalRevenue)}</div>
+          <div className="text-sm text-muted font-medium">Total Revenue</div>
+          <div className="mt-1 text-lg font-bold text-primary">{formatMoney(totalRevenue)}</div>
         </div>
       </div>
 
@@ -176,24 +176,24 @@ function SaleOverview({
           </svg>
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="-mt-3">
-              <div className="text-2xl font-bold text-gray-900">{percent}%</div>
-              <div className="text-xs text-gray-500 text-center">Converted</div>
+              <div className="text-2xl font-bold text-primary">{percent}%</div>
+              <div className="text-xs text-muted text-center">Converted</div>
             </div>
           </div>
         </div>
 
         <div className="flex-1 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">Sales</div>
-            <div className="text-sm font-semibold text-gray-900">{totalSale}</div>
+            <div className="text-sm text-muted">Sales</div>
+            <div className="text-sm font-semibold text-primary">{totalSale}</div>
           </div>
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">Leads</div>
-            <div className="text-sm font-semibold text-gray-900">{totalLead}</div>
+            <div className="text-sm text-muted">Leads</div>
+            <div className="text-sm font-semibold text-primary">{totalLead}</div>
           </div>
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">Refunds</div>
-            <div className="text-sm font-semibold text-gray-900">0</div>
+            <div className="text-sm text-muted">Refunds</div>
+            <div className="text-sm font-semibold text-primary">0</div>
           </div>
         </div>
       </div>
@@ -301,13 +301,13 @@ export default function LeadDashboardPage() {
       {/* Welcome header */}
       <div className="flex justify-between items-start mb-8 gap-4">
         <div>
-          <p className="text-sm text-gray-500">{dateLabel}</p>
-          <h1 className="text-3xl font-bold text-gray-900 mt-1">Welcome back, {name}!</h1>
-          <p className="text-gray-600 mt-2">Lead Dashboard</p>
+          <p className="text-sm text-muted">{dateLabel}</p>
+          <h1 className="text-3xl font-bold text-primary mt-1">Welcome back, {name}!</h1>
+          <p className="text-muted mt-2">Lead Dashboard</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/leads" className={colors.button.secondary}>
+          <Link href="/leads" className={colors.button.secondary} >
             Manage Leads
           </Link>
         </div>
@@ -331,10 +331,10 @@ export default function LeadDashboardPage() {
 
       {/* Charts & Reminders */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <section className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
+        <section className="lg:col-span-2 surface rounded-lg border border-primary p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Revenue Insights</h2>
-            <div className="text-sm text-gray-500">Month & year</div>
+            <h2 className="text-lg font-semibold text-primary">Revenue Insights</h2>
+            <div className="text-sm text-muted">Month & year</div>
           </div>
 
           {loading ? (
@@ -345,8 +345,8 @@ export default function LeadDashboardPage() {
         </section>
 
         <div className="flex flex-col gap-6">
-          <section className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900">Sale Overview</h2>
+          <section className="rounded-lg border border-gray-200 p-6 surface">
+            <h2 className="text-lg font-semibold text-primary">Sale Overview</h2>
             <div className="mt-4">
               {loading ? (
                 <div className="h-56 animate-pulse bg-gray-100 rounded-lg" />
@@ -366,16 +366,16 @@ export default function LeadDashboardPage() {
       </div>
 
       {/* Recent sales table */}
-      <section className="bg-white rounded-lg border border-gray-200 p-6">
+      <section className="rounded-lg border border-gray-200 p-6 surface">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Sales</h2>
-          <div className="text-sm text-gray-500">{loading ? '' : 'Latest converted leads'}</div>
+          <h2 className="text-lg font-semibold text-primary">Recent Sales</h2>
+          <div className="text-sm text-muted">{loading ? '' : 'Latest converted leads'}</div>
         </div>
 
         {loading ? (
           <div className="h-72 animate-pulse bg-gray-100 rounded-lg" />
         ) : recentSales.length === 0 ? (
-          <div className="text-center py-10 text-gray-600">No converted leads yet.</div>
+          <div className="text-center py-10 text-muted">No converted leads yet.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">

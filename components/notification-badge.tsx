@@ -13,7 +13,7 @@ export default function NotificationBadge() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+        className="relative p-2 text-gray-600 icon-btn interactive"
         aria-label="Notifications"
       >
         <Bell size={20} />

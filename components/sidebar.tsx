@@ -86,16 +86,16 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white min-h-screen flex flex-col transition-all duration-300 overflow-hidden ${
+      className={`border-r border-primary text-gray-900 dark:text-white min-h-screen flex flex-col transition-all duration-300 overflow-hidden ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* Logo/Header */}
-      <div className="relative py-8 px-4 border-b border-gray-200 dark:border-gray-700 flex items-center min-h-24">
+      <div className="relative py-8 px-4 border-b border-primary flex items-center min-h-24">
         {/* Hamburger Button - Always Visible */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-900 dark:text-white flex-shrink-0"
+          className="p-2 interactive icon-btn"
           title={isCollapsed ? 'Expand' : 'Collapse'}
         >
           <Menu size={24} />
@@ -107,8 +107,8 @@ export default function Sidebar() {
             isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 delay-300'
           }`}
         >
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap">DPA</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Insurance CRM</p>
+          <h1 className="text-2xl font-bold text-primary whitespace-nowrap">DPA</h1>
+          <p className="text-sm text-muted">Insurance CRM</p>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export default function Sidebar() {
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors block ${
                 isActive
                   ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  : 'text-muted interactive'
               }`}
               title={isCollapsed ? item.name : ''}
             >
@@ -142,14 +142,14 @@ export default function Sidebar() {
       </nav>
 
       {/* User Profile */}
-      <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="px-4 py-4">
         <div
-          className={`mb-4 px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg transition-opacity duration-300 ${
+          className={`mb-4 px-4 py-3 surface rounded-lg transition-opacity duration-300 ${
             isCollapsed ? 'opacity-0' : 'opacity-100'
           }`}
         >
-          <p className="text-sm text-gray-500 dark:text-gray-400">Logged in as</p>
-          <p className="text-sm font-medium truncate text-gray-900 dark:text-white">{user?.email}</p>
+          <p className="text-sm text-muted">Logged in as</p>
+          <p className="text-sm font-medium truncate text-primary">{user?.email}</p>
         </div>
         <button
           onClick={handleLogout}

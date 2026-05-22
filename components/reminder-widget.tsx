@@ -47,8 +47,8 @@ export default function ReminderWidget({
 
   if (reminders.length === 0) {
     return (
-      <div className="p-6 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700 surface">
+        <h3 className="text-lg font-semibold text-primary mb-4">
           Reminders
         </h3>
         <div className="text-center py-8">
@@ -60,7 +60,7 @@ export default function ReminderWidget({
   }
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Reminders

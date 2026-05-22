@@ -1,0 +1,25 @@
+:root {
+  --bg: #ffffff;
+  --fg: #111827;
+  --muted: #6b7280;
+  --subtle: #9ca3af;
+  --surface: #fefeff;
+  --border: #e5e7eb;
+
+  --callout-bg: #eff6ff;
+  --callout-border: #bfdbfe;
+  --callout-fg: #1e3a8a;
+}
+
+:root.dark {
+  --bg: #0f172a;
+  --fg: #f1f5f9;
+  --muted: #9ca3af;
+  --subtle: #6b7280;
+  --surface: #1e293b;
+  --border: #334155;
+
+  --callout-bg: rgba(30, 58, 138, 0.15);
+  --callout-border: #1e40af;
+  --callout-fg: #bfdbfe;
+}

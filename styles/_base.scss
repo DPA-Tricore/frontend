@@ -1,0 +1,5 @@
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  @apply antialiased transition-colors duration-200; 
+}
