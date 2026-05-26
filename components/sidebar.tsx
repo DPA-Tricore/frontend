@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
@@ -18,7 +19,11 @@ import {
   Bell,
 } from 'lucide-react';
 
-const menuItems = [
+type MenuItem =
+  | { name: string; icon: React.ElementType; href: string }
+  | { name: string; icon: React.ElementType };
+
+const menuItems: MenuItem[] = [
   {
     name: 'Dashboard',
     icon: BarChart3,
