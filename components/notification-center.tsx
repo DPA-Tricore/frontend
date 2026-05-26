@@ -75,11 +75,8 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={onClose}
-      />
+      {/* Click-outside to close */}
+      <div className="absolute inset-0" onClick={onClose} />
 
       {/* Drawer */}
       <div className="absolute right-0 top-0 bottom-0 w-full max-w-md surface shadow-lg overflow-y-auto">
