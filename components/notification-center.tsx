@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
+import { Transition } from '@headlessui/react';
 import { useReminders } from '@/lib/hooks/use-reminders';
 import { ReminderResponseDto } from '@/lib/api/reminders';
 import { X, Clock, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 
 interface NotificationCenterProps {
+  isOpen: boolean;
   onClose: () => void;
 }
 
-export default function NotificationCenter({ onClose }: NotificationCenterProps) {
+export default function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
   const { reminders, acknowledgeReminder, dismissReminder, deleteReminder } =
     useReminders();
   const [filter, setFilter] = useState<'all' | 'pending' | 'triggered'>(
@@ -74,11 +76,21 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
   };
 
   return (
+    <Transition show={isOpen} as={Fragment}>
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Click-outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Drawer */}
+      <Transition.Child
+        as={Fragment}
+        enter="transform transition ease-in-out duration-500"
+        enterFrom="translate-x-full"
+        enterTo="translate-x-0"
+        leave="transform transition ease-in-out duration-300"
+        leaveFrom="translate-x-0"
+        leaveTo="translate-x-full"
+      >
       <div className="absolute right-0 top-0 bottom-0 w-full max-w-md surface shadow-lg overflow-y-auto">
         <div className="sticky top-0 surface border-b border-[var(--border)] p-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-primary">
@@ -138,7 +150,9 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
           )}
         </div>
       </div>
+      </Transition.Child>
     </div>
+    </Transition>
   );
 }
 

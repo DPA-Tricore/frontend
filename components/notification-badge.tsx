@@ -24,9 +24,7 @@ export default function NotificationBadge() {
         )}
       </button>
 
-      {isOpen && (
-        <NotificationCenter onClose={() => setIsOpen(false)} />
-      )}
+      <NotificationCenter isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
 }
