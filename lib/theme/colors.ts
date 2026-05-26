@@ -26,8 +26,8 @@ export const colors = {
   // Interactive States
   button: {
     primary: 'px-6 py-2 text-primary rounded-lg hover:bg-gray-800 transition-colors shadow-sm font-medium',
-    secondary: 'px-6 py-2 border border-gray-300 text-primary rounded-lg interactive transition-colors',
-    text: 'text-sm text-gray-900 hover:text-gray-700 font-medium transition-colors',
+    secondary: 'px-6 py-2 border border-[var(--border)] text-primary rounded-lg interactive transition-colors',
+    text: 'text-sm text-primary font-medium transition-colors interactive',
   },
 
   // Status Colors (for badges)
@@ -44,8 +44,8 @@ export const colors = {
   // Pagination
   pagination: {
     active: 'px-3 py-2 rounded-lg text-sm font-medium bg-gray-900 text-white',
-    inactive: 'px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100',
-    button: 'px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed',
+    inactive: 'px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70',
+    button: 'px-4 py-2 border border-[var(--border)] rounded-lg text-sm font-medium text-primary hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed',
   },
 
   // Text

@@ -169,7 +169,7 @@ export default function LeadsPage() {
   };
 
   const SortIcon = ({ field }: { field: string }) => {
-    if (sortBy !== field) return <span className="text-gray-400">⇅</span>;
+    if (sortBy !== field) return <span className="text-subtle">⇅</span>;
     return sortOrder === 'asc' ? <span>↑</span> : <span>↓</span>;
   };
 
@@ -178,8 +178,8 @@ export default function LeadsPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Leads Management</h1>
-          <p className="text-gray-600 mt-2">Track and manage your sales pipeline</p>
+          <h1 className="text-3xl font-bold text-primary">Leads Management</h1>
+          <p className="text-muted mt-2">Track and manage your sales pipeline</p>
         </div>
         <button onClick={() => setShowForm(true)} className={colors.button.primary}>
           + Add Lead
@@ -197,36 +197,36 @@ export default function LeadsPage() {
       <SlideModal isOpen={showForm} onClose={() => setShowForm(false)} title="Create New Lead">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+            <label className="block text-sm font-medium text-muted mb-2">First Name</label>
             <input
               type="text"
               name="firstName"
               value={formData.firstName}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
               placeholder="John"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+            <label className="block text-sm font-medium text-muted mb-2">Last Name</label>
             <input
               type="text"
               name="lastName"
               value={formData.lastName}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
               placeholder="Doe"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Lead Type</label>
+            <label className="block text-sm font-medium text-muted mb-2">Lead Type</label>
             <select
               name="leadType"
               value={formData.leadType}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
             >
               <option value="PROSPECT">Prospect</option>
               <option value="WARM_LEAD">Warm Lead</option>
@@ -235,12 +235,12 @@ export default function LeadsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label className="block text-sm font-medium text-muted mb-2">Status</label>
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
             >
               <option value="NEW">New</option>
               <option value="CONTACTED">Contacted</option>
@@ -263,7 +263,7 @@ export default function LeadsPage() {
       </SlideModal>
 
       {/* Search and Filter Bar */}
-      <div className="mb-6 bg-white rounded-lg border border-gray-200 p-4">
+      <div className="mb-6 surface rounded-lg border border-[var(--border)] p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div>
@@ -272,7 +272,7 @@ export default function LeadsPage() {
               placeholder="Search by name or source..."
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             />
           </div>
 
@@ -281,7 +281,7 @@ export default function LeadsPage() {
             <select
               value={statusFilter}
               onChange={(e) => handleStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             >
               <option value="">Status</option>
               <option value="NEW">New</option>
@@ -299,7 +299,7 @@ export default function LeadsPage() {
             <select
               value={leadTypeFilter}
               onChange={(e) => handleLeadTypeFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             >
               <option value="">Types</option>
               <option value="PROSPECT">Prospect</option>
@@ -314,7 +314,7 @@ export default function LeadsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             >
               <option value="createdAt">Sort</option>
               <option value="firstName">First Name</option>
@@ -328,7 +328,7 @@ export default function LeadsPage() {
 
       {/* Results Count */}
       {meta ? (
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-4 text-sm text-muted">
           Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of {meta.total}{' '}
           leads
         </div>
@@ -350,22 +350,22 @@ export default function LeadsPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600">Loading leads...</p>
+          <p className="text-muted">Loading leads...</p>
         </div>
       ) : leads.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-600">
+        <div className="text-center py-12 surface rounded-lg border border-[var(--border)]">
+          <p className="text-muted">
             No leads found. {search ? 'Try adjusting your search.' : 'Create your first lead to get started!'}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+          <div className="overflow-x-auto surface rounded-lg border border-[var(--border)]">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
+                <tr className="border-b border-[var(--border)] [background:var(--bg)]">
                   <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                     onClick={() => handleSort('firstName')}
                   >
                     <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ export default function LeadsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                     onClick={() => handleSort('leadType')}
                   >
                     <div className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export default function LeadsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                     onClick={() => handleSort('status')}
                   >
                     <div className="flex items-center gap-2">
@@ -391,10 +391,10 @@ export default function LeadsPage() {
                       <SortIcon field="status" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Source</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Contact</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Source</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Contact</th>
                   <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                     onClick={() => handleSort('createdAt')}
                   >
                     <div className="flex items-center gap-2">
@@ -402,19 +402,19 @@ export default function LeadsPage() {
                       <SortIcon field="createdAt" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {leads.map((lead) => (
-                  <tr key={lead.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <tr key={lead.id} className="border-b border-[var(--border)] hover:[background:var(--bg)]">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-primary">
                         {lead.firstName} {lead.lastName}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{lead.leadType}</span>
+                      <span className="text-sm text-muted">{lead.leadType}</span>
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -426,15 +426,15 @@ export default function LeadsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{lead.source || '—'}</span>
+                      <span className="text-sm text-muted">{lead.source || '—'}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted">
                         {getContactDisplay(getPrimaryContact(lead.contacts))}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted">
                         {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : '—'}
                       </span>
                     </td>
@@ -450,7 +450,7 @@ export default function LeadsPage() {
           {/* Pagination */}
           {meta && meta.totalPages > 1 ? (
             <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted">
                 Page {meta.page} of {meta.totalPages}
               </div>
               <div className="flex gap-2 items-center">
@@ -480,14 +480,14 @@ export default function LeadsPage() {
                         <button
                           key={1}
                           onClick={() => setPage(1)}
-                          className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+                          className="px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70"
                         >
                           1
                         </button>,
                       );
                       if (startPage > 2) {
                         pages.push(
-                          <span key="dots-start" className="px-2 py-2 text-gray-500">
+                          <span key="dots-start" className="px-2 py-2 text-subtle">
                             ...
                           </span>,
                         );
@@ -513,7 +513,7 @@ export default function LeadsPage() {
                     if (endPage < meta.totalPages) {
                       if (endPage < meta.totalPages - 1) {
                         pages.push(
-                          <span key="dots-end" className="px-2 py-2 text-gray-500">
+                          <span key="dots-end" className="px-2 py-2 text-subtle">
                             ...
                           </span>,
                         );
@@ -522,7 +522,7 @@ export default function LeadsPage() {
                         <button
                           key={meta.totalPages}
                           onClick={() => setPage(meta.totalPages)}
-                          className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+                          className="px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70"
                         >
                           {meta.totalPages}
                         </button>,
