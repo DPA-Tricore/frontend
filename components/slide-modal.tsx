@@ -46,13 +46,13 @@ export default function SlideModal({
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto relative w-96 bg-white shadow-2xl flex flex-col">
+                <Dialog.Panel className="pointer-events-auto relative w-96 surface shadow-2xl flex flex-col">
                   {/* Header */}
-                  <div className="flex-shrink-0 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+                  <div className="flex-shrink-0 border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-primary">{title}</h2>
                     <button
                       onClick={onClose}
-                      className="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+                      className="text-subtle hover:text-primary focus:outline-none transition-colors"
                     >
                       <svg
                         className="w-6 h-6"
