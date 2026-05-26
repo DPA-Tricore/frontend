@@ -82,21 +82,21 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
       />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-gray-900 shadow-lg overflow-y-auto">
-        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b dark:border-gray-700 p-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md surface shadow-lg overflow-y-auto">
+        <div className="sticky top-0 surface border-b border-[var(--border)] p-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-primary">
             Notifications
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-muted hover:text-primary interactive"
           >
             <X size={24} />
           </button>
         </div>
 
         {/* Filter Tabs */}
-        <div className="border-b dark:border-gray-700 px-4 pt-4 pb-0">
+        <div className="border-b border-[var(--border)] px-4 pt-4 pb-0">
           <div className="flex gap-4">
             {(['all', 'pending', 'triggered'] as const).map(f => (
               <button
@@ -104,8 +104,8 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
                 onClick={() => setFilter(f)}
                 className={`pb-3 px-1 font-medium text-sm border-b-2 transition-colors capitalize ${
                   filter === f
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-muted hover:text-primary'
                 }`}
               >
                 {f}
@@ -118,8 +118,8 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
         <div className="p-4">
           {filteredReminders.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-500 dark:text-gray-400">
+              <CheckCircle className="w-12 h-12 text-subtle mx-auto mb-3" />
+              <p className="text-muted">
                 No {filter} reminders
               </p>
             </div>
@@ -179,8 +179,8 @@ function ReminderCard({
     <div
       className={`p-3 rounded-lg border transition-colors ${
         isOverdue
-          ? 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
-          : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
+          ? 'border-red-200 bg-red-50'
+          : 'border-[var(--border)] [background:var(--bg)]'
       }`}
     >
       <div className="flex gap-3">
@@ -189,23 +189,23 @@ function ReminderCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+              <h3 className="font-semibold text-primary truncate">
                 {reminder.title}
               </h3>
               {reminder.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                <p className="text-sm text-muted line-clamp-2">
                   {reminder.description}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="mt-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+          <div className="mt-2 flex items-center gap-2 text-xs text-muted">
             <Clock size={12} />
             <span>
               Due: {formatDate(reminder.dueDate)}
             </span>
-            {isOverdue && <span className="text-red-600 dark:text-red-400 font-semibold">Overdue</span>}
+            {isOverdue && <span className="text-red-600 font-semibold">Overdue</span>}
           </div>
 
           <div className="mt-3 flex gap-2">
@@ -214,14 +214,14 @@ function ReminderCard({
                 <button
                   onClick={() => handleAction(onAcknowledge)}
                   disabled={isLoading}
-                  className="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 disabled:opacity-50"
+                  className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50"
                 >
                   Acknowledge
                 </button>
                 <button
                   onClick={() => handleAction(onDismiss)}
                   disabled={isLoading}
-                  className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="text-xs px-2 py-1 rounded surface border border-[var(--border)] text-primary hover:opacity-70 disabled:opacity-50"
                 >
                   Dismiss
                 </button>
@@ -231,7 +231,7 @@ function ReminderCard({
             <button
               onClick={() => handleAction(onDelete)}
               disabled={isLoading}
-              className="ml-auto text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 disabled:opacity-50"
+              className="ml-auto text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
             >
               <Trash2 size={14} />
             </button>

@@ -115,7 +115,7 @@ export default function ReminderModal({
 
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1">
+          <label className="block text-sm font-medium text-primary mb-1">
             Reminder Title
           </label>
           <input
@@ -124,14 +124,14 @@ export default function ReminderModal({
             onChange={e =>
               setFormData(prev => ({ ...prev, title: e.target.value }))
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 surface text-primary"
             placeholder="e.g., Follow up with client"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1">
+          <label className="block text-sm font-medium text-primary mb-1">
             Description (Optional)
           </label>
           <textarea
@@ -139,7 +139,7 @@ export default function ReminderModal({
             onChange={e =>
               setFormData(prev => ({ ...prev, description: e.target.value }))
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none surface text-primary"
             rows={3}
             placeholder="Add notes..."
           />
@@ -148,35 +148,35 @@ export default function ReminderModal({
         {/* Due Date */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Due Date
             </label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+              <Calendar className="absolute left-3 top-3 w-4 h-4 text-subtle" />
               <input
                 type="date"
                 value={formData.dueDate}
                 onChange={e =>
                   setFormData(prev => ({ ...prev, dueDate: e.target.value }))
                 }
-                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 surface text-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Time
             </label>
             <div className="relative">
-              <Clock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+              <Clock className="absolute left-3 top-3 w-4 h-4 text-subtle" />
               <input
                 type="time"
                 value={formData.dueTime}
                 onChange={e =>
                   setFormData(prev => ({ ...prev, dueTime: e.target.value }))
                 }
-                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 surface text-primary"
               />
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function ReminderModal({
 
         {/* Reminder Timing */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-1">
+          <label className="block text-sm font-medium text-primary mb-1">
             Remind Me
           </label>
           <select
@@ -192,7 +192,7 @@ export default function ReminderModal({
             onChange={e =>
               setFormData(prev => ({ ...prev, reminderTime: e.target.value }))
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 surface text-primary"
           >
             <option value="on-due-date">On due date</option>
             <option value="before-1-hour">1 hour before</option>
@@ -206,7 +206,7 @@ export default function ReminderModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-2 border border-[var(--border)] text-primary rounded-md hover:opacity-70 transition-colors"
           >
             Cancel
           </button>

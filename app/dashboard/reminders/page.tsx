@@ -127,7 +127,7 @@ export default function RemindersPage() {
   };
 
   const SortIcon = ({ field }: { field: string }) => {
-    if (sortBy !== field) return <span className="text-gray-400">⇅</span>;
+    if (sortBy !== field) return <span className="text-subtle">⇅</span>;
     return <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>;
   };
 
@@ -161,13 +161,13 @@ export default function RemindersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reminders</h1>
-            <p className="text-gray-600 mt-1">Manage your reminders and notifications</p>
+            <h1 className="text-3xl font-bold text-primary">Reminders</h1>
+            <p className="text-muted mt-1">Manage your reminders and notifications</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -183,11 +183,11 @@ export default function RemindersPage() {
         )}
 
         {/* Filters */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 space-y-4">
+        <div className="surface rounded-lg border border-[var(--border)] p-4 mb-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <label className="block text-sm font-medium text-muted mb-1">Search</label>
               <input
                 type="text"
                 placeholder="Search by title or description..."
@@ -196,20 +196,20 @@ export default function RemindersPage() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 surface text-primary"
               />
             </div>
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-muted mb-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 surface text-primary"
               >
                 <option value="">All Statuses</option>
                 <option value="PENDING">Pending</option>
@@ -222,13 +222,13 @@ export default function RemindersPage() {
 
             {/* Sort By */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+              <label className="block text-sm font-medium text-muted mb-1">Sort By</label>
               <select
                 value={sortBy}
                 onChange={(e) =>
                   setSortBy(e.target.value as 'reminderTime' | 'dueDate' | 'title' | 'status' | 'createdAt')
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 surface text-primary"
               >
                 <option value="reminderTime">Reminder Time</option>
                 <option value="dueDate">Due Date</option>
@@ -243,7 +243,7 @@ export default function RemindersPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              className="px-3 py-2 text-sm surface border border-[var(--border)] text-primary rounded-md hover:opacity-70 transition-colors"
             >
               Order: {sortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
             </button>
@@ -252,7 +252,7 @@ export default function RemindersPage() {
 
         {/* Results Count */}
         {meta ? (
-          <div className="mb-4 text-sm text-gray-600">
+          <div className="mb-4 text-sm text-muted">
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of {meta.total} reminders
           </div>
         ) : null}
@@ -261,7 +261,7 @@ export default function RemindersPage() {
         {loading ? (
           <div className="text-center py-12">
             <svg
-              className="animate-spin h-8 w-8 mx-auto text-gray-900 mb-4"
+              className="animate-spin h-8 w-8 mx-auto text-primary mb-4"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -273,23 +273,23 @@ export default function RemindersPage() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            <p className="text-gray-600">Loading reminders...</p>
+            <p className="text-muted">Loading reminders...</p>
           </div>
         ) : reminders.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">
+          <div className="text-center py-12 surface rounded-lg border border-[var(--border)]">
+            <Bell className="w-12 h-12 text-subtle mx-auto mb-4" />
+            <p className="text-muted">
               {search ? 'No reminders found. Try adjusting your search.' : 'No reminders yet. Create your first one!'}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+            <div className="overflow-x-auto surface rounded-lg border border-[var(--border)]">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
+                  <tr className="border-b border-[var(--border)] [background:var(--bg)]">
                     <th
-                      className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                       onClick={() => handleSort('title')}
                     >
                       <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export default function RemindersPage() {
                       </div>
                     </th>
                     <th
-                      className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                       onClick={() => handleSort('status')}
                     >
                       <div className="flex items-center gap-2">
@@ -307,7 +307,7 @@ export default function RemindersPage() {
                       </div>
                     </th>
                     <th
-                      className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                       onClick={() => handleSort('dueDate')}
                     >
                       <div className="flex items-center gap-2">
@@ -315,18 +315,18 @@ export default function RemindersPage() {
                         <SortIcon field="dueDate" />
                       </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Reminder Time</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Time Left</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Reminder Time</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Time Left</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reminders.map((reminder) => (
-                    <tr key={reminder.id} className="border-b border-gray-200 hover:bg-gray-50">
+                    <tr key={reminder.id} className="border-b border-[var(--border)] hover:[background:var(--bg)]">
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{reminder.title}</div>
+                        <div className="text-sm font-medium text-primary">{reminder.title}</div>
                         {reminder.description && (
-                          <div className="text-xs text-gray-500 mt-1 line-clamp-2">{reminder.description}</div>
+                          <div className="text-xs text-subtle mt-1 line-clamp-2">{reminder.description}</div>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -338,15 +338,15 @@ export default function RemindersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">{formatDate(reminder.dueDate)}</span>
+                        <span className="text-sm text-muted">{formatDate(reminder.dueDate)}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted">
                           {formatDate(reminder.reminderTime)} {formatTime(reminder.reminderTime)}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">{getTimeLeft(reminder.reminderTime)}</span>
+                        <span className="text-sm text-muted">{getTimeLeft(reminder.reminderTime)}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
@@ -360,7 +360,7 @@ export default function RemindersPage() {
                               </button>
                               <button
                                 onClick={() => handleDismiss(reminder.id)}
-                                className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                                className="text-xs px-2 py-1 surface border border-[var(--border)] text-primary rounded hover:opacity-70 transition-colors"
                               >
                                 Dismiss
                               </button>
@@ -384,14 +384,14 @@ export default function RemindersPage() {
             {/* Pagination */}
             {meta && meta.totalPages > 1 ? (
               <div className="flex justify-between items-center mt-6">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted">
                   Page {meta.page} of {meta.totalPages}
                 </div>
                 <div className="flex gap-2 items-center">
                   <button
                     onClick={() => setPage(page - 1)}
                     disabled={!meta.hasPrevPage}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 border border-[var(--border)] text-primary rounded-md hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     ← Previous
                   </button>
@@ -413,14 +413,14 @@ export default function RemindersPage() {
                           <button
                             key={1}
                             onClick={() => setPage(1)}
-                            className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+                            className="px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70"
                           >
                             1
                           </button>,
                         );
                         if (startPage > 2) {
                           pages.push(
-                            <span key="dots-start" className="px-2 py-2 text-gray-500">
+                            <span key="dots-start" className="px-2 py-2 text-subtle">
                               ...
                             </span>,
                           );
@@ -435,7 +435,7 @@ export default function RemindersPage() {
                             className={
                               i === meta.page
                                 ? 'px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white'
-                                : 'px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                : 'px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70'
                             }
                           >
                             {i}
@@ -446,7 +446,7 @@ export default function RemindersPage() {
                       if (endPage < meta.totalPages) {
                         if (endPage < meta.totalPages - 1) {
                           pages.push(
-                            <span key="dots-end" className="px-2 py-2 text-gray-500">
+                            <span key="dots-end" className="px-2 py-2 text-subtle">
                               ...
                             </span>,
                           );
@@ -455,7 +455,7 @@ export default function RemindersPage() {
                           <button
                             key={meta.totalPages}
                             onClick={() => setPage(meta.totalPages)}
-                            className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+                            className="px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70"
                           >
                             {meta.totalPages}
                           </button>,
@@ -469,7 +469,7 @@ export default function RemindersPage() {
                   <button
                     onClick={() => setPage(page + 1)}
                     disabled={!meta.hasNextPage}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 border border-[var(--border)] text-primary rounded-md hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Next →
                   </button>
