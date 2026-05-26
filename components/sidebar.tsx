@@ -39,31 +39,11 @@ const menuItems = [
     icon: Bell,
     href: '/dashboard/reminders',
   },
-  {
-    name: 'Policies',
-    icon: FileText,
-    href: '/dashboard/policies',
-  },
-  {
-    name: 'Claims',
-    icon: Zap,
-    href: '/dashboard/claims',
-  },
-  {
-    name: 'Contacts',
-    icon: Users,
-    href: '/dashboard/contacts',
-  },
-  {
-    name: 'Insurance',
-    icon: Shield,
-    href: '/dashboard/insurance',
-  },
-  {
-    name: 'Reports',
-    icon: BarChart3,
-    href: '/dashboard/reports',
-  },
+  { name: 'Policies', icon: FileText },
+  { name: 'Claims', icon: Zap },
+  { name: 'Contacts', icon: Users },
+  { name: 'Insurance', icon: Shield },
+  { name: 'Reports', icon: BarChart3 },
   {
     name: 'Settings',
     icon: Settings,
@@ -86,7 +66,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`border-r border-primary text-gray-900 dark:text-white min-h-screen flex flex-col transition-all duration-300 overflow-hidden ${
+      className={`border-r border-[var(--border)] text-primary min-h-screen flex flex-col transition-all duration-300 overflow-hidden ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
@@ -115,19 +95,13 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-2">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = 'href' in item && pathname === item.href;
           const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors block ${
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-muted interactive'
-              }`}
-              title={isCollapsed ? item.name : ''}
-            >
+          const sharedClass = `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors w-full text-left ${
+            isActive ? 'bg-blue-600 text-white' : 'text-muted interactive'
+          }`;
+          const label = (
+            <>
               <Icon size={20} className="flex-shrink-0" />
               <span
                 className={`font-medium transition-opacity duration-300 ${
@@ -136,7 +110,26 @@ export default function Sidebar() {
               >
                 {item.name}
               </span>
+            </>
+          );
+          return 'href' in item ? (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={sharedClass}
+              title={isCollapsed ? item.name : ''}
+            >
+              {label}
             </Link>
+          ) : (
+            <button
+              key={item.name}
+              type="button"
+              className={sharedClass}
+              title={isCollapsed ? item.name : ''}
+            >
+              {label}
+            </button>
           );
         })}
       </nav>
