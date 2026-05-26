@@ -5,6 +5,7 @@ import { Clock, AlertCircle, CheckCircle, XCircle, Trash2, Bell } from 'lucide-r
 import { reminderAPI } from '@/lib/api/reminders';
 import { ReminderResponseDto } from '@/lib/api/types/reminder-types';
 import ReminderModal from '@/components/reminder-modal';
+import { colors } from '@/lib/theme/colors';
 
 interface PaginationMeta {
   page: number;
@@ -169,12 +170,8 @@ export default function RemindersPage() {
             <h1 className="text-3xl font-bold text-primary">Reminders</h1>
             <p className="text-muted mt-1">Manage your reminders and notifications</p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Bell className="w-4 h-4" />
-            New Reminder
+          <button onClick={() => setShowModal(true)} className={colors.button.primary}>
+            + Add Reminder
           </button>
         </div>
 
