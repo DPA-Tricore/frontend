@@ -195,7 +195,7 @@ export default function TasksPage() {
   };
 
   const SortIcon = ({ field }: { field: string }) => {
-    if (sortBy !== field) return <span className="text-gray-400">⇅</span>;
+    if (sortBy !== field) return <span className="text-subtle">⇅</span>;
     return sortOrder === 'asc' ? <span>↑</span> : <span>↓</span>;
   };
 
@@ -208,8 +208,8 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Tasks Management</h1>
-          <p className="text-gray-600 mt-2">Track and manage your sales activities</p>
+          <h1 className="text-3xl font-bold text-primary">Tasks Management</h1>
+          <p className="text-muted mt-2">Track and manage your sales activities</p>
         </div>
         <button onClick={() => setShowForm(true)} className={colors.button.primary}>
           + Add Task
@@ -227,25 +227,25 @@ export default function TasksPage() {
       <SlideModal isOpen={showForm} onClose={() => setShowForm(false)} title="Create New Task">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+            <label className="block text-sm font-medium text-muted mb-2">Title *</label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
               placeholder="e.g., Follow up with client"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label className="block text-sm font-medium text-muted mb-2">Description</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
               placeholder="Task details..."
               rows={4}
             />
@@ -253,12 +253,12 @@ export default function TasksPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+              <label className="block text-sm font-medium text-muted mb-2">Type *</label>
               <select
                 name="type"
                 value={formData.type}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
               >
                 <option value="CALL">Call</option>
                 <option value="EMAIL">Email</option>
@@ -269,12 +269,12 @@ export default function TasksPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+              <label className="block text-sm font-medium text-muted mb-2">Priority</label>
               <select
                 name="priority"
                 value={formData.priority}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -285,15 +285,15 @@ export default function TasksPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assign To * {usersLoading && <span className="text-xs text-gray-500">(Loading...)</span>}
+            <label className="block text-sm font-medium text-muted mb-2">
+              Assign To * {usersLoading && <span className="text-xs text-subtle">(Loading...)</span>}
             </label>
             <select
               name="assignedToId"
               value={formData.assignedToId}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
             >
               <option value="">Select a user</option>
               {users.map((user) => (
@@ -305,19 +305,19 @@ export default function TasksPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
+            <label className="block text-sm font-medium text-muted mb-2">Due Date *</label>
             <input
               type="datetime-local"
               name="dueDate"
               value={formData.dueDate}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Voice Note (Optional)</label>
+            <label className="block text-sm font-medium text-muted mb-2">Voice Note (Optional)</label>
             <VoiceRecorder 
               onVoiceRecorded={(blob) => setVoiceBlob(blob)}
               onVoiceCleared={() => setVoiceBlob(null)}
@@ -339,7 +339,7 @@ export default function TasksPage() {
       </SlideModal>
 
       {/* Search and Filter Bar */}
-      <div className="mb-6 bg-white rounded-lg border border-gray-200 p-4">
+      <div className="mb-6 surface rounded-lg border border-[var(--border)] p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
           <div>
@@ -348,7 +348,7 @@ export default function TasksPage() {
               placeholder="Search tasks..."
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             />
           </div>
 
@@ -360,7 +360,7 @@ export default function TasksPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             >
               <option value="">Status</option>
               <option value="PENDING">Pending</option>
@@ -378,7 +378,7 @@ export default function TasksPage() {
                 setPriorityFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             >
               <option value="">Priority</option>
               <option value="LOW">Low</option>
@@ -396,7 +396,7 @@ export default function TasksPage() {
                 setTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             >
               <option value="">Type</option>
               <option value="CALL">Call</option>
@@ -415,7 +415,7 @@ export default function TasksPage() {
                 setSortBy(e.target.value as any);
                 setPage(1);
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             >
               <option value="dueDate">Due Date</option>
               <option value="title">Title</option>
@@ -429,7 +429,7 @@ export default function TasksPage() {
 
       {/* Results Count */}
       {meta ? (
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-4 text-sm text-muted">
           Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of {meta.total}{' '}
           tasks
         </div>
@@ -451,22 +451,22 @@ export default function TasksPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600">Loading tasks...</p>
+          <p className="text-muted">Loading tasks...</p>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-600">
+        <div className="text-center py-12 surface rounded-lg border border-[var(--border)]">
+          <p className="text-muted">
             No tasks found. {search ? 'Try adjusting your search.' : 'Create your first task to get started!'}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+          <div className="overflow-x-auto surface rounded-lg border border-[var(--border)]">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
+                <tr className="border-b border-[var(--border)] [background:var(--bg)]">
                   <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                     onClick={() => handleSort('title')}
                   >
                     <div className="flex items-center gap-2">
@@ -474,10 +474,10 @@ export default function TasksPage() {
                       <SortIcon field="title" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Type</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Priority</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Type</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Priority</th>
                   <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                     onClick={() => handleSort('status')}
                   >
                     <div className="flex items-center gap-2">
@@ -486,7 +486,7 @@ export default function TasksPage() {
                     </div>
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
                     onClick={() => handleSort('dueDate')}
                   >
                     <div className="flex items-center gap-2">
@@ -494,16 +494,16 @@ export default function TasksPage() {
                       <SortIcon field="dueDate" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Assigned To</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Assigned To</th>
                 </tr>
               </thead>
               <tbody>
                 {tasks.map((task) => (
-                  <tr key={task.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <tr key={task.id} className="border-b border-[var(--border)] hover:[background:var(--bg)]">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{task.title}</div>
+                      <div className="text-sm font-medium text-primary">{task.title}</div>
                       {task.description && (
-                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">{task.description}</div>
+                        <div className="text-xs text-subtle mt-1 line-clamp-2">{task.description}</div>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -526,10 +526,10 @@ export default function TasksPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">{formatDate(task.dueDate)}</div>
+                      <div className="text-sm text-muted">{formatDate(task.dueDate)}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">{getUserEmail(task.assignedToId)}</div>
+                      <div className="text-sm text-muted">{getUserEmail(task.assignedToId)}</div>
                     </td>
                   </tr>
                 ))}
@@ -545,24 +545,24 @@ export default function TasksPage() {
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={!meta.hasPrevPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] ${
               meta.hasPrevPage
-                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'text-primary hover:opacity-70'
+                : 'text-subtle cursor-not-allowed opacity-50'
             }`}
           >
             Previous
           </button>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted">
             Page {page} of {meta.totalPages}
           </div>
           <button
             onClick={() => setPage(Math.min(meta.totalPages, page + 1))}
             disabled={!meta.hasNextPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] ${
               meta.hasNextPage
-                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'text-primary hover:opacity-70'
+                : 'text-subtle cursor-not-allowed opacity-50'
             }`}
           >
             Next
