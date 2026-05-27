@@ -64,6 +64,9 @@ export interface CreateTaskRequest {
   reminderAt?: Date | string;
   tags?: string[];
   customFields?: Record<string, any>;
+  reminderOffsets?: number[];
+  customReminderTimes?: string[];
+  demoMode?: boolean;
 }
 
 export const tasksApi = {

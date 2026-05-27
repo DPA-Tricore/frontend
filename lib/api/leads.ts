@@ -80,6 +80,8 @@ export interface CreateLeadRequest {
   status: string;
   email?: string;
   source?: string;
+  reminderTimes?: string[];
+  demoMode?: boolean;
 }
 
 export const leadsApi = {

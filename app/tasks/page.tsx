@@ -28,6 +28,10 @@ function formatDate(date: Date | string | undefined): string {
   return d.toLocaleDateString();
 }
 
+function formatDateTime(isoString: string): string {
+  return new Date(isoString).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+}
+
 function getPriorityColor(priority: string): string {
   switch (priority) {
     case 'URGENT':
@@ -60,6 +64,16 @@ function getTaskTypeColor(type: string): string {
   }
 }
 
+const REMINDER_PRESETS = [
+  { label: 'At due time', offset: 0 },
+  { label: '15 min before', offset: 15 },
+  { label: '30 min before', offset: 30 },
+  { label: '1 hour before', offset: 60 },
+  { label: '3 hours before', offset: 180 },
+  { label: '1 day before', offset: 1440 },
+  { label: '2 days before', offset: 2880 },
+];
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<TaskResponseDto[]>([]);
   const [users, setUsers] = useState<UserResponseDto[]>([]);
@@ -89,7 +103,40 @@ export default function TasksPage() {
     assignedToId: '',
     dueDate: '',
   });
+
+  // Reminder state
+  const [selectedOffsets, setSelectedOffsets] = useState<number[]>([]);
+  const [customReminderTimes, setCustomReminderTimes] = useState<string[]>([]);
+  const [customTimeInput, setCustomTimeInput] = useState('');
+  const [demoMode, setDemoMode] = useState(false);
+
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+
+  const toggleOffset = (offset: number) => {
+    setSelectedOffsets((prev) =>
+      prev.includes(offset) ? prev.filter((o) => o !== offset) : [...prev, offset],
+    );
+  };
+
+  const addCustomTime = () => {
+    if (customTimeInput && !customReminderTimes.includes(customTimeInput)) {
+      setCustomReminderTimes((prev) => [...prev, customTimeInput]);
+      setCustomTimeInput('');
+    }
+  };
+
+  const removeCustomTime = (time: string) => {
+    setCustomReminderTimes((prev) => prev.filter((t) => t !== time));
+  };
+
+  const resetForm = () => {
+    setFormData({ title: '', description: '', type: 'CALL', priority: 'MEDIUM', assignedToId: '', dueDate: '' });
+    setSelectedOffsets([]);
+    setCustomReminderTimes([]);
+    setCustomTimeInput('');
+    setDemoMode(false);
+    setVoiceBlob(null);
+  };
 
   // Load users for dropdown
   useEffect(() => {
@@ -150,16 +197,13 @@ export default function TasksPage() {
       await tasksApi.createTask({
         ...formData,
         dueDate,
+        ...(selectedOffsets.length > 0 && { reminderOffsets: selectedOffsets }),
+        ...(customReminderTimes.length > 0 && {
+          customReminderTimes: customReminderTimes.map((t) => new Date(t).toISOString()),
+        }),
+        ...(demoMode && { demoMode: true }),
       });
-      setFormData({
-        title: '',
-        description: '',
-        type: 'CALL',
-        priority: 'MEDIUM',
-        assignedToId: '',
-        dueDate: '',
-      });
-      setVoiceBlob(null);
+      resetForm();
       setShowForm(false);
       setPage(1);
       fetchTasks();
@@ -224,7 +268,7 @@ export default function TasksPage() {
       ) : null}
 
       {/* Add Task Modal */}
-      <SlideModal isOpen={showForm} onClose={() => setShowForm(false)} title="Create New Task">
+      <SlideModal isOpen={showForm} onClose={() => { setShowForm(false); resetForm(); }} title="Create New Task">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-muted mb-2">Title *</label>
@@ -316,19 +360,105 @@ export default function TasksPage() {
             />
           </div>
 
+          {/* Reminders */}
+          <div>
+            <label className="block text-sm font-medium text-muted mb-3">
+              Reminders <span className="text-xs text-subtle font-normal">(optional, select multiple)</span>
+            </label>
+
+            {/* Preset chips */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {REMINDER_PRESETS.map(({ label, offset }) => {
+                const active = selectedOffsets.includes(offset);
+                return (
+                  <button
+                    key={offset}
+                    type="button"
+                    onClick={() => toggleOffset(offset)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      active
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'border-[var(--border)] text-muted hover:border-blue-400 hover:text-blue-600'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom datetime picker */}
+            <div className="flex gap-2 items-center">
+              <input
+                type="datetime-local"
+                value={customTimeInput}
+                onChange={(e) => setCustomTimeInput(e.target.value)}
+                className="flex-1 px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+              />
+              <button
+                type="button"
+                onClick={addCustomTime}
+                disabled={!customTimeInput}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] text-muted hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                + Custom
+              </button>
+            </div>
+
+            {/* Added custom times */}
+            {customReminderTimes.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {customReminderTimes.map((time) => (
+                  <span
+                    key={time}
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white"
+                  >
+                    {formatDateTime(time)}
+                    <button
+                      type="button"
+                      onClick={() => removeCustomTime(time)}
+                      className="hover:opacity-70 ml-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Demo mode */}
+            {(selectedOffsets.length > 0 || customReminderTimes.length > 0) && (
+              <label className="inline-flex items-center gap-2 mt-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={demoMode}
+                  onChange={(e) => setDemoMode(e.target.checked)}
+                  className="w-4 h-4 rounded accent-orange-500"
+                />
+                <span className="text-xs text-orange-600 font-medium">
+                  Fire immediately (demo mode)
+                </span>
+              </label>
+            )}
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-muted mb-2">Voice Note (Optional)</label>
-            <VoiceRecorder 
+            <VoiceRecorder
               onVoiceRecorded={(blob) => setVoiceBlob(blob)}
               onVoiceCleared={() => setVoiceBlob(null)}
             />
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={() => {
-              setShowForm(false);
-              setVoiceBlob(null);
-            }} className={colors.button.secondary}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+              className={colors.button.secondary}
+            >
               Cancel
             </button>
             <button type="submit" className={colors.button.primary}>

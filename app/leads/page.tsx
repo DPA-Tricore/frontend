@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { axiosClient } from '@/lib/api/axios-client';
+import { leadsApi } from '@/lib/api/leads';
 import SlideModal from '@/components/slide-modal';
 import { colors, getStatusColor } from '@/lib/theme/colors';
 
@@ -54,6 +54,10 @@ const getContactDisplay = (contact: Contact | null): string => {
   return `${typeLabel}: ${contact.value}`;
 };
 
+function formatDateTime(isoString: string): string {
+  return new Date(isoString).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -63,7 +67,7 @@ export default function LeadsPage() {
 
   // Pagination and filtering state
   const [page, setPage] = useState(1);
-  const [limit] = useState(10); // Fixed limit for pagination testing
+  const [limit] = useState(10);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<
     'createdAt' | 'firstName' | 'lastName' | 'status' | 'leadType'
@@ -79,6 +83,29 @@ export default function LeadsPage() {
     status: 'NEW',
   });
 
+  // Reminder state
+  const [reminderTimes, setReminderTimes] = useState<string[]>([]);
+  const [reminderTimeInput, setReminderTimeInput] = useState('');
+  const [demoMode, setDemoMode] = useState(false);
+
+  const addReminderTime = () => {
+    if (reminderTimeInput && !reminderTimes.includes(reminderTimeInput)) {
+      setReminderTimes((prev) => [...prev, reminderTimeInput]);
+      setReminderTimeInput('');
+    }
+  };
+
+  const removeReminderTime = (time: string) => {
+    setReminderTimes((prev) => prev.filter((t) => t !== time));
+  };
+
+  const resetForm = () => {
+    setFormData({ firstName: '', lastName: '', leadType: 'PROSPECT', status: 'NEW' });
+    setReminderTimes([]);
+    setReminderTimeInput('');
+    setDemoMode(false);
+  };
+
   const fetchLeads = useCallback(async () => {
     try {
       setLoading(true);
@@ -92,15 +119,21 @@ export default function LeadsPage() {
         ...(leadTypeFilter && { leadType: leadTypeFilter }),
       });
 
-      const response = await axiosClient.get<PaginatedResponse>(`/leads?${params}`);
+      const response = await leadsApi.getLeads({
+        page,
+        limit,
+        ...(search && { search }),
+        sortBy,
+        sortOrder,
+        ...(statusFilter && { status: statusFilter }),
+        ...(leadTypeFilter && { leadType: leadTypeFilter }),
+      });
 
-      if ((response.data as any).data) {
-        // Handle paginated response
-        setLeads((response.data as any).data);
-        setMeta((response.data as any).meta);
+      if ((response as any).data) {
+        setLeads((response as any).data);
+        setMeta((response as any).meta);
       } else {
-        // Handle legacy response format
-        setLeads(response.data as any);
+        setLeads(response as any);
         setMeta(null);
       }
       setError(null);
@@ -119,10 +152,15 @@ export default function LeadsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axiosClient.post('/leads', formData);
-      setFormData({ firstName: '', lastName: '', leadType: 'PROSPECT', status: 'NEW' });
+      await leadsApi.createLead({
+        ...formData,
+        ...(reminderTimes.length > 0 && {
+          reminderTimes: reminderTimes.map((t) => new Date(t).toISOString()),
+        }),
+        ...(demoMode && { demoMode: true }),
+      });
+      resetForm();
       setShowForm(false);
-      // Reset to first page when creating new lead
       setPage(1);
       fetchLeads();
     } catch (err) {
@@ -143,15 +181,13 @@ export default function LeadsPage() {
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    setPage(1); // Reset to first page on search
+    setPage(1);
   };
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
-      // Toggle sort order if same field is clicked
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
-      // Set new field and default to descending
       setSortBy(field as any);
       setSortOrder('desc');
     }
@@ -194,7 +230,7 @@ export default function LeadsPage() {
       ) : null}
 
       {/* Add Lead Modal */}
-      <SlideModal isOpen={showForm} onClose={() => setShowForm(false)} title="Create New Lead">
+      <SlideModal isOpen={showForm} onClose={() => { setShowForm(false); resetForm(); }} title="Create New Lead">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-muted mb-2">First Name</label>
@@ -251,8 +287,67 @@ export default function LeadsPage() {
               <option value="UNRESPONSIVE">Unresponsive</option>
             </select>
           </div>
+
+          {/* Follow-up Reminders */}
+          <div>
+            <label className="block text-sm font-medium text-muted mb-3">
+              Follow-up Reminders <span className="text-xs text-subtle font-normal">(optional)</span>
+            </label>
+
+            <div className="flex gap-2 items-center">
+              <input
+                type="datetime-local"
+                value={reminderTimeInput}
+                onChange={(e) => setReminderTimeInput(e.target.value)}
+                className="flex-1 px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+              />
+              <button
+                type="button"
+                onClick={addReminderTime}
+                disabled={!reminderTimeInput}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] text-muted hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                + Add
+              </button>
+            </div>
+
+            {reminderTimes.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {reminderTimes.map((time) => (
+                  <span
+                    key={time}
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white"
+                  >
+                    {formatDateTime(time)}
+                    <button
+                      type="button"
+                      onClick={() => removeReminderTime(time)}
+                      className="hover:opacity-70 ml-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {reminderTimes.length > 0 && (
+              <label className="inline-flex items-center gap-2 mt-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={demoMode}
+                  onChange={(e) => setDemoMode(e.target.checked)}
+                  className="w-4 h-4 rounded accent-orange-500"
+                />
+                <span className="text-xs text-orange-600 font-medium">
+                  Fire immediately (demo mode)
+                </span>
+              </label>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={() => setShowForm(false)} className={colors.button.secondary}>
+            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} className={colors.button.secondary}>
               Cancel
             </button>
             <button type="submit" className={colors.button.primary}>
@@ -462,7 +557,6 @@ export default function LeadsPage() {
                   ← Previous
                 </button>
 
-                {/* Generate page numbers */}
                 <div className="flex gap-1">
                   {(() => {
                     const pages: React.ReactNode[] = [];
@@ -474,7 +568,6 @@ export default function LeadsPage() {
                       startPage = Math.max(1, endPage - maxPagesToShow + 1);
                     }
 
-                    // First page
                     if (startPage > 1) {
                       pages.push(
                         <button
@@ -494,7 +587,6 @@ export default function LeadsPage() {
                       }
                     }
 
-                    // Middle pages
                     for (let i = startPage; i <= endPage; i++) {
                       pages.push(
                         <button
@@ -509,7 +601,6 @@ export default function LeadsPage() {
                       );
                     }
 
-                    // Last page
                     if (endPage < meta.totalPages) {
                       if (endPage < meta.totalPages - 1) {
                         pages.push(
@@ -548,4 +639,3 @@ export default function LeadsPage() {
     </div>
   );
 }
-
