@@ -3,14 +3,10 @@
 import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { colors, getStatusColor } from '@/lib/theme/colors';
 import { PaginationMeta } from '@/lib/types/common';
+import { getPrimaryContact } from './lead-card';
 
 type Lead = LeadResponseDto;
 type Contact = ContactResponseDto;
-
-const getPrimaryContact = (contacts?: Contact[]): Contact | null => {
-  if (!contacts || contacts.length === 0) return null;
-  return contacts.find((c) => c.isPrimary) || contacts[0] || null;
-};
 
 const getContactDisplay = (contact: Contact | null): string => {
   if (!contact) return '—';
