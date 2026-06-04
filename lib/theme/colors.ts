@@ -25,7 +25,7 @@ export const colors = {
 
   // Interactive States
   button: {
-    primary: 'px-6 py-2 text-primary rounded-lg hover:bg-gray-800 transition-colors shadow-sm font-medium',
+    primary: 'px-6 py-2 border border-[var(--border)] text-primary rounded-lg interactive transition-colors shadow-sm font-medium',
     secondary: 'px-6 py-2 border border-[var(--border)] text-primary rounded-lg interactive transition-colors',
     text: 'text-sm text-primary font-medium transition-colors interactive',
   },

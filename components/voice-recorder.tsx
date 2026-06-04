@@ -144,7 +144,7 @@ export default function VoiceRecorder({ onVoiceRecorded, onVoiceCleared }: Voice
 
       {!recordedBlob ? (
         // Recording interface
-        <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50">
+        <div className="rounded-lg p-4 surface">
           {!isRecording ? (
             <button
               type="button"
