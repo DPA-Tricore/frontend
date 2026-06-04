@@ -52,7 +52,7 @@ const menuItems: MenuItem[] = [
   {
     name: 'Settings',
     icon: Settings,
-    href: '/dashboard/settings',
+    href: '/settings',
   },
 ];
 
