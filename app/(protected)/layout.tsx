@@ -1,3 +1,5 @@
+// Protected layout — shared shell for all authenticated routes (leads, tasks, reminders, dashboard).
+// Handles auth guard, sidebar, header, and page transition animation.
 'use client';
 
 import { useAuth } from '@/context/auth-context';

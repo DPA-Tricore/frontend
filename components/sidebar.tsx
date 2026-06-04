@@ -42,7 +42,7 @@ const menuItems: MenuItem[] = [
   {
     name: 'Reminders',
     icon: Bell,
-    href: '/dashboard/reminders',
+    href: '/reminders',
   },
   { name: 'Policies', icon: FileText },
   { name: 'Claims', icon: Zap },

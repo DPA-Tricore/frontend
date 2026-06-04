@@ -1,3 +1,5 @@
+// Root layout — sets fonts, metadata, and global providers (AuthProvider, ThemeProvider).
+// Every page in the app is wrapped by this. No UI chrome here.
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
