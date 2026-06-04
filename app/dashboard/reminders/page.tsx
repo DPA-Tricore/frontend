@@ -2,19 +2,10 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Clock, AlertCircle, CheckCircle, XCircle, Trash2, Bell } from 'lucide-react';
-import { reminderAPI } from '@/lib/api/reminders';
+import { reminderAPI, PaginationMeta } from '@/lib/api/reminders';
 import { ReminderResponseDto } from '@/lib/api/types/reminder-types';
 import ReminderModal from '@/components/reminder-modal';
 import { colors } from '@/lib/theme/colors';
-
-interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
 
 const statusColors: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
   PENDING: {

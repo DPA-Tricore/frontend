@@ -1,71 +1,48 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { leadsApi } from '@/lib/api/leads';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
+import { leadsApi, LeadResponseDto } from '@/lib/api/leads';
 import SlideModal from '@/components/slide-modal';
-import { colors, getStatusColor } from '@/lib/theme/colors';
+import { colors } from '@/lib/theme/colors';
+import LeadBoardView from './components/lead-board-view';
+import LeadListView from './components/lead-list-view';
+import { PaginationMeta } from '@/lib/types/common';
 
-interface Contact {
-  id: string;
-  type: string;
-  value: string;
-  isPrimary: boolean;
-  isVerified: boolean;
-  doNotContact: boolean;
-  lastUsedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface Lead {
-  id: string;
-  firstName: string;
-  lastName: string;
-  leadType: string;
-  status: string;
-  email?: string;
-  source?: string;
-  contacts?: Contact[];
-  createdAt?: string;
-}
-
-interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
-
-interface PaginatedResponse {
-  data: Lead[];
-  meta: PaginationMeta;
-}
-
-const getPrimaryContact = (contacts?: Contact[]): Contact | null => {
-  if (!contacts || contacts.length === 0) return null;
-  return contacts.find((c) => c.isPrimary) || contacts[0] || null;
-};
-
-const getContactDisplay = (contact: Contact | null): string => {
-  if (!contact) return '—';
-  const typeLabel = contact.type.toLowerCase();
-  return `${typeLabel}: ${contact.value}`;
-};
+type Lead = LeadResponseDto;
 
 function formatDateTime(isoString: string): string {
   return new Date(isoString).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
 }
 
+type ViewMode = 'board' | 'list';
+
 export default function LeadsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const viewParam = searchParams.get('view');
+  const view: ViewMode = viewParam === 'list' ? 'list' : 'board';
+
+  const setView = (next: ViewMode) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === 'board') {
+      params.delete('view');
+    } else {
+      params.set('view', next);
+    }
+    const qs = params.toString();
+    router.replace(pathname + (qs ? `?${qs}` : ''));
+  };
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  // Pagination and filtering state
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState('');
@@ -83,7 +60,6 @@ export default function LeadsPage() {
     status: 'NEW',
   });
 
-  // Reminder state
   const [reminderTimes, setReminderTimes] = useState<string[]>([]);
   const [reminderTimeInput, setReminderTimeInput] = useState('');
   const [demoMode, setDemoMode] = useState(false);
@@ -109,16 +85,6 @@ export default function LeadsPage() {
   const fetchLeads = useCallback(async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        ...(search && { search }),
-        sortBy,
-        sortOrder,
-        ...(statusFilter && { status: statusFilter }),
-        ...(leadTypeFilter && { leadType: leadTypeFilter }),
-      });
-
       const response = await leadsApi.getLeads({
         page,
         limit,
@@ -169,14 +135,9 @@ export default function LeadsPage() {
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = (value: string) => {
@@ -204,10 +165,23 @@ export default function LeadsPage() {
     setPage(1);
   };
 
-  const SortIcon = ({ field }: { field: string }) => {
-    if (sortBy !== field) return <span className="text-subtle">⇅</span>;
-    return sortOrder === 'asc' ? <span>↑</span> : <span>↓</span>;
-  };
+  const handleStatusChange = useCallback(
+    async (leadId: string, newStatus: string, oldStatus: string) => {
+      setLeads((prev) =>
+        prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)),
+      );
+      try {
+        await leadsApi.updateLead(leadId, { status: newStatus });
+      } catch (err) {
+        console.error(err);
+        setLeads((prev) =>
+          prev.map((l) => (l.id === leadId ? { ...l, status: oldStatus } : l)),
+        );
+        setError('Failed to update lead status');
+      }
+    },
+    [],
+  );
 
   return (
     <div className="p-8">
@@ -217,9 +191,68 @@ export default function LeadsPage() {
           <h1 className="text-3xl font-bold text-primary">Leads Management</h1>
           <p className="text-muted mt-2">Track and manage your sales pipeline</p>
         </div>
-        <button onClick={() => setShowForm(true)} className={colors.button.primary}>
-          + Add Lead
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View toggle */}
+          <div className="flex items-center border border-[var(--border)] rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView('board')}
+              title="Board view"
+              className={`px-3 py-2 text-sm transition-colors ${
+                view === 'board'
+                  ? 'bg-gray-900 text-white'
+                  : 'surface text-muted hover:text-primary'
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="5" height="18" rx="1" />
+                <rect x="10" y="3" width="5" height="12" rx="1" />
+                <rect x="17" y="3" width="5" height="15" rx="1" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setView('list')}
+              title="List view"
+              className={`px-3 py-2 text-sm border-l border-[var(--border)] transition-colors ${
+                view === 'list'
+                  ? 'bg-gray-900 text-white'
+                  : 'surface text-muted hover:text-primary'
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <button onClick={() => setShowForm(true)} className={colors.button.primary}>
+            + Add Lead
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -230,7 +263,14 @@ export default function LeadsPage() {
       ) : null}
 
       {/* Add Lead Modal */}
-      <SlideModal isOpen={showForm} onClose={() => { setShowForm(false); resetForm(); }} title="Create New Lead">
+      <SlideModal
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          resetForm();
+        }}
+        title="Create New Lead"
+      >
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-muted mb-2">First Name</label>
@@ -291,9 +331,9 @@ export default function LeadsPage() {
           {/* Follow-up Reminders */}
           <div>
             <label className="block text-sm font-medium text-muted mb-3">
-              Follow-up Reminders <span className="text-xs text-subtle font-normal">(optional)</span>
+              Follow-up Reminders{' '}
+              <span className="text-xs text-subtle font-normal">(optional)</span>
             </label>
-
             <div className="flex gap-2 items-center">
               <input
                 type="datetime-local"
@@ -347,7 +387,14 @@ export default function LeadsPage() {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} className={colors.button.secondary}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+              className={colors.button.secondary}
+            >
               Cancel
             </button>
             <button type="submit" className={colors.button.primary}>
@@ -357,11 +404,10 @@ export default function LeadsPage() {
         </form>
       </SlideModal>
 
-      {/* Search and Filter Bar */}
-      <div className="mb-6 surface rounded-lg border border-[var(--border)] p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
-          <div>
+      {/* Search and Filter Bar — only shown in list view */}
+      {view === 'list' && (
+        <div className="mb-6 surface rounded-lg border border-[var(--border)] p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <input
               type="text"
               placeholder="Search by name or source..."
@@ -369,10 +415,6 @@ export default function LeadsPage() {
               onChange={(e) => handleSearch(e.target.value)}
               className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
             />
-          </div>
-
-          {/* Status Filter */}
-          <div>
             <select
               value={statusFilter}
               onChange={(e) => handleStatusFilter(e.target.value)}
@@ -387,10 +429,6 @@ export default function LeadsPage() {
               <option value="LOST">Lost</option>
               <option value="UNRESPONSIVE">Unresponsive</option>
             </select>
-          </div>
-
-          {/* Lead Type Filter */}
-          <div>
             <select
               value={leadTypeFilter}
               onChange={(e) => handleLeadTypeFilter(e.target.value)}
@@ -402,10 +440,6 @@ export default function LeadsPage() {
               <option value="QUALIFIED_LEAD">Qualified Lead</option>
               <option value="OPPORTUNITY">Opportunity</option>
             </select>
-          </div>
-
-          {/* Sort By */}
-          <div>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
@@ -419,17 +453,17 @@ export default function LeadsPage() {
             </select>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Results Count */}
-      {meta ? (
+      {/* Results count — only in list view */}
+      {view === 'list' && meta ? (
         <div className="mb-4 text-sm text-muted">
           Showing {(page - 1) * limit + 1} to {Math.min(page * limit, meta.total)} of {meta.total}{' '}
           leads
         </div>
       ) : null}
 
-      {/* Leads List */}
+      {/* Content */}
       {loading ? (
         <div className="text-center py-12">
           <svg
@@ -438,203 +472,53 @@ export default function LeadsPage() {
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
             <path
               className="opacity-75"
               fill="currentColor"
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
+            />
           </svg>
           <p className="text-muted">Loading leads...</p>
         </div>
       ) : leads.length === 0 ? (
         <div className="text-center py-12 surface rounded-lg border border-[var(--border)]">
           <p className="text-muted">
-            No leads found. {search ? 'Try adjusting your search.' : 'Create your first lead to get started!'}
+            No leads found.{' '}
+            {search ? 'Try adjusting your search.' : 'Create your first lead to get started!'}
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="overflow-x-auto surface rounded-lg border border-[var(--border)]">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[var(--border)] [background:var(--bg)]">
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                    onClick={() => handleSort('firstName')}
-                  >
-                    <div className="flex items-center gap-2">
-                      Name
-                      <SortIcon field="firstName" />
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                    onClick={() => handleSort('leadType')}
-                  >
-                    <div className="flex items-center gap-2">
-                      Lead Type
-                      <SortIcon field="leadType" />
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                    onClick={() => handleSort('status')}
-                  >
-                    <div className="flex items-center gap-2">
-                      Status
-                      <SortIcon field="status" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Source</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Contact</th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                    onClick={() => handleSort('createdAt')}
-                  >
-                    <div className="flex items-center gap-2">
-                      Created
-                      <SortIcon field="createdAt" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="border-b border-[var(--border)] hover:[background:var(--bg)]">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-primary">
-                        {lead.firstName} {lead.lastName}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-muted">{lead.leadType}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          lead.status,
-                        )}`}
-                      >
-                        {lead.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-muted">{lead.source || '—'}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-muted">
-                        {getContactDisplay(getPrimaryContact(lead.contacts))}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-muted">
-                        {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : '—'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button className={colors.button.text}>Edit</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {meta && meta.totalPages > 1 ? (
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-muted">
-                Page {meta.page} of {meta.totalPages}
-              </div>
-              <div className="flex gap-2 items-center">
-                <button
-                  onClick={() => setPage(page - 1)}
-                  disabled={!meta.hasPrevPage}
-                  className={colors.pagination.button}
-                >
-                  ← Previous
-                </button>
-
-                <div className="flex gap-1">
-                  {(() => {
-                    const pages: React.ReactNode[] = [];
-                    const maxPagesToShow = 7;
-                    let startPage = Math.max(1, meta.page - Math.floor(maxPagesToShow / 2));
-                    const endPage = Math.min(meta.totalPages, startPage + maxPagesToShow - 1);
-
-                    if (endPage - startPage + 1 < maxPagesToShow) {
-                      startPage = Math.max(1, endPage - maxPagesToShow + 1);
-                    }
-
-                    if (startPage > 1) {
-                      pages.push(
-                        <button
-                          key={1}
-                          onClick={() => setPage(1)}
-                          className="px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70"
-                        >
-                          1
-                        </button>,
-                      );
-                      if (startPage > 2) {
-                        pages.push(
-                          <span key="dots-start" className="px-2 py-2 text-subtle">
-                            ...
-                          </span>,
-                        );
-                      }
-                    }
-
-                    for (let i = startPage; i <= endPage; i++) {
-                      pages.push(
-                        <button
-                          key={i}
-                          onClick={() => setPage(i)}
-                          className={
-                            i === meta.page ? colors.pagination.active : colors.pagination.inactive
-                          }
-                        >
-                          {i}
-                        </button>,
-                      );
-                    }
-
-                    if (endPage < meta.totalPages) {
-                      if (endPage < meta.totalPages - 1) {
-                        pages.push(
-                          <span key="dots-end" className="px-2 py-2 text-subtle">
-                            ...
-                          </span>,
-                        );
-                      }
-                      pages.push(
-                        <button
-                          key={meta.totalPages}
-                          onClick={() => setPage(meta.totalPages)}
-                          className="px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-primary hover:opacity-70"
-                        >
-                          {meta.totalPages}
-                        </button>,
-                      );
-                    }
-
-                    return pages;
-                  })()}
-                </div>
-
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={!meta.hasNextPage}
-                  className={colors.pagination.button}
-                >
-                  Next →
-                </button>
-              </div>
-            </div>
-          ) : null}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15, ease: 'easeInOut' }}
+          >
+            {view === 'board' ? (
+              <LeadBoardView leads={leads} onStatusChange={handleStatusChange} />
+            ) : (
+              <LeadListView
+                leads={leads}
+                meta={meta}
+                page={page}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+                onPageChange={setPage}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );

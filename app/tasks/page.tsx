@@ -2,20 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { axiosClient } from '@/lib/api/axios-client';
-import { tasksApi, TaskResponseDto } from '@/lib/api/tasks';
+import { tasksApi, TaskResponseDto, PaginationMeta } from '@/lib/api/tasks';
 import { usersApi, UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
 import VoiceRecorder from '@/components/voice-recorder';
 import { colors, getStatusColor } from '@/lib/theme/colors';
-
-interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
 
 interface PaginatedResponse {
   data: TaskResponseDto[];

@@ -1,4 +1,6 @@
 import { axiosClient } from '@/lib/api/axios-client';
+import type { PaginationMeta } from '@/lib/types/common';
+export type { PaginationMeta } from '@/lib/types/common';
 
 export interface TaskResponseDto {
   id: string;
@@ -21,15 +23,6 @@ export interface TaskResponseDto {
   customFields?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
 }
 
 export interface PaginatedTaskResponse {

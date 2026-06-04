@@ -1,4 +1,6 @@
 import { axiosClient } from '@/lib/api/axios-client';
+import type { PaginationMeta } from '@/lib/types/common';
+export type { PaginationMeta } from '@/lib/types/common';
 
 export interface ReminderResponseDto {
   id: string;
@@ -43,15 +45,6 @@ export interface ListRemindersParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   search?: string;
-}
-
-export interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
 }
 
 export interface PaginatedReminderResponse {
