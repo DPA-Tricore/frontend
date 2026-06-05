@@ -17,6 +17,7 @@ import {
   Settings,
   CheckSquare,
   Bell,
+  Star,
 } from 'lucide-react';
 
 type MenuItem =
@@ -43,6 +44,11 @@ const menuItems: MenuItem[] = [
     name: 'Reminders',
     icon: Bell,
     href: '/reminders',
+  },
+  {
+    name: 'Reviews',
+    icon: Star,
+    href: '/reviews',
   },
   { name: 'Policies', icon: FileText },
   { name: 'Claims', icon: Zap },
