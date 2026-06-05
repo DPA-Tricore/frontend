@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ReminderResponseDto, reminderAPI } from '@/lib/api/reminders';
+import { reminderAPI } from '@/lib/api/reminders';
+import type { ReminderResponseDto } from '@/lib/types/reminders';
 
 interface UseRemindersOptions {
   autoRefresh?: boolean;
