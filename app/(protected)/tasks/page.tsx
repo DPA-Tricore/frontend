@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { axiosClient } from '@/lib/api/axios-client';
 import { tasksApi, TaskResponseDto, PaginationMeta } from '@/lib/api/tasks';
+import Pagination from '@/components/pagination';
 import { usersApi, UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
 import VoiceRecorder from '@/components/voice-recorder';
@@ -660,36 +661,7 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {meta && meta.totalPages > 1 ? (
-        <div className="mt-6 flex items-center justify-between">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={!meta.hasPrevPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] ${
-              meta.hasPrevPage
-                ? 'text-primary hover:opacity-70'
-                : 'text-subtle cursor-not-allowed opacity-50'
-            }`}
-          >
-            Previous
-          </button>
-          <div className="text-sm text-muted">
-            Page {page} of {meta.totalPages}
-          </div>
-          <button
-            onClick={() => setPage(Math.min(meta.totalPages, page + 1))}
-            disabled={!meta.hasNextPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] ${
-              meta.hasNextPage
-                ? 'text-primary hover:opacity-70'
-                : 'text-subtle cursor-not-allowed opacity-50'
-            }`}
-          >
-            Next
-          </button>
-        </div>
-      ) : null}
+      {meta && <Pagination meta={meta} page={page} onPageChange={setPage} />}
     </div>
   );
 }
