@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { colors, getStatusColor } from '@/lib/theme/colors';
 import { PaginationMeta } from '@/lib/types/common';
@@ -46,6 +47,14 @@ export default function LeadListView({
 }: LeadListViewProps) {
   return (
     <div className="space-y-4">
+      <AnimatePresence mode="wait">
+      <motion.div
+        key={page}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.15, ease: 'easeInOut' }}
+      >
       <div className="overflow-x-auto surface rounded-lg border border-[var(--border)]">
         <table className="w-full">
           <thead>
@@ -130,6 +139,9 @@ export default function LeadListView({
           </tbody>
         </table>
       </div>
+
+      </motion.div>
+      </AnimatePresence>
 
       {meta && <Pagination meta={meta} page={page} onPageChange={onPageChange} />}
     </div>

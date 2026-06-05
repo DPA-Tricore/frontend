@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { PaginationMeta } from '@/lib/types/common';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import Pagination from '@/components/pagination';
@@ -35,6 +36,14 @@ export default function TaskListView({
 }: TaskListViewProps) {
   return (
     <div className="space-y-4">
+      <AnimatePresence mode="wait">
+      <motion.div
+        key={page}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.15, ease: 'easeInOut' }}
+      >
       <div className="overflow-x-auto surface rounded-lg border border-[var(--border)]">
         <table className="w-full">
           <thead>
@@ -75,6 +84,9 @@ export default function TaskListView({
           </tbody>
         </table>
       </div>
+
+      </motion.div>
+      </AnimatePresence>
 
       {meta && <Pagination meta={meta} page={page} onPageChange={onPageChange} />}
     </div>
