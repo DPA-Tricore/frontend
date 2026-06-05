@@ -1,21 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Clock, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { colors } from '@/lib/theme/colors';
-import { formatDate, formatTime, getTimeLeft } from '@/lib/utils/date';
 import { PaginationMeta } from '@/lib/types/common';
-import type { ReminderResponseDto, ReminderStatus } from '@/lib/types/reminders';
+import type { ReminderResponseDto } from '@/lib/types/reminders';
+import ReminderListItem from './reminder-list-item';
 
 type SortField = 'reminderTime' | 'dueDate' | 'title' | 'status' | 'createdAt';
-
-const statusConfig: Record<ReminderStatus, { bg: string; text: string; icon: React.ReactNode }> = {
-  PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-4 h-4" /> },
-  TRIGGERED: { bg: 'bg-red-100', text: 'text-red-800', icon: <AlertCircle className="w-4 h-4" /> },
-  ACKNOWLEDGED: { bg: 'bg-blue-100', text: 'text-blue-800', icon: <CheckCircle className="w-4 h-4" /> },
-  DISMISSED: { bg: 'bg-gray-100', text: 'text-gray-800', icon: <XCircle className="w-4 h-4" /> },
-  CANCELLED: { bg: 'bg-gray-100', text: 'text-gray-800', icon: <XCircle className="w-4 h-4" /> },
-};
 
 function SortIcon({ field, sortBy, sortOrder }: { field: string; sortBy: string; sortOrder: 'asc' | 'desc' }) {
   if (sortBy !== field) return <span className="text-subtle">⇅</span>;
@@ -53,104 +44,32 @@ export default function ReminderListView({
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--border)] [background:var(--bg)]">
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                onClick={() => onSort('title')}
-              >
-                <div className="flex items-center gap-2">
-                  Title
-                  <SortIcon field="title" sortBy={sortBy} sortOrder={sortOrder} />
-                </div>
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                onClick={() => onSort('status')}
-              >
-                <div className="flex items-center gap-2">
-                  Status
-                  <SortIcon field="status" sortBy={sortBy} sortOrder={sortOrder} />
-                </div>
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                onClick={() => onSort('dueDate')}
-              >
-                <div className="flex items-center gap-2">
-                  Due Date
-                  <SortIcon field="dueDate" sortBy={sortBy} sortOrder={sortOrder} />
-                </div>
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
-                onClick={() => onSort('reminderTime')}
-              >
-                <div className="flex items-center gap-2">
-                  Reminder Time
-                  <SortIcon field="reminderTime" sortBy={sortBy} sortOrder={sortOrder} />
-                </div>
-              </th>
+              {(['title', 'status', 'dueDate', 'reminderTime'] as SortField[]).map((field) => (
+                <th
+                  key={field}
+                  className="px-6 py-3 text-left text-sm font-semibold text-primary cursor-pointer hover:opacity-70"
+                  onClick={() => onSort(field)}
+                >
+                  <div className="flex items-center gap-2">
+                    {field === 'dueDate' ? 'Due Date' : field === 'reminderTime' ? 'Reminder Time' : field.charAt(0).toUpperCase() + field.slice(1)}
+                    <SortIcon field={field} sortBy={sortBy} sortOrder={sortOrder} />
+                  </div>
+                </th>
+              ))}
               <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Time Left</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {reminders.map((reminder) => {
-              const status = statusConfig[reminder.status];
-              return (
-                <tr key={reminder.id} className="border-b border-[var(--border)] hover:[background:var(--bg)]">
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-primary">{reminder.title}</div>
-                    {reminder.description && (
-                      <div className="text-xs text-subtle mt-1 line-clamp-2">{reminder.description}</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
-                      {status.icon}
-                      {reminder.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-muted">{formatDate(reminder.dueDate)}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-muted">
-                      {formatDate(reminder.reminderTime)} {formatTime(reminder.reminderTime)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-muted">{getTimeLeft(reminder.reminderTime)}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      {(reminder.status === 'PENDING' || reminder.status === 'TRIGGERED') && (
-                        <>
-                          <button
-                            onClick={() => onAcknowledge(reminder.id)}
-                            className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                          >
-                            Acknowledge
-                          </button>
-                          <button
-                            onClick={() => onDismiss(reminder.id)}
-                            className="text-xs px-2 py-1 surface border border-[var(--border)] text-primary rounded hover:opacity-70 transition-colors"
-                          >
-                            Dismiss
-                          </button>
-                        </>
-                      )}
-                      <button
-                        onClick={() => onDelete(reminder.id)}
-                        className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+            {reminders.map((reminder) => (
+              <ReminderListItem
+                key={reminder.id}
+                reminder={reminder}
+                onAcknowledge={onAcknowledge}
+                onDismiss={onDismiss}
+                onDelete={onDelete}
+              />
+            ))}
           </tbody>
         </table>
       </div>
