@@ -18,6 +18,7 @@ import {
   CheckSquare,
   Bell,
   Star,
+  GitBranch,
 } from 'lucide-react';
 
 type MenuItem =
@@ -49,6 +50,11 @@ const menuItems: MenuItem[] = [
     name: 'Reviews',
     icon: Star,
     href: '/reviews',
+  },
+  {
+    name: 'Automations',
+    icon: GitBranch,
+    href: '/automations',
   },
   { name: 'Policies', icon: FileText },
   { name: 'Claims', icon: Zap },

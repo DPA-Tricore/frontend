@@ -114,3 +114,11 @@ export const getStatusColor = (status: string): string => {
   };
   return statusMap[status] || colors.status.unresponsive;
 };
+
+export const getScopeColor = (scope: string): string => {
+  const map: Record<string, string> = {
+    GLOBAL: 'bg-blue-100 text-blue-800',
+    USER: 'bg-purple-100 text-purple-800',
+  };
+  return map[scope] ?? 'bg-gray-100 text-gray-800';
+};
