@@ -14,15 +14,34 @@ export default function LoginPage() {
   });
   const [localError, setLocalError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
+  const [lastChangeTime, setLastChangeTime] = useState(0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const now = Date.now();
+    const wasEmpty = !formData[name as keyof typeof formData];
+    const newFormData = { ...formData, [name]: value };
+
+    setFormData(newFormData);
     if (localError) setLocalError(null);
     if (error) clearError();
+
+    if (wasEmpty && value && newFormData.email && newFormData.password && now - lastChangeTime < 200) {
+      setTimeout(() => handleAutoSubmit(newFormData), 100);
+    }
+    setLastChangeTime(now);
+  };
+
+  const handleAutoSubmit = async (data: typeof formData) => {
+    try {
+      await login(data);
+      router.push('/dashboard');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed';
+      setLocalError(message);
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
