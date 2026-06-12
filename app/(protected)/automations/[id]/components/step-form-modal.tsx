@@ -5,7 +5,13 @@ import { automationsApi } from '@/lib/api/automations';
 import { AutomationActionType } from '@/lib/types/automations';
 import type { AutomationStepResponseDto } from '@/lib/types/automations';
 import SlideModal from '@/components/slide-modal';
+import RichTextEditor from '@/components/rich-text-editor';
 import { colors } from '@/lib/theme/colors';
+
+// Fields that should render as a textarea instead of a single-line input
+const TEXTAREA_KEYS = new Set(['description', 'message']);
+// The email body field — rendered with the rich text editor
+const RICH_TEXT_KEY = 'body';
 
 const ACTION_TYPES = [
   { value: AutomationActionType.EMAIL, label: 'Send Email' },
@@ -159,13 +165,30 @@ export default function StepFormModal({
           {fields.map(({ key, label, placeholder }) => (
             <div key={key}>
               <label className="block text-xs text-subtle mb-1">{label}</label>
-              <input
-                type="text"
-                value={configValues[key] ?? ''}
-                onChange={(e) => setConfigValues((prev) => ({ ...prev, [key]: e.target.value }))}
-                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary text-sm"
-                placeholder={placeholder}
-              />
+
+              {key === RICH_TEXT_KEY ? (
+                <RichTextEditor
+                  value={configValues[key] ?? ''}
+                  onChange={(html) => setConfigValues((prev) => ({ ...prev, [key]: html }))}
+                  placeholder={placeholder}
+                />
+              ) : TEXTAREA_KEYS.has(key) ? (
+                <textarea
+                  value={configValues[key] ?? ''}
+                  onChange={(e) => setConfigValues((prev) => ({ ...prev, [key]: e.target.value }))}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary text-sm resize-none"
+                  placeholder={placeholder}
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={configValues[key] ?? ''}
+                  onChange={(e) => setConfigValues((prev) => ({ ...prev, [key]: e.target.value }))}
+                  className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary text-sm"
+                  placeholder={placeholder}
+                />
+              )}
             </div>
           ))}
         </div>

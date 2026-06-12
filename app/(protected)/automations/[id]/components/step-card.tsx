@@ -48,8 +48,16 @@ export default function StepCard({
         <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium shrink-0 ${ACTION_TYPE_COLORS[step.actionType]}`}>
           {ACTION_TYPE_LABELS[step.actionType]}
         </span>
-        <div className="flex-1">
-          <div className="text-sm text-primary font-medium">{configSummary(step)}</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm text-primary font-medium truncate">{configSummary(step)}</div>
+          {step.actionConfig.body && (
+            <div
+              className="text-xs text-subtle mt-0.5 truncate"
+              dangerouslySetInnerHTML={{
+                __html: step.actionConfig.body.replace(/<[^>]+>/g, ' ').trim(),
+              }}
+            />
+          )}
           {step.condition && (
             <div className="text-xs text-subtle mt-0.5">Has condition</div>
           )}
