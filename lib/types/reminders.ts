@@ -45,6 +45,7 @@ export interface ListRemindersParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   search?: string;
+  leadId?: string;
 }
 
 export interface PaginatedReminderResponse {

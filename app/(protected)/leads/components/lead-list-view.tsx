@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { colors, getStatusColor } from '@/lib/theme/colors';
 import { PaginationMeta } from '@/lib/types/common';
@@ -45,6 +46,7 @@ export default function LeadListView({
   onSort,
   onPageChange,
 }: LeadListViewProps) {
+  const router = useRouter();
   return (
     <div className="space-y-4">
       <AnimatePresence mode="wait">
@@ -102,7 +104,11 @@ export default function LeadListView({
           </thead>
           <tbody>
             {leads.map((lead) => (
-              <tr key={lead.id} className="border-b border-[var(--border)] hover:[background:var(--bg)]">
+              <tr
+                key={lead.id}
+                className="border-b border-[var(--border)] hover:[background:var(--bg)] cursor-pointer"
+                onClick={() => router.push(`/leads/${lead.id}`)}
+              >
                 <td className="px-6 py-4">
                   <div className="text-sm font-medium text-primary">
                     {lead.firstName} {lead.lastName}
@@ -131,7 +137,7 @@ export default function LeadListView({
                     {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : '—'}
                   </span>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                   <button className={colors.button.text}>Edit</button>
                 </td>
               </tr>
