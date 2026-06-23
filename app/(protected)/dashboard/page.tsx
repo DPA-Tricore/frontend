@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { leadsApi } from '@/lib/api/leads';
+import { tasksApi } from '@/lib/api/tasks';
 import { colors } from '@/lib/theme/colors';
 import { formatMoney } from '@/lib/utils/format';
 import {
@@ -11,18 +12,21 @@ import {
   toCoverageAmount,
   safeDate,
   monthKey,
-  monthLabel,
   getDisplayNameFromEmail,
 } from '@/lib/utils/dashboard';
+import { useReminders } from '@/lib/hooks/use-reminders';
+import type { LeadResponseDto } from '@/lib/types/leads';
+import type { TaskResponseDto } from '@/lib/types/tasks';
 import ReminderWidget from '@/components/reminder-widget';
 import DashboardStatCard from './components/dashboard-stat-card';
-import DashboardRevenueChart from './components/dashboard-revenue-chart';
-import DashboardSaleOverview from './components/dashboard-sale-overview';
-import DashboardRecentSales from './components/dashboard-recent-sales';
+import DashboardRecentLeads from './components/dashboard-recent-leads';
+import DashboardPendingTasks from './components/dashboard-pending-tasks';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [leads, setLeads] = useState<LeadLike[]>([]);
+  const { pendingCount } = useReminders();
+  const [leads, setLeads] = useState<LeadResponseDto[]>([]);
+  const [tasks, setTasks] = useState<TaskResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,8 +36,15 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await leadsApi.getLeads();
-        if (!cancelled) setLeads(Array.isArray(res) ? (res as LeadLike[]) : []);
+        const [leadsRes, tasksRes] = await Promise.all([
+          leadsApi.getLeads(),
+          tasksApi.getTasks({ sortBy: 'dueDate', sortOrder: 'asc', limit: 50 }),
+        ]);
+        if (!cancelled) {
+          setLeads(Array.isArray(leadsRes) ? leadsRes : (leadsRes as any).data ?? []);
+          const raw = Array.isArray(tasksRes) ? tasksRes : (tasksRes as any).data ?? [];
+          setTasks(raw);
+        }
       } catch {
         if (!cancelled) setError('Failed to load dashboard data');
       } finally {
@@ -58,54 +69,43 @@ export default function DashboardPage() {
   );
 
   const metrics = useMemo(() => {
-    const totalLead = leads.length;
-    const converted = leads.filter((l) => l.status === 'CONVERTED' || !!l.convertedCustomerId);
-    const totalSale = converted.length;
-    const totalCustomer = leads.filter((l) => !!l.convertedCustomerId).length;
-    const totalRevenue = converted.reduce((sum, l) => sum + toCoverageAmount(l.coverageAmount), 0);
+    const totalLeads = leads.length;
 
     const now = new Date();
-    const monthStarts: Date[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(1);
-      d.setMonth(d.getMonth() - i);
-      monthStarts.push(d);
-    }
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
 
-    const map: Record<string, number> = {};
-    for (const ms of monthStarts) map[monthKey(ms)] = 0;
-    for (const l of converted) {
-      const d = safeDate(l.convertedAt) || safeDate(l.createdAt);
-      if (d) {
-        const key = monthKey(d);
-        if (key in map) map[key] += toCoverageAmount(l.coverageAmount);
-      }
-    }
+    const pendingTasks = tasks.filter(
+      (t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED',
+    );
+    const dueTodayCount = pendingTasks.filter(
+      (t) => new Date(t.dueDate) <= todayEnd,
+    ).length;
 
-    const series = monthStarts.map((d) => ({ label: monthLabel(d), value: map[monthKey(d)] || 0 }));
-    const prev = series.length >= 2 ? series[series.length - 2].value : 0;
-    const curr = series.length >= 1 ? series[series.length - 1].value : 0;
-    const deltaPercent = prev > 0 ? ((curr - prev) / prev) * 100 : null;
+    const converted = leads.filter((l) => l.status === 'CONVERTED' || !!l.convertedCustomerId);
+    const currentMonth = monthKey(now);
+    const revenueThisMonth = converted
+      .filter((l) => {
+        const d = safeDate((l as LeadLike).convertedAt as string) || safeDate(l.createdAt);
+        return d && monthKey(d) === currentMonth;
+      })
+      .reduce((sum, l) => sum + toCoverageAmount((l as LeadLike).coverageAmount), 0);
 
-    return { totalLead, totalSale, totalCustomer, totalRevenue, series, deltaPercent };
-  }, [leads]);
+    return { totalLeads, dueTodayCount, revenueThisMonth, pendingTasks };
+  }, [leads, tasks]);
 
-  const recentSales = useMemo(
+  const recentLeads = useMemo(
     () =>
       leads
-        .filter((l) => l.status === 'CONVERTED' || !!l.convertedCustomerId)
         .slice()
-        .sort((a, b) => {
-          const da = safeDate(a.convertedAt) || safeDate(a.createdAt) || new Date(0);
-          const db = safeDate(b.convertedAt) || safeDate(b.createdAt) || new Date(0);
-          return db.getTime() - da.getTime();
-        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 5),
     [leads],
   );
 
-  const skeleton = <div className="animate-pulse bg-[var(--border)] rounded-lg" />;
+  const upcomingTasks = useMemo(() => metrics.pendingTasks.slice(0, 5), [metrics.pendingTasks]);
+
+  const skeleton = <div className="animate-pulse bg-[var(--border)] rounded-lg min-h-[120px]" />;
 
   return (
     <div className="p-8">
@@ -114,7 +114,7 @@ export default function DashboardPage() {
         <div>
           <p className="text-sm text-muted">{dateLabel}</p>
           <h1 className="text-3xl font-bold text-primary mt-1">Welcome back, {name}!</h1>
-          <p className="text-muted mt-2">Lead Dashboard</p>
+          <p className="text-muted mt-2">Here's what needs your attention today.</p>
         </div>
         <Link href="/leads" className={colors.button.secondary}>
           Manage Leads
@@ -122,59 +122,61 @@ export default function DashboardPage() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{error}</div>
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {error}
+        </div>
       )}
 
-      {/* Summary cards */}
+      {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <DashboardStatCard label="Total Sale" value={loading ? '—' : String(metrics.totalSale)} subLabel="This period" />
-        <DashboardStatCard label="Total Lead" value={loading ? '—' : String(metrics.totalLead)} subLabel="All leads" />
-        <DashboardStatCard label="Total Revenue" value={loading ? '—' : formatMoney(metrics.totalRevenue)} subLabel="From converted leads" />
-        <DashboardStatCard label="Total Customer" value={loading ? '—' : String(metrics.totalCustomer)} subLabel="Converted" />
+        <DashboardStatCard
+          label="Total Leads"
+          value={loading ? '—' : String(metrics.totalLeads)}
+          subLabel="All time"
+        />
+        <DashboardStatCard
+          label="Tasks Due"
+          value={loading ? '—' : String(metrics.dueTodayCount)}
+          subLabel="Today & overdue"
+        />
+        <DashboardStatCard
+          label="Pending Reminders"
+          value={String(pendingCount)}
+          subLabel="Needs attention"
+        />
+        <DashboardStatCard
+          label="Revenue This Month"
+          value={loading ? '—' : formatMoney(metrics.revenueThisMonth)}
+          subLabel="From converted leads"
+        />
       </div>
 
-      {/* Charts & Reminders */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* Recent Leads + Reminders */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <section className="lg:col-span-2 surface rounded-lg border border-[var(--border)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-primary">Revenue Insights</h2>
-            <div className="text-sm text-muted">Month & year</div>
+            <h2 className="text-lg font-semibold text-primary">Recent Leads</h2>
+            <Link href="/leads" className="text-sm text-muted hover:text-primary transition-colors">
+              View all →
+            </Link>
           </div>
-          {loading
-            ? <div className="h-52">{skeleton}</div>
-            : <DashboardRevenueChart series={metrics.series} />
-          }
+          {loading ? skeleton : <DashboardRecentLeads leads={recentLeads} />}
         </section>
 
-        <div className="flex flex-col gap-6">
-          <section className="surface rounded-lg border border-[var(--border)] p-6">
-            <h2 className="text-lg font-semibold text-primary">Sale Overview</h2>
-            <div className="mt-4">
-              {loading
-                ? <div className="h-56">{skeleton}</div>
-                : <DashboardSaleOverview
-                    totalLead={metrics.totalLead}
-                    totalSale={metrics.totalSale}
-                    totalRevenue={metrics.totalRevenue}
-                    deltaPercent={metrics.deltaPercent}
-                  />
-              }
-            </div>
-          </section>
-
-          <ReminderWidget limit={3} />
-        </div>
+        <ReminderWidget limit={5} />
       </div>
 
-      {/* Recent sales */}
+      {/* Pending Tasks */}
       <section className="surface rounded-lg border border-[var(--border)] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-primary">Recent Sales</h2>
-          {!loading && <div className="text-sm text-muted">Latest converted leads</div>}
+          <h2 className="text-lg font-semibold text-primary">Pending Tasks</h2>
+          <Link href="/tasks" className="text-sm text-muted hover:text-primary transition-colors">
+            View all →
+          </Link>
         </div>
         {loading
-          ? <div className="h-72">{skeleton}</div>
-          : <DashboardRecentSales sales={recentSales} />
+          ? <div className="animate-pulse bg-[var(--border)] rounded-lg h-32" />
+          : <DashboardPendingTasks tasks={upcomingTasks} />
         }
       </section>
     </div>
