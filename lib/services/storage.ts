@@ -6,6 +6,7 @@
 export interface StorageUser {
   id: string;
   email: string;
+  role: string;
   createdAt: string;
   isActive: boolean;
 }

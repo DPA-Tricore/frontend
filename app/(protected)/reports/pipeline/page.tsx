@@ -67,23 +67,27 @@ export default function PipelineReportPage() {
           {/* Bar chart */}
           <div className="border border-[var(--border)] rounded-xl p-6 bg-[var(--surface)]">
             <h2 className="text-sm font-medium text-primary mb-6">Leads by Stage</h2>
-            <div className="space-y-4">
-              {sorted.map((stage) => (
-                <div key={stage.status} className="flex items-center gap-4">
-                  <span className="w-32 text-xs text-[var(--muted)] shrink-0">{stage.status.replace('_', ' ')}</span>
-                  <div className="flex-1 bg-[var(--bg)] rounded-full h-2.5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gray-900 dark:bg-white transition-all duration-500"
-                      style={{ width: `${(stage.count / max) * 100}%` }}
-                    />
+            {sorted.length === 0 ? (
+              <p className="text-sm text-[var(--muted)] py-4">No leads found for the selected period.</p>
+            ) : (
+              <div className="space-y-4">
+                {sorted.map((stage) => (
+                  <div key={stage.status} className="flex items-center gap-4">
+                    <span className="w-32 text-xs text-[var(--muted)] shrink-0">{stage.status.replace('_', ' ')}</span>
+                    <div className="flex-1 bg-[var(--bg)] rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gray-900 dark:bg-white transition-all duration-500"
+                        style={{ width: `${(stage.count / max) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-right text-sm font-medium text-primary">{stage.count}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(stage.status)}`}>
+                      {stage.status}
+                    </span>
                   </div>
-                  <span className="w-8 text-right text-sm font-medium text-primary">{stage.count}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(stage.status)}`}>
-                    {stage.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </>
       )}

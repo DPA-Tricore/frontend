@@ -8,6 +8,7 @@ import { storageService } from '@/lib/services/storage';
 export interface User {
   id: string;
   email: string;
+  role: string;
   createdAt: string;
   isActive: boolean;
 }
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData: User = {
         id: response.id!,
         email: response.email!,
+        role: 'AGENT',
         createdAt: response.createdAt!,
         isActive: response.isActive!,
       };
@@ -95,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData: User = {
         id: decoded.sub || decoded.id,
         email: decoded.email || data.email,
+        role: decoded.role ?? 'AGENT',
         createdAt: new Date().toISOString(),
         isActive: true,
       };

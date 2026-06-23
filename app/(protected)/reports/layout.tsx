@@ -2,17 +2,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
 import { GitMerge, TrendingUp, CheckSquare, Users } from 'lucide-react';
 
 const tabs = [
   { label: 'Pipeline', href: '/reports/pipeline', icon: GitMerge },
   { label: 'Lead Trend', href: '/reports/trends', icon: TrendingUp },
   { label: 'Activity', href: '/reports/activity', icon: CheckSquare },
-  { label: 'Agent Performance', href: '/reports/agents', icon: Users },
+  { label: 'Agent Performance', href: '/reports/agents', icon: Users, minRole: ['ORG_ADMIN', 'MANAGER'] },
 ];
 
 export default function ReportsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const visibleTabs = tabs.filter((t) => !t.minRole || (user?.role && t.minRole.includes(user.role)));
 
   return (
     <div className="p-6 space-y-6">
@@ -22,7 +26,7 @@ export default function ReportsLayout({ children }: { children: React.ReactNode 
       </div>
 
       <div className="border-b border-[var(--border)] flex gap-1">
-        {tabs.map(({ label, href, icon: Icon }) => {
+        {visibleTabs.map(({ label, href, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
