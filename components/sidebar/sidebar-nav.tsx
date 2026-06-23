@@ -11,6 +11,7 @@ import {
   GitBranch,
   Paperclip,
   Settings,
+  FileBarChart,
 } from 'lucide-react';
 import React from 'react';
 
@@ -26,6 +27,7 @@ const menuItems: MenuItem[] = [
   { name: 'Reviews', icon: Star, href: '/reviews' },
   { name: 'Automations', icon: GitBranch, href: '/automations' },
   { name: 'Documents', icon: Paperclip, href: '/documents' },
+  { name: 'Reports', icon: FileBarChart, href: '/reports' },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 
