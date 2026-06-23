@@ -4,13 +4,15 @@ import NotificationBadge from '@/components/notification-badge';
 import { useAuth } from '@/context/auth-context';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/context/theme-context';
+import NavbarSearch from '@/components/search/NavbarSearch';
 
 interface HeaderProps {
   onMenuClick?: () => void;
   title?: string;
+  onSearchOpen?: () => void;
 }
 
-export default function Header({ onMenuClick, title }: HeaderProps) {
+export default function Header({ onMenuClick, title, onSearchOpen }: HeaderProps) {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -29,6 +31,9 @@ export default function Header({ onMenuClick, title }: HeaderProps) {
 
         {/* Right side */}
         <div className="flex items-center gap-4">
+          {/* Search */}
+          {onSearchOpen && <NavbarSearch onOpen={onSearchOpen} />}
+
           {/* Notification Badge */}
           <NotificationBadge />
 

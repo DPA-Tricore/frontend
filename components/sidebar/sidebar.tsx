@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import SidebarNav from './sidebar-nav';
 import SidebarUser from './sidebar-user';
-
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 

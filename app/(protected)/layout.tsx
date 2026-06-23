@@ -9,12 +9,15 @@ import { motion } from 'framer-motion';
 import Sidebar from '@/components/sidebar/sidebar';
 import Header from '@/components/header';
 import LoadingSpinner from '@/components/loading-spinner';
+import SearchPalette from '@/components/search/SearchPalette';
+import { useCommandPalette } from '@/lib/hooks/useCommandPalette';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { isLoading, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { isOpen: isPaletteOpen, open: openPalette, close: closePalette } = useCommandPalette();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -29,7 +32,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} onSearchOpen={openPalette} />
+        <SearchPalette isOpen={isPaletteOpen} onClose={closePalette} />
         <main className="flex-1 overflow-auto">
           <motion.div
             key={pathname}
