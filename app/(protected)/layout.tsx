@@ -6,7 +6,7 @@ import { useAuth } from '@/context/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import Sidebar from '@/components/sidebar';
+import Sidebar from '@/components/sidebar/sidebar';
 import Header from '@/components/header';
 import LoadingSpinner from '@/components/loading-spinner';
 

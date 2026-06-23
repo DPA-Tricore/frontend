@@ -149,7 +149,7 @@ export default function LeadsPage() {
             transition={{ duration: 0.15, ease: 'easeInOut' }}
           >
             {view === 'board' ? (
-              <LeadBoardView leads={leads} onStatusChange={handleStatusChange} />
+              <LeadBoardView onStatusChange={handleStatusChange} />
             ) : (
               <LeadListView
                 leads={leads}

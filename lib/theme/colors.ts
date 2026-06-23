@@ -81,6 +81,27 @@ export const combineColors = (...colorClasses: (string | undefined)[]): string =
 /**
  * Get status color by status value
  */
+export const getPriorityColor = (priority: string): string => {
+  const map: Record<string, string> = {
+    URGENT: 'bg-red-100 text-red-800',
+    HIGH: 'bg-orange-100 text-orange-800',
+    MEDIUM: 'bg-blue-100 text-blue-800',
+    LOW: 'bg-gray-100 text-gray-800',
+  };
+  return map[priority] ?? 'bg-gray-100 text-gray-800';
+};
+
+export const getTaskTypeColor = (type: string): string => {
+  const map: Record<string, string> = {
+    CALL: 'bg-purple-100 text-purple-800',
+    EMAIL: 'bg-green-100 text-green-800',
+    MEETING: 'bg-blue-100 text-blue-800',
+    FOLLOW_UP: 'bg-yellow-100 text-yellow-800',
+    CUSTOM: 'bg-gray-100 text-gray-800',
+  };
+  return map[type] ?? 'bg-gray-100 text-gray-800';
+};
+
 export const getStatusColor = (status: string): string => {
   const statusMap: Record<string, string> = {
     NEW: colors.status.new,
@@ -92,4 +113,12 @@ export const getStatusColor = (status: string): string => {
     UNRESPONSIVE: colors.status.unresponsive,
   };
   return statusMap[status] || colors.status.unresponsive;
+};
+
+export const getScopeColor = (scope: string): string => {
+  const map: Record<string, string> = {
+    GLOBAL: 'bg-blue-100 text-blue-800',
+    USER: 'bg-purple-100 text-purple-800',
+  };
+  return map[scope] ?? 'bg-gray-100 text-gray-800';
 };

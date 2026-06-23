@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useDraggable } from '@dnd-kit/core';
 import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { getStatusColor } from '@/lib/theme/colors';
@@ -58,6 +59,13 @@ export default function LeadCard({ lead, isOverlay = false }: LeadCardProps) {
           {new Date(lead.createdAt).toLocaleDateString()}
         </p>
       )}
+      <Link
+        href={`/leads/${lead.id}`}
+        onClick={(e) => e.stopPropagation()}
+        className="text-xs text-subtle hover:text-primary mt-2 inline-block transition-colors"
+      >
+        View →
+      </Link>
     </div>
   );
 }
