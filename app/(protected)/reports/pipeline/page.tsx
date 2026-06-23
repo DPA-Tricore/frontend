@@ -6,6 +6,7 @@ import type { PipelineReport } from '@/lib/types/reports';
 import { getStatusColor } from '@/lib/theme/colors';
 import LoadingSpinner from '@/components/loading-spinner';
 import DateRangeFilter from '../components/date-range-filter';
+import ExportButton from '../components/export-button';
 
 const STATUS_ORDER = ['NEW', 'CONTACTED', 'QUALIFIED', 'IN_NEGOTIATION', 'CONVERTED', 'LOST', 'UNRESPONSIVE'];
 
@@ -42,7 +43,10 @@ export default function PipelineReportPage() {
 
   return (
     <div className="space-y-6">
-      <DateRangeFilter startDate={startDate} endDate={endDate} onChange={(s, e) => { setStartDate(s); setEndDate(e); }} />
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <DateRangeFilter startDate={startDate} endDate={endDate} onChange={(s, e) => { setStartDate(s); setEndDate(e); }} />
+        <ExportButton type="pipeline" query={{ startDate: startDate || undefined, endDate: endDate || undefined }} />
+      </div>
 
       {loading && <LoadingSpinner />}
       {error && <p className="text-red-500 text-sm">{error}</p>}

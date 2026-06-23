@@ -5,6 +5,7 @@ import { reportsApi } from '@/lib/api/reports';
 import type { AgentPerformanceReport, AgentMetrics } from '@/lib/types/reports';
 import LoadingSpinner from '@/components/loading-spinner';
 import DateRangeFilter from '../components/date-range-filter';
+import ExportButton from '../components/export-button';
 
 type SortKey = keyof Pick<AgentMetrics, 'totalLeads' | 'convertedLeads' | 'lostLeads' | 'conversionRate' | 'tasksCompleted'>;
 
@@ -57,7 +58,10 @@ export default function AgentPerformancePage() {
 
   return (
     <div className="space-y-6">
-      <DateRangeFilter startDate={startDate} endDate={endDate} onChange={(s, e) => { setStartDate(s); setEndDate(e); }} />
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <DateRangeFilter startDate={startDate} endDate={endDate} onChange={(s, e) => { setStartDate(s); setEndDate(e); }} />
+        <ExportButton type="agent-performance" query={{ startDate: startDate || undefined, endDate: endDate || undefined }} />
+      </div>
 
       {loading && <LoadingSpinner />}
       {error && <p className="text-red-500 text-sm">{error}</p>}
