@@ -10,6 +10,7 @@ import Sidebar from '@/components/sidebar/sidebar';
 import Header from '@/components/header';
 import LoadingSpinner from '@/components/loading-spinner';
 import SearchPalette from '@/components/search/SearchPalette';
+import ChatSidebar from '@/components/ai/ChatSidebar';
 import { useCommandPalette } from '@/lib/hooks/useCommandPalette';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -45,6 +46,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           </motion.div>
         </main>
       </div>
+      <ChatSidebar />
     </div>
   );
 }
