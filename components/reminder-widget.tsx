@@ -48,11 +48,9 @@ export default function ReminderWidget({
   if (reminders.length === 0) {
     return (
       <div className="p-6 rounded-lg border border-[var(--border)] surface">
-        <h3 className="text-lg font-semibold text-primary mb-4">
-          Reminders
-        </h3>
+        <h3 className="text-lg font-semibold text-primary mb-4">Reminders</h3>
         <div className="text-center py-8">
-          <CheckCircle className="w-12 h-12 text-subtle mx-auto mb-3" />
+          <CheckCircle className="w-12 h-12 text-muted mx-auto mb-3" />
           <p className="text-muted">All caught up!</p>
         </div>
       </div>
@@ -62,38 +60,27 @@ export default function ReminderWidget({
   return (
     <div className="p-6 rounded-lg border border-[var(--border)] surface">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-primary">
-          Reminders
-        </h3>
-        {reminders.length > 0 && (
-          <span className="text-sm font-medium text-muted">
-            {reminders.length} total
-          </span>
-        )}
+        <h3 className="text-lg font-semibold text-primary">Reminders</h3>
+        <span className="text-sm text-muted">{reminders.length} total</span>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
-        <div className="p-2 rounded-lg bg-red-50">
-          <p className="text-red-600 font-semibold">
-            {overdue.length} Overdue
-          </p>
+        <div className="p-2 rounded-lg bg-red-500/10">
+          <p className="text-red-500 font-semibold">{overdue.length} Overdue</p>
         </div>
-        <div className="p-2 rounded-lg bg-yellow-50">
-          <p className="text-yellow-600 font-semibold">
-            {upcoming.length} Upcoming
-          </p>
+        <div className="p-2 rounded-lg bg-yellow-500/10">
+          <p className="text-yellow-500 font-semibold">{upcoming.length} Upcoming</p>
         </div>
-        <div className="p-2 rounded-lg bg-blue-50">
-          <p className="text-blue-600 font-semibold">
-            {reminders.filter(r => r.status === 'ACKNOWLEDGED').length}{' '}
-            Acknowledged
+        <div className="p-2 rounded-lg bg-blue-500/10">
+          <p className="text-blue-500 font-semibold">
+            {reminders.filter(r => r.status === 'ACKNOWLEDGED').length} Done
           </p>
         </div>
       </div>
 
       {/* Reminders List */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {displayReminders.map(reminder => {
           const isOverdue = new Date(reminder.reminderTime) < new Date();
 
@@ -102,31 +89,25 @@ export default function ReminderWidget({
               key={reminder.id}
               className={`p-3 rounded-lg border transition-colors ${
                 isOverdue
-                  ? 'border-red-200 bg-red-50'
-                  : 'border-[var(--border)] [background:var(--bg)]'
+                  ? 'border-red-500/30 bg-red-500/10'
+                  : 'border-[var(--border)] bg-[var(--surface-2)]'
               }`}
             >
               <div className="flex gap-3">
                 <div className="flex-shrink-0 mt-0.5">
                   {isOverdue ? (
-                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <AlertCircle className="w-4 h-4 text-red-500" />
                   ) : (
-                    <Clock className="w-5 h-5 text-blue-600" />
+                    <Clock className="w-4 h-4 text-blue-500" />
                   )}
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-primary truncate">
+                  <p className="text-sm font-medium text-primary truncate">
                     {reminder.title}
-                  </h4>
-                  <p className="text-xs text-muted mt-1">
+                  </p>
+                  <p className="text-xs text-muted mt-0.5">
                     {formatRelativeTime(reminder.reminderTime)}
                   </p>
-                  {reminder.description && (
-                    <p className="text-xs text-muted line-clamp-1 mt-1">
-                      {reminder.description}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -134,14 +115,14 @@ export default function ReminderWidget({
         })}
       </div>
 
-      {/* View All Button */}
+      {/* View All */}
       {reminders.length > limit && (
         <button
           onClick={onViewAll}
-          className="w-full mt-4 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md transition-colors flex items-center justify-center gap-2"
+          className="w-full mt-4 px-4 py-2 text-sm font-medium text-muted hover:text-primary hover:bg-[var(--surface-2)] rounded-lg transition-colors flex items-center justify-center gap-1"
         >
-          View All ({reminders.length})
-          <ChevronRight size={16} />
+          View all {reminders.length} reminders
+          <ChevronRight size={14} />
         </button>
       )}
     </div>
@@ -158,22 +139,13 @@ function formatRelativeTime(dateString: string): string {
 
   if (diffMins < 0) {
     const absMins = Math.abs(diffMins);
-    if (absMins < 60) {
-      return `${absMins}m overdue`;
-    }
+    if (absMins < 60) return `${absMins}m overdue`;
     const absHours = Math.floor(absMins / 60);
-    if (absHours < 24) {
-      return `${absHours}h overdue`;
-    }
-    const absDays = Math.floor(absMins / (60 * 24));
-    return `${absDays}d overdue`;
+    if (absHours < 24) return `${absHours}h overdue`;
+    return `${Math.floor(absMins / (60 * 24))}d overdue`;
   }
 
-  if (diffMins < 60) {
-    return `in ${diffMins}m`;
-  }
-  if (diffHours < 24) {
-    return `in ${diffHours}h`;
-  }
+  if (diffMins < 60) return `in ${diffMins}m`;
+  if (diffHours < 24) return `in ${diffHours}h`;
   return `in ${diffDays}d`;
 }
