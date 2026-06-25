@@ -27,15 +27,16 @@ export default function LogoutButton({ isCollapsed = false }: LogoutButtonProps)
     <button
       onClick={handleLogout}
       disabled={isLoading}
-      className="w-full px-4 py-2 text-sm bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+      title="Logout"
+      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
     >
-      <LogOut size={16} />
+      <LogOut size={16} className="flex-shrink-0" />
       <span
         className={`transition-opacity duration-300 ${
-          isCollapsed ? 'opacity-0' : 'opacity-100'
+          isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
-        {isLoading ? 'Logging out...' : 'Logout'}
+        {isLoading ? 'Logging out…' : 'Logout'}
       </span>
     </button>
   );

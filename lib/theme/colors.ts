@@ -30,15 +30,15 @@ export const colors = {
     text: 'text-sm text-primary font-medium transition-colors interactive',
   },
 
-  // Status Colors (for badges)
+  // Status Colors (for badges) — opacity-based so they work in both light and dark mode
   status: {
-    new: 'bg-blue-100 text-blue-800',
-    contacted: 'bg-yellow-100 text-yellow-800',
-    qualified: 'bg-green-100 text-green-800',
-    negotiation: 'bg-purple-100 text-purple-800',
-    converted: 'bg-emerald-100 text-emerald-800',
-    lost: 'bg-red-100 text-red-800',
-    unresponsive: 'bg-gray-100 text-gray-800',
+    new: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
+    contacted: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+    qualified: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    negotiation: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
+    converted: 'bg-teal-500/15 text-teal-700 dark:text-teal-400',
+    lost: 'bg-red-500/15 text-red-600 dark:text-red-400',
+    unresponsive: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
   },
 
   // Pagination
@@ -83,23 +83,23 @@ export const combineColors = (...colorClasses: (string | undefined)[]): string =
  */
 export const getPriorityColor = (priority: string): string => {
   const map: Record<string, string> = {
-    URGENT: 'bg-red-100 text-red-800',
-    HIGH: 'bg-orange-100 text-orange-800',
-    MEDIUM: 'bg-blue-100 text-blue-800',
-    LOW: 'bg-gray-100 text-gray-800',
+    URGENT: 'bg-red-500/15 text-red-600 dark:text-red-400',
+    HIGH: 'bg-orange-500/15 text-orange-600 dark:text-orange-400',
+    MEDIUM: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
+    LOW: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
   };
-  return map[priority] ?? 'bg-gray-100 text-gray-800';
+  return map[priority] ?? 'bg-gray-500/15 text-gray-600 dark:text-gray-400';
 };
 
 export const getTaskTypeColor = (type: string): string => {
   const map: Record<string, string> = {
-    CALL: 'bg-purple-100 text-purple-800',
-    EMAIL: 'bg-green-100 text-green-800',
-    MEETING: 'bg-blue-100 text-blue-800',
-    FOLLOW_UP: 'bg-yellow-100 text-yellow-800',
-    CUSTOM: 'bg-gray-100 text-gray-800',
+    CALL: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
+    EMAIL: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    MEETING: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
+    FOLLOW_UP: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+    CUSTOM: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
   };
-  return map[type] ?? 'bg-gray-100 text-gray-800';
+  return map[type] ?? 'bg-gray-500/15 text-gray-600 dark:text-gray-400';
 };
 
 export const getStatusColor = (status: string): string => {

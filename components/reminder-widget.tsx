@@ -61,21 +61,14 @@ export default function ReminderWidget({
     <div className="p-6 rounded-lg border border-[var(--border)] surface">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-primary">Reminders</h3>
-        <span className="text-sm text-muted">{reminders.length} total</span>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
-        <div className="p-2 rounded-lg bg-red-500/10">
-          <p className="text-red-500 font-semibold">{overdue.length} Overdue</p>
-        </div>
-        <div className="p-2 rounded-lg bg-yellow-500/10">
-          <p className="text-yellow-500 font-semibold">{upcoming.length} Upcoming</p>
-        </div>
-        <div className="p-2 rounded-lg bg-blue-500/10">
-          <p className="text-blue-500 font-semibold">
-            {reminders.filter(r => r.status === 'ACKNOWLEDGED').length} Done
-          </p>
+        <div className="flex items-center gap-3 text-xs">
+          {overdue.length > 0 && (
+            <span className="font-semibold text-red-500">{overdue.length} overdue</span>
+          )}
+          {upcoming.length > 0 && (
+            <span className="text-muted">{upcoming.length} upcoming</span>
+          )}
+          <span className="text-muted">{reminders.filter(r => r.status === 'ACKNOWLEDGED').length} done</span>
         </div>
       </div>
 
@@ -117,13 +110,13 @@ export default function ReminderWidget({
 
       {/* View All */}
       {reminders.length > limit && (
-        <button
-          onClick={onViewAll}
+        <Link
+          href="/reminders"
           className="w-full mt-4 px-4 py-2 text-sm font-medium text-muted hover:text-primary hover:bg-[var(--surface-2)] rounded-lg transition-colors flex items-center justify-center gap-1"
         >
           View all {reminders.length} reminders
           <ChevronRight size={14} />
-        </button>
+        </Link>
       )}
     </div>
   );

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { leadsApi } from '@/lib/api/leads';
 import { tasksApi } from '@/lib/api/tasks';
-import { colors } from '@/lib/theme/colors';
 import { formatMoney } from '@/lib/utils/format';
 import {
   type LeadLike,
@@ -17,10 +16,8 @@ import {
 import { useReminders } from '@/lib/hooks/use-reminders';
 import type { LeadResponseDto } from '@/lib/types/leads';
 import type { TaskResponseDto } from '@/lib/types/tasks';
-import ReminderWidget from '@/components/reminder-widget';
-import DashboardStatCard from './components/dashboard-stat-card';
 import DashboardRecentLeads from './components/dashboard-recent-leads';
-import DashboardPendingTasks from './components/dashboard-pending-tasks';
+import DashboardActionQueue from './components/dashboard-action-queue';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -99,26 +96,50 @@ export default function DashboardPage() {
       leads
         .slice()
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5),
+        .slice(0, 8),
     [leads],
   );
-
-  const upcomingTasks = useMemo(() => metrics.pendingTasks.slice(0, 5), [metrics.pendingTasks]);
 
   const skeleton = <div className="animate-pulse bg-[var(--border)] rounded-lg min-h-[120px]" />;
 
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="flex justify-between items-start mb-8 gap-4">
+      <div className="flex justify-between items-end mb-6">
         <div>
-          <p className="text-sm text-muted">{dateLabel}</p>
-          <h1 className="text-3xl font-bold text-primary mt-1">Welcome back, {name}!</h1>
-          <p className="text-muted mt-2">Here's what needs your attention today.</p>
+          <p className="text-xs text-muted">{dateLabel}</p>
+          <h1 className="text-2xl font-bold text-primary mt-0.5">Welcome back, {name}</h1>
         </div>
-        <Link href="/leads" className={colors.button.secondary}>
-          Manage Leads
-        </Link>
+        {!loading && (
+          <div className="text-right">
+            <p className="text-xs text-muted mb-0.5">Revenue this month</p>
+            <p className="text-2xl font-bold text-primary">{formatMoney(metrics.revenueThisMonth)}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Metrics strip */}
+      <div className="flex items-center gap-6 mb-8 pb-5 border-b border-[var(--border)]">
+        {loading ? (
+          <div className="h-4 w-56 animate-pulse bg-[var(--border)] rounded" />
+        ) : (
+          <>
+            <span>
+              <span className="text-base font-bold text-primary">{metrics.totalLeads}</span>
+              <span className="text-sm text-muted ml-1.5">leads</span>
+            </span>
+            <span className="text-[var(--border)]" aria-hidden>·</span>
+            <span>
+              <span className="text-base font-bold text-primary">{metrics.dueTodayCount}</span>
+              <span className="text-sm text-muted ml-1.5">tasks due</span>
+            </span>
+            <span className="text-[var(--border)]" aria-hidden>·</span>
+            <span>
+              <span className="text-base font-bold text-primary">{pendingCount}</span>
+              <span className="text-sm text-muted ml-1.5">pending reminders</span>
+            </span>
+          </>
+        )}
       </div>
 
       {error && (
@@ -127,58 +148,23 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <DashboardStatCard
-          label="Total Leads"
-          value={loading ? '—' : String(metrics.totalLeads)}
-          subLabel="All time"
-        />
-        <DashboardStatCard
-          label="Tasks Due"
-          value={loading ? '—' : String(metrics.dueTodayCount)}
-          subLabel="Today & overdue"
-        />
-        <DashboardStatCard
-          label="Pending Reminders"
-          value={String(pendingCount)}
-          subLabel="Needs attention"
-        />
-        <DashboardStatCard
-          label="Revenue This Month"
-          value={loading ? '—' : formatMoney(metrics.revenueThisMonth)}
-          subLabel="From converted leads"
-        />
-      </div>
-
-      {/* Recent Leads + Reminders */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      {/* Main content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2 surface rounded-lg border border-[var(--border)] p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-primary">Recent Leads</h2>
-            <Link href="/leads" className="text-sm text-muted hover:text-primary transition-colors">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-base font-semibold text-primary">Recent Leads</h2>
+            <Link href="/leads" className="text-xs text-muted hover:text-primary transition-colors">
               View all →
             </Link>
           </div>
           {loading ? skeleton : <DashboardRecentLeads leads={recentLeads} />}
         </section>
 
-        <ReminderWidget limit={5} />
+        <section className="surface rounded-lg border border-[var(--border)] p-6">
+          <h2 className="text-base font-semibold text-primary mb-5">Today's Actions</h2>
+          {loading ? skeleton : <DashboardActionQueue tasks={metrics.pendingTasks} />}
+        </section>
       </div>
-
-      {/* Pending Tasks */}
-      <section className="surface rounded-lg border border-[var(--border)] p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-primary">Pending Tasks</h2>
-          <Link href="/tasks" className="text-sm text-muted hover:text-primary transition-colors">
-            View all →
-          </Link>
-        </div>
-        {loading
-          ? <div className="animate-pulse bg-[var(--border)] rounded-lg h-32" />
-          : <DashboardPendingTasks tasks={upcomingTasks} />
-        }
-      </section>
     </div>
   );
 }
