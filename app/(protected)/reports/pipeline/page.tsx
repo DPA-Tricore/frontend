@@ -1,14 +1,52 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
 import { reportsApi } from '@/lib/api/reports';
 import type { PipelineReport } from '@/lib/types/reports';
-import { getStatusColor } from '@/lib/theme/colors';
 import LoadingSpinner from '@/components/loading-spinner';
 import DateRangeFilter from '../components/date-range-filter';
 import ExportButton from '../components/export-button';
 
 const STATUS_ORDER = ['NEW', 'CONTACTED', 'QUALIFIED', 'IN_NEGOTIATION', 'CONVERTED', 'LOST', 'UNRESPONSIVE'];
+
+const STATUS_COLORS: Record<string, string> = {
+  NEW: '#6366f1',
+  CONTACTED: '#3b82f6',
+  QUALIFIED: '#f59e0b',
+  IN_NEGOTIATION: '#8b5cf6',
+  CONVERTED: '#10b981',
+  LOST: '#ef4444',
+  UNRESPONSIVE: '#9ca3af',
+};
+
+const formatLabel = (s: string) =>
+  s
+    .split('_')
+    .map((w) => w[0] + w.slice(1).toLowerCase())
+    .join(' ');
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (!active || !payload?.length) return null;
+  const { status, count, pct } = payload[0].payload;
+  return (
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 shadow-md text-sm">
+      <p className="font-medium text-primary">{formatLabel(status)}</p>
+      <p className="text-[var(--muted)]">
+        {count} leads · {pct}%
+      </p>
+    </div>
+  );
+};
 
 export default function PipelineReportPage() {
   const [data, setData] = useState<PipelineReport | null>(null);
@@ -35,11 +73,15 @@ export default function PipelineReportPage() {
     return () => { cancelled = true; };
   }, [startDate, endDate]);
 
-  const sorted = data
-    ? [...data.stages].sort((a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status))
+  const chartData = data
+    ? [...data.stages]
+        .sort((a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status))
+        .map((s) => ({
+          ...s,
+          name: formatLabel(s.status),
+          pct: data.total > 0 ? ((s.count / data.total) * 100).toFixed(1) : '0.0',
+        }))
     : [];
-
-  const max = Math.max(1, ...sorted.map((s) => s.count));
 
   return (
     <div className="space-y-6">
@@ -53,44 +95,45 @@ export default function PipelineReportPage() {
 
       {data && !loading && (
         <>
-          {/* KPI cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { label: 'Total Leads', value: data.total },
-              { label: 'Converted', value: data.convertedCount },
-              { label: 'Lost', value: data.lostCount },
-              { label: 'Conversion Rate', value: `${data.conversionRate}%` },
-            ].map(({ label, value }) => (
+              { label: 'Converted', value: data.convertedCount, valueClass: 'text-emerald-600' },
+              { label: 'Lost', value: data.lostCount, valueClass: 'text-red-500' },
+              { label: 'Conversion Rate', value: `${data.conversionRate}%`, valueClass: 'text-primary' },
+            ].map(({ label, value, valueClass }) => (
               <div key={label} className="border border-[var(--border)] rounded-xl p-4 bg-[var(--surface)]">
                 <p className="text-xs text-[var(--muted)] mb-1">{label}</p>
-                <p className="text-2xl font-semibold text-primary">{value}</p>
+                <p className={`text-2xl font-semibold ${valueClass ?? 'text-primary'}`}>{value}</p>
               </div>
             ))}
           </div>
 
-          {/* Bar chart */}
           <div className="border border-[var(--border)] rounded-xl p-6 bg-[var(--surface)]">
             <h2 className="text-sm font-medium text-primary mb-6">Leads by Stage</h2>
-            {sorted.length === 0 ? (
+            {chartData.length === 0 ? (
               <p className="text-sm text-[var(--muted)] py-4">No leads found for the selected period.</p>
             ) : (
-              <div className="space-y-4">
-                {sorted.map((stage) => (
-                  <div key={stage.status} className="flex items-center gap-4">
-                    <span className="w-32 text-xs text-[var(--muted)] shrink-0">{stage.status.replace('_', ' ')}</span>
-                    <div className="flex-1 bg-[var(--bg)] rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gray-900 dark:bg-white transition-all duration-500"
-                        style={{ width: `${(stage.count / max) * 100}%` }}
-                      />
-                    </div>
-                    <span className="w-8 text-right text-sm font-medium text-primary">{stage.count}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(stage.status)}`}>
-                      {stage.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <ResponsiveContainer width="100%" height={chartData.length * 52}>
+                <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 48, left: 16, bottom: 0 }}>
+                  <CartesianGrid horizontal={false} stroke="var(--border)" strokeDasharray="3 3" />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--muted)' }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={110}
+                    tick={{ fontSize: 12, fill: 'var(--muted)' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--bg)', opacity: 0.5 }} />
+                  <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={24}>
+                    {chartData.map((entry) => (
+                      <Cell key={entry.status} fill={STATUS_COLORS[entry.status] ?? '#6366f1'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             )}
           </div>
         </>
