@@ -45,14 +45,14 @@ export default function SearchFilters({ tab, filters, hasActiveFilters, onFilter
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    if (isOpen && ASSIGNED_TO_TABS.includes(tab) && users.length === 0) {
+    if (isOpen && ASSIGNED_TO_TABS.includes(tab as SearchEntityType) && users.length === 0) {
       usersApi.getUsers().then((u) => setUsers(u as User[])).catch(() => {});
     }
   }, [isOpen, tab, users.length]);
 
-  const statusOptions = STATUS_OPTIONS[tab];
-  const entityTypeOptions = ENTITY_TYPE_OPTIONS[tab];
-  const showAssignedTo = ASSIGNED_TO_TABS.includes(tab);
+  const statusOptions = STATUS_OPTIONS[tab as SearchEntityType];
+  const entityTypeOptions = ENTITY_TYPE_OPTIONS[tab as SearchEntityType];
+  const showAssignedTo = ASSIGNED_TO_TABS.includes(tab as SearchEntityType);
 
   return (
     <div>
