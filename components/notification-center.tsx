@@ -3,7 +3,7 @@
 import React, { useState, Fragment } from 'react';
 import { Transition } from '@headlessui/react';
 import { useReminders } from '@/lib/hooks/use-reminders';
-import { ReminderResponseDto } from '@/lib/api/reminders';
+import { ReminderResponseDto } from '@/lib/types/reminders';
 import { X, Clock, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 
 interface NotificationCenterProps {
