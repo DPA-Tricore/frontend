@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 import { tasksApi } from '@/lib/api/tasks';
 import { usersApi, UserResponseDto } from '@/lib/api/users';
 import type { TaskResponseDto } from '@/lib/types/tasks';
@@ -12,13 +14,18 @@ import EmptyState from '@/components/empty-state';
 import PaginationSummary from '@/components/pagination-summary';
 import TaskFilters from './components/task-filters';
 import TaskListView from './components/task-list-view';
+import TaskBoardView from './components/task-board-view';
 import TaskCreateModal from './components/task-create-modal';
+import ViewToggle, { type ViewMode } from './components/view-toggle';
 
 type SortField = 'title' | 'createdAt' | 'dueDate' | 'status' | 'priority' | 'type';
 
 const LIMIT = 10;
 
 export default function TasksPage() {
+  const searchParams = useSearchParams();
+  const view: ViewMode = searchParams.get('view') === 'list' ? 'list' : 'board';
+
   const [tasks, setTasks] = useState<TaskResponseDto[]>([]);
   const [users, setUsers] = useState<UserResponseDto[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -41,7 +48,7 @@ export default function TasksPage() {
         setUsersLoading(true);
         setUsers(await usersApi.getUsers());
       } catch {
-        // non-critical, table shows fallback
+        // non-critical
       } finally {
         setUsersLoading(false);
       }
@@ -78,8 +85,8 @@ export default function TasksPage() {
   }, [page, search, sortBy, sortOrder, statusFilter, priorityFilter, typeFilter]);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    if (view === 'list') fetchTasks();
+  }, [fetchTasks, view]);
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -94,6 +101,17 @@ export default function TasksPage() {
   const getUserEmail = (userId: string) =>
     users.find((u) => u.id === userId)?.email ?? 'Unknown User';
 
+  const handleStatusChange = useCallback(
+    async (taskId: string, newStatus: string, oldStatus: string) => {
+      try {
+        await tasksApi.updateTask(taskId, { status: newStatus });
+      } catch {
+        setError('Failed to update task status');
+      }
+    },
+    [],
+  );
+
   return (
     <div className="p-8">
       <PageHeader
@@ -101,45 +119,63 @@ export default function TasksPage() {
         subtitle="Track and manage your sales activities"
         error={error}
         actions={
-          <button onClick={() => setShowModal(true)} className={colors.button.primary}>
-            + Add Task
-          </button>
+          <>
+            <ViewToggle />
+            <button onClick={() => setShowModal(true)} className={colors.button.primary}>
+              + Add Task
+            </button>
+          </>
         }
       />
 
-      <TaskFilters
-        search={search}
-        statusFilter={statusFilter}
-        priorityFilter={priorityFilter}
-        typeFilter={typeFilter}
-        sortBy={sortBy}
-        onSearch={(v) => { setSearch(v); setPage(1); }}
-        onStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
-        onPriorityFilter={(v) => { setPriorityFilter(v); setPage(1); }}
-        onTypeFilter={(v) => { setTypeFilter(v); setPage(1); }}
-        onSortChange={(v) => { setSortBy(v); setPage(1); }}
-      />
-
-      {meta && <PaginationSummary meta={meta} page={page} limit={LIMIT} label="tasks" />}
-
-      {loading ? (
-        <LoadingSpinner message="Loading tasks..." />
-      ) : tasks.length === 0 ? (
-        <EmptyState
-          message={search ? 'No tasks found. Try adjusting your search.' : 'Create your first task to get started!'}
-        />
-      ) : (
-        <TaskListView
-          tasks={tasks}
-          meta={meta}
-          page={page}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={handleSort}
-          onPageChange={setPage}
-          getUserEmail={getUserEmail}
-        />
+      {view === 'list' && (
+        <>
+          <TaskFilters
+            search={search}
+            statusFilter={statusFilter}
+            priorityFilter={priorityFilter}
+            typeFilter={typeFilter}
+            sortBy={sortBy}
+            onSearch={(v) => { setSearch(v); setPage(1); }}
+            onStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
+            onPriorityFilter={(v) => { setPriorityFilter(v); setPage(1); }}
+            onTypeFilter={(v) => { setTypeFilter(v); setPage(1); }}
+            onSortChange={(v) => { setSortBy(v); setPage(1); }}
+          />
+          {meta && <PaginationSummary meta={meta} page={page} limit={LIMIT} label="tasks" />}
+        </>
       )}
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={view}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.15, ease: 'easeInOut' }}
+        >
+          {view === 'board' ? (
+            <TaskBoardView users={users} onStatusChange={handleStatusChange} />
+          ) : loading ? (
+            <LoadingSpinner message="Loading tasks..." />
+          ) : tasks.length === 0 ? (
+            <EmptyState
+              message={search ? 'No tasks found. Try adjusting your search.' : 'Create your first task to get started!'}
+            />
+          ) : (
+            <TaskListView
+              tasks={tasks}
+              meta={meta}
+              page={page}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              onPageChange={setPage}
+              getUserEmail={getUserEmail}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       <TaskCreateModal
         isOpen={showModal}
