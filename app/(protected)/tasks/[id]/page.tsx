@@ -50,7 +50,7 @@ export default function TaskDetailPage() {
       const updated = await tasksApi.updateTask(task.id, {
         status: 'COMPLETED',
         completedAt: new Date(),
-      } as any);
+      });
       setTask(updated);
     } finally {
       setCompleting(false);
@@ -59,7 +59,7 @@ export default function TaskDetailPage() {
 
   const handleStatusChange = async (status: string) => {
     if (!task) return;
-    const updated = await tasksApi.updateTask(task.id, { status } as any);
+    const updated = await tasksApi.updateTask(task.id, { status });
     setTask(updated);
   };
 

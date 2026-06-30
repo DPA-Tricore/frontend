@@ -28,7 +28,6 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onUpdated 
     description: task.description ?? '',
     type: task.type,
     priority: task.priority,
-    status: task.status,
     assignedToId: task.assignedToId,
     dueDate: toDatetimeLocal(task.dueDate),
     startDate: toDatetimeLocal(task.startDate),
@@ -44,7 +43,6 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onUpdated 
       description: task.description ?? '',
       type: task.type,
       priority: task.priority,
-      status: task.status,
       assignedToId: task.assignedToId,
       dueDate: toDatetimeLocal(task.dueDate),
       startDate: toDatetimeLocal(task.startDate),
@@ -76,8 +74,7 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onUpdated 
         ...(formData.startDate && { startDate: new Date(formData.startDate) }),
         ...(formData.outcome && { outcome: formData.outcome }),
         ...(formData.resultType && { resultType: formData.resultType }),
-        status: formData.status,
-      } as any);
+      });
       onUpdated(updated);
     } catch {
       setError('Failed to update task. Please try again.');
@@ -143,26 +140,15 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onUpdated 
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted mb-2">Status</label>
-            <select name="status" value={formData.status} onChange={handleChange} className={inputClass}>
-              <option value="PENDING">Pending</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted mb-2">Result Type</label>
-            <select name="resultType" value={formData.resultType} onChange={handleChange} className={inputClass}>
-              <option value="">None</option>
-              <option value="SUCCESS">Success</option>
-              <option value="NO_ANSWER">No Answer</option>
-              <option value="RESCHEDULED">Rescheduled</option>
-              <option value="FAILED">Failed</option>
-            </select>
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-2">Result Type</label>
+          <select name="resultType" value={formData.resultType} onChange={handleChange} className={inputClass}>
+            <option value="">None</option>
+            <option value="SUCCESS">Success</option>
+            <option value="NO_ANSWER">No Answer</option>
+            <option value="RESCHEDULED">Rescheduled</option>
+            <option value="FAILED">Failed</option>
+          </select>
         </div>
 
         <div>

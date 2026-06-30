@@ -58,4 +58,6 @@ export interface CreateTaskRequest {
   reminderOffsets?: number[];
   customReminderTimes?: string[];
   demoMode?: boolean;
+  status?: string;
+  completedAt?: Date | string;
 }

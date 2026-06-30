@@ -60,7 +60,7 @@ export default function TaskHero({
     const newStatus = e.target.value;
     setUpdatingStatus(true);
     try {
-      await tasksApi.updateTask(task.id, { status: newStatus } as any);
+      await tasksApi.updateTask(task.id, { status: newStatus });
       onStatusChange(newStatus);
     } finally {
       setUpdatingStatus(false);
