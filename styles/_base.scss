@@ -1,5 +1,9 @@
+html {
+  font-size: 13px;
+}
+
 body {
   background-color: var(--bg);
   color: var(--fg);
-  @apply antialiased transition-colors duration-200; 
+  @apply antialiased transition-colors duration-200;
 }
