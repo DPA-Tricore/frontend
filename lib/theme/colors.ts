@@ -115,6 +115,17 @@ export const getStatusColor = (status: string): string => {
   return statusMap[status] || colors.status.unresponsive;
 };
 
+export const getReminderStatusColor = (status: string): string => {
+  const map: Record<string, string> = {
+    PENDING: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
+    TRIGGERED: 'bg-red-500/15 text-red-600 dark:text-red-400',
+    ACKNOWLEDGED: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
+    DISMISSED: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
+    CANCELLED: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
+  };
+  return map[status] ?? map.DISMISSED;
+};
+
 export const getScopeColor = (scope: string): string => {
   const map: Record<string, string> = {
     GLOBAL: 'bg-blue-100 text-blue-800',

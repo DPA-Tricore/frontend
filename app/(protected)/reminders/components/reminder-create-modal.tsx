@@ -47,28 +47,37 @@ export default function ReminderCreateModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    title: initialData?.title || 'Task Reminder',
-    description: initialData?.description || '',
-    dueDate: initialData?.dueDate
-      ? new Date(initialData.dueDate).toISOString().split('T')[0]
+  const buildFormData = (data?: typeof initialData) => ({
+    title: data?.title || 'Task Reminder',
+    description: data?.description || '',
+    dueDate: data?.dueDate
+      ? new Date(data.dueDate).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
-    dueTime: '09:00',
-    reminderOffset: 'before-1-day',
+    dueTime: data?.dueDate ? new Date(data.dueDate).toTimeString().slice(0, 5) : '09:00',
+    // Calendar events are positioned by reminderTime, not dueDate — defaulting
+    // this to "1 day before" made a freshly created reminder silently render
+    // a day away from whatever date/time was just picked (calendar click,
+    // right-click, or the date/time fields themselves). "On due date" means
+    // reminderTime === dueDate/time exactly, so it appears right where set.
+    reminderOffset: 'on-due-date',
   });
 
+  const [formData, setFormData] = useState(() => buildFormData(initialData));
+
+  // This modal instance stays mounted across opens (only isOpen toggles), so
+  // useState's initializer above only ever runs once. Re-derive from
+  // initialData every time it opens, not just on first mount, so e.g. two
+  // different right-clicked dates each prefill correctly.
   useEffect(() => {
-    if (!isOpen) setError(null);
+    if (isOpen) {
+      setFormData(buildFormData(initialData));
+      setError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const reset = () => {
-    setFormData({
-      title: 'Task Reminder',
-      description: '',
-      dueDate: new Date().toISOString().split('T')[0],
-      dueTime: '09:00',
-      reminderOffset: 'before-1-day',
-    });
+    setFormData(buildFormData());
     setError(null);
   };
 

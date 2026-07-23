@@ -10,6 +10,15 @@
   --callout-bg: #eff6ff;
   --callout-border: #bfdbfe;
   --callout-fg: #1e3a8a;
+
+  --reminder-pending-bg: rgba(234, 179, 8, 0.15);
+  --reminder-pending-fg: #a16207;
+  --reminder-triggered-bg: rgba(239, 68, 68, 0.15);
+  --reminder-triggered-fg: #dc2626;
+  --reminder-acknowledged-bg: rgba(59, 130, 246, 0.15);
+  --reminder-acknowledged-fg: #2563eb;
+  --reminder-dismissed-bg: rgba(107, 114, 128, 0.15);
+  --reminder-dismissed-fg: #4b5563;
 }
 
 :root.dark {
@@ -24,4 +33,13 @@
   --callout-bg: rgba(30, 58, 138, 0.15);
   --callout-border: #1e40af;
   --callout-fg: #bfdbfe;
+
+  --reminder-pending-bg: rgba(234, 179, 8, 0.2);
+  --reminder-pending-fg: #facc15;
+  --reminder-triggered-bg: rgba(239, 68, 68, 0.2);
+  --reminder-triggered-fg: #f87171;
+  --reminder-acknowledged-bg: rgba(59, 130, 246, 0.2);
+  --reminder-acknowledged-fg: #60a5fa;
+  --reminder-dismissed-bg: rgba(107, 114, 128, 0.2);
+  --reminder-dismissed-fg: #9ca3af;
 }

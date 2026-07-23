@@ -1,0 +1,183 @@
+/* react-big-calendar theming: map its default chrome onto our CSS variable tokens
+   so it matches the app's light/dark theme and reads closer to a native
+   Apple-Calendar-style grid instead of the library's baked-in colors. */
+
+/* The app's global root font-size is a deliberately compact 13px (see
+   _base.scss); the calendar reads too cramped at that scale, so it opts out
+   with an explicit px baseline instead of rem. */
+.rbc-calendar {
+  color: var(--fg);
+  font-size: 15px;
+}
+
+/* Grid containers */
+.rbc-month-view,
+.rbc-time-view {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rbc-month-row + .rbc-month-row,
+.rbc-day-bg + .rbc-day-bg,
+.rbc-month-row,
+.rbc-day-slot .rbc-time-slot,
+.rbc-timeslot-group,
+.rbc-time-content,
+.rbc-time-content > * + * > *,
+.rbc-time-header-content,
+.rbc-time-header.rbc-overflowing,
+.rbc-agenda-view table.rbc-agenda-table {
+  border-color: var(--border);
+}
+
+.rbc-day-bg,
+.rbc-day-slot,
+.rbc-time-content,
+.rbc-time-header-content,
+.rbc-time-view-resources .rbc-time-gutter,
+.rbc-time-view-resources .rbc-time-header-gutter {
+  background: var(--surface);
+}
+
+.rbc-off-range-bg {
+  background: var(--bg);
+}
+
+.rbc-off-range {
+  color: var(--subtle);
+}
+
+/* Weekday header row */
+.rbc-header {
+  color: var(--muted);
+  border-color: var(--border);
+  background: var(--surface);
+  padding: 12px 0;
+  font-weight: 500;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rbc-header.rbc-today {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+/* Today: no full-cell tint (Apple only highlights the date number itself) */
+.rbc-today {
+  background: var(--surface);
+}
+
+.rbc-date-cell {
+  color: var(--fg);
+  padding: 8px 10px 0 0;
+  font-size: 15px;
+}
+
+.rbc-date-cell.rbc-now .rbc-button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Event chips */
+.rbc-event {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 3px 6px;
+  font-size: 13px;
+}
+
+/* The drag-and-drop addon's default stylesheet puts `transition: opacity
+   150ms` on every .rbc-event so the dragged/dimmed states fade in. In month
+   view the drag preview remounts into a new week-row's DOM each time it
+   crosses a row boundary, so that transition keeps restarting mid-drag and
+   reads as a flicker. Make the opacity states instant instead. */
+.rbc-addons-dnd .rbc-event {
+  transition: none;
+}
+
+/* Month view events have no status-color utility class applied (they render as a
+   dot + title instead, see MonthEvent), so force our text token here. Scoped to
+   month view only: week/day events rely on Tailwind's own text-color utility
+   classes from getReminderStatusColor(), which this must not clobber. */
+.rbc-month-view .rbc-event {
+  color: var(--fg);
+}
+
+.rbc-event.rbc-selected {
+  background: var(--surface-2);
+}
+
+.rbc-event:focus {
+  outline: 2px solid var(--border);
+}
+
+.rbc-event-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.rbc-show-more {
+  color: var(--muted);
+  background: transparent;
+  font-weight: 500;
+}
+
+.rbc-show-more:hover {
+  color: var(--fg);
+}
+
+/* Overlay popup ("+N more") */
+.rbc-overlay {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  color: var(--fg);
+}
+
+.rbc-overlay-header {
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+/* Week/day time grid */
+.rbc-time-gutter,
+.rbc-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rbc-timeslot-group {
+  min-height: 64px;
+}
+
+/* Reminders are always point-in-time, never all-day events, so the empty
+   all-day row react-big-calendar reserves under the week/day header is
+   just dead space here. */
+.rbc-allday-cell {
+  display: none;
+}
+
+.rbc-current-time-indicator {
+  background-color: #ef4444;
+  height: 2px;
+}
+
+.rbc-time-slot.rbc-now {
+  font-weight: 600;
+}
+
+.rbc-day-slot.rbc-today {
+  background: var(--surface);
+}

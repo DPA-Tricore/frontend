@@ -11,3 +11,8 @@
 
 /* Animation styles */
 @import "../styles/_animations.scss";
+
+/* react-big-calendar base styles, then our theme overrides on top (order matters) */
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+@import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+@import "../styles/_calendar.scss";
