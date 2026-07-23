@@ -17,3 +17,10 @@ export interface UpdateOrgUserRequest {
   role?: AssignableRole;
   teamId?: string | null;
 }
+
+export interface CreateOrgUserRequest {
+  email: string;
+  password: string;
+  role: AssignableRole;
+  teamId?: string;
+}

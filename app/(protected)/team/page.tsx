@@ -10,6 +10,7 @@ import type { OrgUserResponseDto } from '@/lib/types/users';
 import LoadingSpinner from '@/components/loading-spinner';
 import TeamList from './components/team-list';
 import UserRoleTable from './components/user-role-table';
+import AddUserForm from './components/add-user-form';
 
 export default function TeamPage() {
   const router = useRouter();
@@ -52,6 +53,7 @@ export default function TeamPage() {
       ) : (
         <>
           <TeamList teams={teams} onChanged={refetch} />
+          <AddUserForm teams={teams} onChanged={refetch} />
           <UserRoleTable users={users} teams={teams} currentUserId={user?.id} onChanged={refetch} />
         </>
       )}

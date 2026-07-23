@@ -1,7 +1,7 @@
 import { axiosClient } from '@/lib/api/axios-client';
-import type { OrgUserResponseDto, UpdateOrgUserRequest } from '@/lib/types/users';
+import type { OrgUserResponseDto, UpdateOrgUserRequest, CreateOrgUserRequest } from '@/lib/types/users';
 
-export type { OrgUserResponseDto as UserResponseDto, UpdateOrgUserRequest } from '@/lib/types/users';
+export type { OrgUserResponseDto as UserResponseDto, UpdateOrgUserRequest, CreateOrgUserRequest } from '@/lib/types/users';
 export type { UserRole, AssignableRole } from '@/lib/types/users';
 
 export const usersApi = {
@@ -10,6 +10,14 @@ export const usersApi = {
    */
   async getUsers(): Promise<OrgUserResponseDto[]> {
     const response = await axiosClient.get<OrgUserResponseDto[]>('/users');
+    return response.data;
+  },
+
+  /**
+   * Create a new user in the current org (Org Admin only)
+   */
+  async createUser(data: CreateOrgUserRequest): Promise<OrgUserResponseDto> {
+    const response = await axiosClient.post<OrgUserResponseDto>('/users', data);
     return response.data;
   },
 
