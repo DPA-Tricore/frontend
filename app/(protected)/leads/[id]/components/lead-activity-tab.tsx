@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import { tasksApi } from '@/lib/api/tasks';
 import { reminderAPI } from '@/lib/api/reminders';
 import { documentsApi } from '@/lib/api/documents';
+import { activitiesApi } from '@/lib/api/activities';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
 import type { DocumentResponseDto } from '@/lib/types/documents';
+import type { ActivityResponseDto } from '@/lib/types/activities';
 import { getStatusColor, getPriorityColor } from '@/lib/theme/colors';
 import { formatDate, formatTime } from '@/lib/utils/date';
 
-type ActivityKind = 'task' | 'reminder' | 'document';
+type ActivityKind = 'task' | 'reminder' | 'document' | 'activity';
 
 interface ActivityItem {
   id: string;
@@ -19,17 +21,20 @@ interface ActivityItem {
   task?: TaskResponseDto;
   reminder?: ReminderResponseDto;
   document?: DocumentResponseDto;
+  activity?: ActivityResponseDto;
 }
 
 function buildFeed(
   tasks: TaskResponseDto[],
   reminders: ReminderResponseDto[],
   documents: DocumentResponseDto[],
+  activities: ActivityResponseDto[],
 ): ActivityItem[] {
   const items: ActivityItem[] = [
     ...tasks.map((t) => ({ id: `task-${t.id}`, kind: 'task' as const, date: String(t.createdAt), task: t })),
     ...reminders.map((r) => ({ id: `rem-${r.id}`, kind: 'reminder' as const, date: r.createdAt, reminder: r })),
     ...documents.map((d) => ({ id: `doc-${d.id}`, kind: 'document' as const, date: d.createdAt, document: d })),
+    ...activities.map((a) => ({ id: `act-${a.id}`, kind: 'activity' as const, date: a.createdAt, activity: a })),
   ];
   return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
@@ -47,8 +52,9 @@ export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
       tasksApi.getTasksByLeadId(leadId).catch(() => [] as TaskResponseDto[]),
       reminderAPI.list({ leadId, limit: 50 }).then((r) => r.data).catch(() => [] as ReminderResponseDto[]),
       documentsApi.getLeadDocuments(leadId).catch(() => [] as DocumentResponseDto[]),
-    ]).then(([tasks, reminders, documents]) => {
-      setFeed(buildFeed(tasks, reminders, documents));
+      activitiesApi.list({ entityType: 'LEAD', entityId: leadId }).catch(() => [] as ActivityResponseDto[]),
+    ]).then(([tasks, reminders, documents, activities]) => {
+      setFeed(buildFeed(tasks, reminders, documents, activities));
     }).finally(() => setLoading(false));
   }, [leadId]);
 
@@ -73,9 +79,9 @@ export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
           <div key={item.id} className="relative flex gap-4 pb-6">
             {/* Dot */}
             <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm
-              ${item.kind === 'task' ? 'bg-purple-100' : item.kind === 'reminder' ? 'bg-yellow-100' : 'bg-blue-100'}`}
+              ${item.kind === 'task' ? 'bg-purple-100' : item.kind === 'reminder' ? 'bg-yellow-100' : item.kind === 'activity' ? 'bg-green-100' : 'bg-blue-100'}`}
             >
-              {item.kind === 'task' ? '✓' : item.kind === 'reminder' ? '🔔' : '📎'}
+              {item.kind === 'task' ? '✓' : item.kind === 'reminder' ? '🔔' : item.kind === 'activity' ? '🔄' : '📎'}
             </div>
 
             {/* Content */}
@@ -88,6 +94,9 @@ export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
               )}
               {item.kind === 'document' && item.document && (
                 <DocumentActivity document={item.document} date={item.date} />
+              )}
+              {item.kind === 'activity' && item.activity && (
+                <StatusActivity activity={item.activity} date={item.date} />
               )}
             </div>
           </div>
@@ -121,6 +130,15 @@ function ReminderActivity({ reminder, date }: { reminder: ReminderResponseDto; d
       <span className="text-sm font-medium text-primary">Reminder set</span>
       <p className="text-sm text-muted mt-0.5">{reminder.title}</p>
       <p className="text-xs text-subtle mt-1">{formatDate(date)} · Due {formatDate(reminder.dueDate)} at {formatTime(reminder.dueDate)}</p>
+    </div>
+  );
+}
+
+function StatusActivity({ activity, date }: { activity: ActivityResponseDto; date: string }) {
+  return (
+    <div>
+      <span className="text-sm font-medium text-primary">{activity.message ?? activity.action}</span>
+      <p className="text-xs text-subtle mt-1">{formatDate(date)} · {formatTime(date)}</p>
     </div>
   );
 }
