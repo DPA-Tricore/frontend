@@ -1,4 +1,6 @@
-export type ActivityEntityType = 'LEAD' | 'TASK' | 'REMINDER';
+import type { PaginationMeta } from './common';
+
+export type ActivityEntityType = 'LEAD' | 'TASK' | 'REMINDER' | 'USER' | 'TEAM' | 'ORGANIZATION';
 
 export interface ActivityResponseDto {
   id: string;
@@ -14,4 +16,18 @@ export interface ActivityResponseDto {
 export interface ListActivitiesParams {
   entityType: ActivityEntityType;
   entityId: string;
+}
+
+export interface AuditLogEntryDto extends ActivityResponseDto {
+  actorEmail: string | null;
+}
+
+export interface PaginatedAuditLogResponse {
+  data: AuditLogEntryDto[];
+  meta: PaginationMeta;
+}
+
+export interface ListAuditLogParams {
+  page?: number;
+  limit?: number;
 }

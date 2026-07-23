@@ -15,6 +15,7 @@ import {
   FileBarChart,
   Search,
   Users,
+  ShieldCheck,
 } from 'lucide-react';
 import React from 'react';
 
@@ -33,6 +34,7 @@ const menuItems: MenuItem[] = [
   { name: 'Documents', icon: Paperclip, href: '/documents' },
   { name: 'Reports', icon: FileBarChart, href: '/reports' },
   { name: 'Team', icon: Users, href: '/team', minRole: ['ORG_ADMIN'] },
+  { name: 'Audit Log', icon: ShieldCheck, href: '/audit-log', minRole: ['ORG_ADMIN'] },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 
