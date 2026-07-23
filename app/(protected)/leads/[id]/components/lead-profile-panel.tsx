@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { leadsApi, LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
+import { usersApi } from '@/lib/api/users';
+import type { OrgUserResponseDto } from '@/lib/types/users';
+import { useAuth } from '@/context/auth-context';
 import { getStatusColor } from '@/lib/theme/colors';
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
@@ -49,13 +52,27 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 interface LeadProfilePanelProps {
   lead: LeadResponseDto;
   onStatusChange: (newStatus: string) => void;
+  onAssigneeChange: (agentId: string | null) => void;
   onEditClick: () => void;
 }
 
-export default function LeadProfilePanel({ lead, onStatusChange, onEditClick }: LeadProfilePanelProps) {
+const ASSIGNABLE_ROLES = ['AGENT', 'MANAGER'];
+const CAN_ASSIGN_ROLES = ['ORG_ADMIN', 'MANAGER'];
+
+export default function LeadProfilePanel({ lead, onStatusChange, onAssigneeChange, onEditClick }: LeadProfilePanelProps) {
+  const { user } = useAuth();
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [updatingAssignee, setUpdatingAssignee] = useState(false);
+  const [agents, setAgents] = useState<OrgUserResponseDto[]>([]);
   const initials = `${lead.firstName[0] ?? ''}${lead.lastName[0] ?? ''}`.toUpperCase();
   const fullName = `${lead.firstName} ${lead.lastName}`;
+  const canAssign = !!user?.role && CAN_ASSIGN_ROLES.includes(user.role);
+
+  useEffect(() => {
+    usersApi.getUsers()
+      .then((users) => setAgents(users.filter((u) => u.isActive && ASSIGNABLE_ROLES.includes(u.role))))
+      .catch(() => {});
+  }, []);
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value;
@@ -67,6 +84,19 @@ export default function LeadProfilePanel({ lead, onStatusChange, onEditClick }: 
       setUpdatingStatus(false);
     }
   };
+
+  const handleAssigneeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const agentId = e.target.value || null;
+    setUpdatingAssignee(true);
+    try {
+      await leadsApi.assignLead(lead.id, agentId);
+      onAssigneeChange(agentId);
+    } finally {
+      setUpdatingAssignee(false);
+    }
+  };
+
+  const assignedAgentEmail = agents.find((a) => a.id === lead.assignedAgentId)?.email;
 
   return (
     <aside className="w-72 shrink-0 space-y-5">
@@ -154,6 +184,26 @@ export default function LeadProfilePanel({ lead, onStatusChange, onEditClick }: 
           </div>
         </div>
       )}
+
+      {/* Assigned to */}
+      <div className="surface border border-[var(--border)] rounded-xl p-4">
+        <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-2">Assigned To</p>
+        {canAssign ? (
+          <select
+            value={lead.assignedAgentId ?? ''}
+            onChange={handleAssigneeChange}
+            disabled={updatingAssignee}
+            className="w-full text-xs px-3 py-2 rounded-lg border border-[var(--border)] bg-transparent text-primary cursor-pointer focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+          >
+            <option value="">Unassigned</option>
+            {agents.map((a) => (
+              <option key={a.id} value={a.id}>{a.email}</option>
+            ))}
+          </select>
+        ) : (
+          <p className="text-xs text-primary font-medium">{assignedAgentEmail ?? 'Unassigned'}</p>
+        )}
+      </div>
 
       {/* Lead details */}
       <div className="surface border border-[var(--border)] rounded-xl p-4">

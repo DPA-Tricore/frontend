@@ -47,6 +47,11 @@ export const leadsApi = {
     return response.data;
   },
 
+  async assignLead(id: string, agentId: string | null): Promise<LeadResponseDto> {
+    const response = await axiosClient.post<LeadResponseDto>(`/leads/${id}/assign`, { agentId });
+    return response.data;
+  },
+
   async deleteLead(id: string): Promise<void> {
     await axiosClient.delete(`/leads/${id}`);
   },

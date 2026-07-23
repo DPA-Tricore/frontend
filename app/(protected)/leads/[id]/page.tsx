@@ -81,6 +81,7 @@ export default function LeadDetailPage() {
         <LeadProfilePanel
           lead={lead}
           onStatusChange={(newStatus) => setLead((prev) => prev ? { ...prev, status: newStatus } : prev)}
+          onAssigneeChange={(agentId) => setLead((prev) => prev ? { ...prev, assignedAgentId: agentId ?? undefined } : prev)}
           onEditClick={() => {}}
         />
 
