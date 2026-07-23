@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import SidebarItem from './sidebar-item';
+import { useAuth } from '@/context/auth-context';
 import {
   BarChart3,
   TrendingUp,
@@ -13,12 +14,13 @@ import {
   Settings,
   FileBarChart,
   Search,
+  Users,
 } from 'lucide-react';
 import React from 'react';
 
 type MenuItem =
-  | { name: string; icon: React.ElementType; href: string }
-  | { name: string; icon: React.ElementType };
+  | { name: string; icon: React.ElementType; href: string; minRole?: string[] }
+  | { name: string; icon: React.ElementType; minRole?: string[] };
 
 const menuItems: MenuItem[] = [
   { name: 'Dashboard', icon: BarChart3, href: '/dashboard' },
@@ -30,6 +32,7 @@ const menuItems: MenuItem[] = [
   { name: 'Automations', icon: GitBranch, href: '/automations' },
   { name: 'Documents', icon: Paperclip, href: '/documents' },
   { name: 'Reports', icon: FileBarChart, href: '/reports' },
+  { name: 'Team', icon: Users, href: '/team', minRole: ['ORG_ADMIN'] },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 
@@ -39,10 +42,15 @@ interface SidebarNavProps {
 
 export default function SidebarNav({ isCollapsed }: SidebarNavProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const visibleItems = menuItems.filter(
+    (item) => !item.minRole || (user?.role && item.minRole.includes(user.role)),
+  );
 
   return (
     <nav className="flex-1 px-4 py-6 space-y-2">
-      {menuItems.map((item) => {
+      {visibleItems.map((item) => {
         const isActive =
           'href' in item &&
           (pathname === item.href ||
