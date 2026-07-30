@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
-import { usersApi } from '@/lib/api/users';
+import { useUsers } from '@/lib/hooks/use-users';
 import type { SearchEntityType } from '@/lib/types/search';
 import {
   LEAD_STATUSES,
@@ -14,8 +14,6 @@ import {
   AUTOMATION_STATUSES,
 } from '@/lib/types/search';
 import type { SearchPageState as PageState } from '@/lib/hooks/useSearchPage';
-
-interface User { id: string; email: string; }
 
 interface Props {
   tab: SearchEntityType | 'all';
@@ -42,13 +40,9 @@ const ASSIGNED_TO_TABS: SearchEntityType[] = ['lead', 'task'];
 
 export default function SearchFilters({ tab, filters, hasActiveFilters, onFiltersChange, onClear }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    if (isOpen && ASSIGNED_TO_TABS.includes(tab as SearchEntityType) && users.length === 0) {
-      usersApi.getUsers().then((u) => setUsers(u as User[])).catch(() => {});
-    }
-  }, [isOpen, tab, users.length]);
+  const { data: users = [] } = useUsers({
+    enabled: isOpen && ASSIGNED_TO_TABS.includes(tab as SearchEntityType),
+  });
 
   const statusOptions = STATUS_OPTIONS[tab as SearchEntityType];
   const entityTypeOptions = ENTITY_TYPE_OPTIONS[tab as SearchEntityType];

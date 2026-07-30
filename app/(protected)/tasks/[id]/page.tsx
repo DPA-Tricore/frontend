@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { tasksApi } from '@/lib/api/tasks';
-import { usersApi, UserResponseDto } from '@/lib/api/users';
 import type { TaskResponseDto } from '@/lib/types/tasks';
+import { useUsers } from '@/lib/hooks/use-users';
 import LoadingSpinner from '@/components/loading-spinner';
 import TaskTopBar from './components/task-top-bar';
 import TaskHero from './components/task-hero';
@@ -18,7 +18,7 @@ export default function TaskDetailPage() {
   const router = useRouter();
 
   const [task, setTask] = useState<TaskResponseDto | null>(null);
-  const [users, setUsers] = useState<UserResponseDto[]>([]);
+  const { data: users = [] } = useUsers();
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -37,7 +37,6 @@ export default function TaskDetailPage() {
 
   useEffect(() => {
     fetchTask();
-    usersApi.getUsers().then(setUsers).catch(() => {});
   }, [fetchTask]);
 
   const getUserEmail = (userId: string) =>

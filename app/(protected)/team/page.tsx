@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';
 import { teamsApi } from '@/lib/api/teams';
-import { usersApi } from '@/lib/api/users';
 import type { TeamResponseDto } from '@/lib/types/teams';
-import type { OrgUserResponseDto } from '@/lib/types/users';
+import { useUsers } from '@/lib/hooks/use-users';
+import { userKeys } from '@/lib/queries/keys';
 import LoadingSpinner from '@/components/loading-spinner';
 import TeamList from './components/team-list';
 import UserRoleTable from './components/user-role-table';
@@ -15,17 +16,20 @@ import AddUserForm from './components/add-user-form';
 export default function TeamPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [teams, setTeams] = useState<TeamResponseDto[]>([]);
-  const [users, setUsers] = useState<OrgUserResponseDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [teamsLoading, setTeamsLoading] = useState(true);
+  const { data: users = [], isLoading: usersLoading } = useUsers();
 
   const isOrgAdmin = user?.role === 'ORG_ADMIN';
 
   const refetch = useCallback(async () => {
-    const [teamsData, usersData] = await Promise.all([teamsApi.getTeams(), usersApi.getUsers()]);
+    const [teamsData] = await Promise.all([
+      teamsApi.getTeams(),
+      queryClient.invalidateQueries({ queryKey: userKeys.all }),
+    ]);
     setTeams(teamsData);
-    setUsers(usersData);
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     if (isAuthLoading) return;
@@ -33,11 +37,13 @@ export default function TeamPage() {
       router.replace('/dashboard');
       return;
     }
-    setIsLoading(true);
-    refetch().finally(() => setIsLoading(false));
+    setTeamsLoading(true);
+    refetch().finally(() => setTeamsLoading(false));
   }, [isAuthLoading, isOrgAdmin, refetch, router]);
 
   if (isAuthLoading || !isOrgAdmin) return <LoadingSpinner fullPage />;
+
+  const isLoading = teamsLoading || usersLoading;
 
   return (
     <div className="p-6 space-y-6">
