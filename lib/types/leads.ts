@@ -74,3 +74,36 @@ export interface CreateLeadRequest {
   reminderTimes?: string[];
   demoMode?: boolean;
 }
+
+export interface ExportLeadsParams {
+  search?: string;
+  status?: string;
+  leadType?: string;
+}
+
+// 'valid' = passed validation, not yet committed (dry-run only).
+// 'created' = actually written to the DB (commit only).
+// 'error' = failed validation or the write itself failed.
+// 'duplicate' = matched an existing lead or an earlier row in the file — always skipped.
+export type ImportRowStatus = 'created' | 'valid' | 'error' | 'duplicate';
+
+export interface ImportRowResultDto {
+  row: number;
+  status: ImportRowStatus;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  errors: string[];
+  warnings: string[];
+}
+
+export interface ImportResultDto {
+  dryRun: boolean;
+  totalRows: number;
+  validCount: number;
+  errorCount: number;
+  duplicateCount: number;
+  createdCount: number;
+  rows: ImportRowResultDto[];
+}

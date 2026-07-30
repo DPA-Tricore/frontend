@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { Upload } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { leadsApi, LeadResponseDto } from '@/lib/api/leads';
 import { PaginationMeta } from '@/lib/types/common';
@@ -14,6 +16,7 @@ import LeadBoardView from './components/lead-board-view';
 import LeadListView from './components/lead-list-view';
 import LeadCreateModal from './components/lead-create-modal';
 import LeadFilters from './components/lead-filters';
+import LeadExportButton from './components/lead-export-button';
 import ViewToggle, { type ViewMode } from './components/view-toggle';
 
 export default function LeadsPage() {
@@ -104,6 +107,20 @@ export default function LeadsPage() {
         actions={
           <>
             <ViewToggle />
+            <LeadExportButton
+              params={{
+                ...(search && { search }),
+                ...(statusFilter && { status: statusFilter }),
+                ...(leadTypeFilter && { leadType: leadTypeFilter }),
+              }}
+            />
+            <Link
+              href="/leads/import"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-lg transition-colors border-[var(--border)] text-primary hover:opacity-70"
+            >
+              <Upload size={14} />
+              Import CSV
+            </Link>
             <button onClick={() => setShowForm(true)} className={colors.button.primary}>
               + Add Lead
             </button>
