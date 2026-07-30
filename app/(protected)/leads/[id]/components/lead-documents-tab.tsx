@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { documentsApi, DocumentResponseDto } from '@/lib/api/documents';
 import { formatDate } from '@/lib/utils/date';
+import { useLeadDocuments, useUploadLeadDocument, useDeleteLeadDocument } from '@/lib/hooks/use-lead-detail';
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -23,28 +24,13 @@ interface Props {
 }
 
 export default function LeadDocumentsTab({ leadId }: Props) {
-  const [documents, setDocuments] = useState<DocumentResponseDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const { data: documents = [], isLoading: loading } = useLeadDocuments(leadId);
+  const uploadDocument = useUploadLeadDocument(leadId);
+  const deleteDocument = useDeleteLeadDocument(leadId);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const fetchDocuments = useCallback(async () => {
-    try {
-      setLoading(true);
-      setDocuments(await documentsApi.getLeadDocuments(leadId));
-    } catch {
-      setError('Failed to load documents');
-    } finally {
-      setLoading(false);
-    }
-  }, [leadId]);
-
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
 
   const uploadFile = async (file: File) => {
     if (file.size > 20 * 1024 * 1024) {
@@ -52,14 +38,10 @@ export default function LeadDocumentsTab({ leadId }: Props) {
       return;
     }
     try {
-      setUploading(true);
       setError(null);
-      const doc = await documentsApi.uploadLeadDocument(leadId, file);
-      setDocuments((prev) => [doc, ...prev]);
+      await uploadDocument.mutateAsync(file);
     } catch {
       setError('Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -89,8 +71,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
 
   const handleDelete = async (id: string) => {
     try {
-      await documentsApi.deleteDocument(id);
-      setDocuments((prev) => prev.filter((d) => d.id !== id));
+      await deleteDocument.mutateAsync(id);
     } catch {
       setError('Delete failed');
     }
@@ -111,7 +92,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         }`}
       >
         <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
-        {uploading ? (
+        {uploadDocument.isPending ? (
           <p className="text-sm text-subtle">Uploading...</p>
         ) : (
           <>

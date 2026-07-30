@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import {
   DndContext,
   DragEndEvent,
@@ -12,8 +12,10 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { leadsApi, LeadResponseDto } from '@/lib/api/leads';
-import BoardColumn from './lead-board-column';
+import { LeadResponseDto } from '@/lib/api/leads';
+import { useUpdateLeadStatus, useLeadsBoardSummary } from '@/lib/hooks/use-leads';
+import LoadingSpinner from '@/components/loading-spinner';
+import BoardColumnContainer from './lead-board-column-container';
 import LeadCard from './lead-card';
 
 const BOARD_COLUMNS: { status: string; label: string }[] = [
@@ -26,134 +28,35 @@ const BOARD_COLUMNS: { status: string; label: string }[] = [
   { status: 'UNRESPONSIVE', label: 'Unresponsive' },
 ];
 
-const LEADS_PER_COLUMN = 10;
-
-interface ColumnState {
-  leads: LeadResponseDto[];
-  page: number;
-  hasMore: boolean;
-  isLoading: boolean;
-  total: number;
-}
-
-type ColumnStates = Record<string, ColumnState>;
-
-interface LeadBoardViewProps {
-  onStatusChange: (leadId: string, newStatus: string, oldStatus: string) => void;
-}
-
-export default function LeadBoardView({ onStatusChange }: LeadBoardViewProps) {
-  const [columnStates, setColumnStates] = useState<ColumnStates>(
-    BOARD_COLUMNS.reduce(
-      (acc, { status }) => ({
-        ...acc,
-        [status]: { leads: [], page: 1, hasMore: true, isLoading: true, total: 0 },
-      }),
-      {} as ColumnStates,
-    ),
-  );
-
-  const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
+export default function LeadBoardView() {
+  const [activeLead, setActiveLead] = useState<LeadResponseDto | null>(null);
+  const updateLeadStatus = useUpdateLeadStatus();
+  // Seeds each column's cache with its first page — mounting columns before this
+  // resolves would make each one fire its own page-1 fetch, defeating the point.
+  const { isLoading: boardLoading } = useLeadsBoardSummary();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
   );
 
-  // Initial load for all columns
-  useEffect(() => {
-    BOARD_COLUMNS.forEach(({ status }) => {
-      loadLeads(status, 1);
-    });
-  }, []);
-
-  const loadLeads = useCallback(
-    async (status: string, page: number) => {
-      try {
-        setColumnStates((prev) => ({
-          ...prev,
-          [status]: { ...prev[status], isLoading: true },
-        }));
-
-        const response = await leadsApi.getLeads({
-          status,
-          page,
-          limit: LEADS_PER_COLUMN,
-        });
-
-        const paginatedResponse = response as any;
-        const newLeads = paginatedResponse.data || [];
-        const total = paginatedResponse.meta?.total || 0;
-        const hasMore = (paginatedResponse.meta?.page || 1) * LEADS_PER_COLUMN < total;
-
-        setColumnStates((prev) => ({
-          ...prev,
-          [status]: {
-            leads: page === 1 ? newLeads : [...prev[status].leads, ...newLeads],
-            page,
-            hasMore,
-            isLoading: false,
-            total,
-          },
-        }));
-      } catch (error) {
-        console.error(`Failed to load leads for ${status}:`, error);
-        setColumnStates((prev) => ({
-          ...prev,
-          [status]: { ...prev[status], isLoading: false },
-        }));
-      }
-    },
-    [],
-  );
-
-  const handleLoadMore = useCallback(
-    (status: string) => {
-      const state = columnStates[status];
-      if (!state.isLoading && state.hasMore) {
-        loadLeads(status, state.page + 1);
-      }
-    },
-    [columnStates, loadLeads],
-  );
-
-  const allLeads = Object.values(columnStates).flatMap((s) => s.leads);
-  const activeLead = allLeads.find((l) => l.id === activeLeadId) ?? null;
-
   const handleDragStart = ({ active }: DragStartEvent) => {
-    setActiveLeadId(active.id as string);
+    setActiveLead((active.data.current?.lead as LeadResponseDto) ?? null);
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    setActiveLeadId(null);
+    setActiveLead(null);
     if (!over) return;
-    const leadId = active.id as string;
+    const lead = active.data.current?.lead as LeadResponseDto | undefined;
     const newStatus = over.id as string;
-    const oldStatus = active.data.current?.status as string;
-    if (newStatus === oldStatus) return;
+    if (!lead || newStatus === lead.status) return;
 
-    // Find the lead in the old column
-    const leadToMove = columnStates[oldStatus].leads.find((l) => l.id === leadId);
-    if (!leadToMove) return;
-
-    // Update local state immediately for smooth UI
-    setColumnStates((prev) => ({
-      ...prev,
-      [oldStatus]: {
-        ...prev[oldStatus],
-        leads: prev[oldStatus].leads.filter((l) => l.id !== leadId),
-        total: prev[oldStatus].total - 1,
-      },
-      [newStatus]: {
-        ...prev[newStatus],
-        leads: [{ ...leadToMove, status: newStatus }, ...prev[newStatus].leads],
-        total: prev[newStatus].total + 1,
-      },
-    }));
-
-    // Call API to persist the change
-    onStatusChange(leadId, newStatus, oldStatus);
+    updateLeadStatus.mutate({ lead, newStatus });
   };
+
+  if (boardLoading) {
+    return <LoadingSpinner message="Loading board..." />;
+  }
 
   return (
     <DndContext
@@ -164,21 +67,9 @@ export default function LeadBoardView({ onStatusChange }: LeadBoardViewProps) {
     >
       <div className="overflow-x-auto pb-4 h-[calc(100vh-200px)]">
         <div className="flex gap-4 min-w-max h-full">
-          {BOARD_COLUMNS.map(({ status, label }) => {
-            const state = columnStates[status];
-            return (
-              <BoardColumn
-                key={status}
-                status={status}
-                label={label}
-                leads={state.leads}
-                isLoading={state.isLoading}
-                hasMore={state.hasMore}
-                totalCount={state.total}
-                onLoadMore={() => handleLoadMore(status)}
-              />
-            );
-          })}
+          {BOARD_COLUMNS.map(({ status, label }) => (
+            <BoardColumnContainer key={status} status={status} label={label} />
+          ))}
         </div>
       </div>
 

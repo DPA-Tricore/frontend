@@ -18,7 +18,7 @@ export interface LeadCardProps {
 export default function LeadCard({ lead, isOverlay = false }: LeadCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: lead.id,
-    data: { status: lead.status },
+    data: { lead },
   });
 
   const contact = getPrimaryContact(lead.contacts);

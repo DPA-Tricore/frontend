@@ -54,6 +54,16 @@ export interface PaginatedLeadResponse {
   meta: PaginationMeta;
 }
 
+export interface LeadBoardColumn {
+  status: string;
+  data: LeadResponseDto[];
+  meta: PaginationMeta;
+}
+
+export interface LeadBoardResponse {
+  columns: LeadBoardColumn[];
+}
+
 export interface ListLeadsParams {
   page?: number;
   limit?: number;

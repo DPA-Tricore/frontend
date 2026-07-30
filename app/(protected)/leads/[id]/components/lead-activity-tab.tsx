@@ -1,64 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { tasksApi } from '@/lib/api/tasks';
-import { reminderAPI } from '@/lib/api/reminders';
-import { documentsApi } from '@/lib/api/documents';
-import { activitiesApi } from '@/lib/api/activities';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
 import type { DocumentResponseDto } from '@/lib/types/documents';
 import type { ActivityResponseDto } from '@/lib/types/activities';
 import { getStatusColor, getPriorityColor } from '@/lib/theme/colors';
 import { formatDate, formatTime } from '@/lib/utils/date';
-
-type ActivityKind = 'task' | 'reminder' | 'document' | 'activity';
-
-interface ActivityItem {
-  id: string;
-  kind: ActivityKind;
-  date: string;
-  task?: TaskResponseDto;
-  reminder?: ReminderResponseDto;
-  document?: DocumentResponseDto;
-  activity?: ActivityResponseDto;
-}
-
-function buildFeed(
-  tasks: TaskResponseDto[],
-  reminders: ReminderResponseDto[],
-  documents: DocumentResponseDto[],
-  activities: ActivityResponseDto[],
-): ActivityItem[] {
-  const items: ActivityItem[] = [
-    ...tasks.map((t) => ({ id: `task-${t.id}`, kind: 'task' as const, date: String(t.createdAt), task: t })),
-    ...reminders.map((r) => ({ id: `rem-${r.id}`, kind: 'reminder' as const, date: r.createdAt, reminder: r })),
-    ...documents.map((d) => ({ id: `doc-${d.id}`, kind: 'document' as const, date: d.createdAt, document: d })),
-    ...activities.map((a) => ({ id: `act-${a.id}`, kind: 'activity' as const, date: a.createdAt, activity: a })),
-  ];
-  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
+import { useLeadActivityFeed } from '@/lib/hooks/use-lead-detail';
 
 interface LeadActivityTabProps {
   leadId: string;
 }
 
 export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
-  const [feed, setFeed] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: feed = [], isLoading } = useLeadActivityFeed(leadId);
 
-  useEffect(() => {
-    Promise.all([
-      tasksApi.getTasksByLeadId(leadId).catch(() => [] as TaskResponseDto[]),
-      reminderAPI.list({ leadId, limit: 50 }).then((r) => r.data).catch(() => [] as ReminderResponseDto[]),
-      documentsApi.getLeadDocuments(leadId).catch(() => [] as DocumentResponseDto[]),
-      activitiesApi.list({ entityType: 'LEAD', entityId: leadId }).catch(() => [] as ActivityResponseDto[]),
-    ]).then(([tasks, reminders, documents, activities]) => {
-      setFeed(buildFeed(tasks, reminders, documents, activities));
-    }).finally(() => setLoading(false));
-  }, [leadId]);
-
-  if (loading) return <p className="text-sm text-subtle">Loading activity...</p>;
+  if (isLoading) return <p className="text-sm text-subtle">Loading activity...</p>;
 
   if (feed.length === 0) {
     return (

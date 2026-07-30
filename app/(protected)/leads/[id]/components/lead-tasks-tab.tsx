@@ -1,27 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { tasksApi } from '@/lib/api/tasks';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import { getStatusColor, getPriorityColor, getTaskTypeColor } from '@/lib/theme/colors';
 import { formatDate } from '@/lib/utils/date';
+import { useLeadTasks } from '@/lib/hooks/use-lead-detail';
 
 interface LeadTasksTabProps {
   leadId: string;
 }
 
 export default function LeadTasksTab({ leadId }: LeadTasksTabProps) {
-  const [tasks, setTasks] = useState<TaskResponseDto[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tasks = [], isLoading } = useLeadTasks(leadId);
 
-  useEffect(() => {
-    tasksApi.getTasksByLeadId(leadId)
-      .then(setTasks)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [leadId]);
-
-  if (loading) return <p className="text-sm text-subtle">Loading tasks...</p>;
+  if (isLoading) return <p className="text-sm text-subtle">Loading tasks...</p>;
 
   if (tasks.length === 0) {
     return (

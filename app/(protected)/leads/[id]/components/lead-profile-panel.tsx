@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { leadsApi, LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
-import { usersApi } from '@/lib/api/users';
-import type { OrgUserResponseDto } from '@/lib/types/users';
+import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { useAuth } from '@/context/auth-context';
 import { getStatusColor } from '@/lib/theme/colors';
+import { useUpdateLeadStatus, useAssignLead } from '@/lib/hooks/use-leads';
+import { useUsers } from '@/lib/hooks/use-users';
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
 const AVATAR_COLORS = [
@@ -51,49 +50,29 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface LeadProfilePanelProps {
   lead: LeadResponseDto;
-  onStatusChange: (newStatus: string) => void;
-  onAssigneeChange: (agentId: string | null) => void;
   onEditClick: () => void;
 }
 
 const ASSIGNABLE_ROLES = ['AGENT', 'MANAGER'];
 const CAN_ASSIGN_ROLES = ['ORG_ADMIN', 'MANAGER'];
 
-export default function LeadProfilePanel({ lead, onStatusChange, onAssigneeChange, onEditClick }: LeadProfilePanelProps) {
+export default function LeadProfilePanel({ lead, onEditClick }: LeadProfilePanelProps) {
   const { user } = useAuth();
-  const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [updatingAssignee, setUpdatingAssignee] = useState(false);
-  const [agents, setAgents] = useState<OrgUserResponseDto[]>([]);
+  const { data: users = [] } = useUsers();
+  const agents = users.filter((u) => u.isActive && ASSIGNABLE_ROLES.includes(u.role));
+  const updateStatus = useUpdateLeadStatus();
+  const assignLead = useAssignLead();
   const initials = `${lead.firstName[0] ?? ''}${lead.lastName[0] ?? ''}`.toUpperCase();
   const fullName = `${lead.firstName} ${lead.lastName}`;
   const canAssign = !!user?.role && CAN_ASSIGN_ROLES.includes(user.role);
 
-  useEffect(() => {
-    usersApi.getUsers()
-      .then((users) => setAgents(users.filter((u) => u.isActive && ASSIGNABLE_ROLES.includes(u.role))))
-      .catch(() => {});
-  }, []);
-
-  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value;
-    setUpdatingStatus(true);
-    try {
-      await leadsApi.updateLead(lead.id, { status: newStatus });
-      onStatusChange(newStatus);
-    } finally {
-      setUpdatingStatus(false);
-    }
+  const handleStatusChange = (newStatus: string) => {
+    updateStatus.mutate({ lead, newStatus });
   };
 
-  const handleAssigneeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleAssigneeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const agentId = e.target.value || null;
-    setUpdatingAssignee(true);
-    try {
-      await leadsApi.assignLead(lead.id, agentId);
-      onAssigneeChange(agentId);
-    } finally {
-      setUpdatingAssignee(false);
-    }
+    assignLead.mutate({ id: lead.id, agentId });
   };
 
   const assignedAgentEmail = agents.find((a) => a.id === lead.assignedAgentId)?.email;
@@ -112,8 +91,8 @@ export default function LeadProfilePanel({ lead, onStatusChange, onAssigneeChang
         <div className="mt-3">
           <select
             value={lead.status}
-            onChange={handleStatusChange}
-            disabled={updatingStatus}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            disabled={updateStatus.isPending}
             className={`w-full text-xs font-medium px-3 py-1.5 rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-blue-500 text-center appearance-none ${getStatusColor(lead.status)} disabled:opacity-60`}
           >
             {LEAD_STATUSES.map((s) => (
@@ -132,16 +111,8 @@ export default function LeadProfilePanel({ lead, onStatusChange, onAssigneeChang
           </button>
           {lead.status !== 'CONVERTED' && (
             <button
-              onClick={async () => {
-                setUpdatingStatus(true);
-                try {
-                  await leadsApi.updateLead(lead.id, { status: 'CONVERTED' });
-                  onStatusChange('CONVERTED');
-                } finally {
-                  setUpdatingStatus(false);
-                }
-              }}
-              disabled={updatingStatus}
+              onClick={() => handleStatusChange('CONVERTED')}
+              disabled={updateStatus.isPending}
               className="flex-1 text-xs px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
             >
               Convert
@@ -149,16 +120,8 @@ export default function LeadProfilePanel({ lead, onStatusChange, onAssigneeChang
           )}
           {lead.status !== 'LOST' && (
             <button
-              onClick={async () => {
-                setUpdatingStatus(true);
-                try {
-                  await leadsApi.updateLead(lead.id, { status: 'LOST' });
-                  onStatusChange('LOST');
-                } finally {
-                  setUpdatingStatus(false);
-                }
-              }}
-              disabled={updatingStatus}
+              onClick={() => handleStatusChange('LOST')}
+              disabled={updateStatus.isPending}
               className="flex-1 text-xs px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors font-medium disabled:opacity-50"
             >
               Lost
@@ -192,7 +155,7 @@ export default function LeadProfilePanel({ lead, onStatusChange, onAssigneeChang
           <select
             value={lead.assignedAgentId ?? ''}
             onChange={handleAssigneeChange}
-            disabled={updatingAssignee}
+            disabled={assignLead.isPending}
             className="w-full text-xs px-3 py-2 rounded-lg border border-[var(--border)] bg-transparent text-primary cursor-pointer focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
           >
             <option value="">Unassigned</option>

@@ -6,6 +6,7 @@ import type {
   CreateLeadRequest,
   ExportLeadsParams,
   ImportResultDto,
+  LeadBoardResponse,
 } from '@/lib/types/leads';
 
 export type {
@@ -18,6 +19,8 @@ export type {
   ImportRowStatus,
   ImportRowResultDto,
   ImportResultDto,
+  LeadBoardColumn,
+  LeadBoardResponse,
 } from '@/lib/types/leads';
 export { ContactType } from '@/lib/types/leads';
 
@@ -47,6 +50,12 @@ export const leadsApi = {
     }
     const url = queryParams.toString() ? `/leads?${queryParams}` : '/leads';
     const response = await axiosClient.get<PaginatedLeadResponse | LeadResponseDto[]>(url);
+    return response.data;
+  },
+
+  /** First page of every status column + totals, in one call — backs the board view. */
+  async getLeadsBoard(): Promise<LeadBoardResponse> {
+    const response = await axiosClient.get<LeadBoardResponse>('/leads/board');
     return response.data;
   },
 

@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { reminderAPI } from '@/lib/api/reminders';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
 import { formatDate, formatTime } from '@/lib/utils/date';
+import { useLeadReminders } from '@/lib/hooks/use-lead-detail';
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
@@ -18,17 +17,9 @@ interface LeadRemindersTabProps {
 }
 
 export default function LeadRemindersTab({ leadId }: LeadRemindersTabProps) {
-  const [reminders, setReminders] = useState<ReminderResponseDto[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: reminders = [], isLoading } = useLeadReminders(leadId);
 
-  useEffect(() => {
-    reminderAPI.list({ leadId, limit: 50, sortBy: 'reminderTime', sortOrder: 'asc' })
-      .then((res) => setReminders(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [leadId]);
-
-  if (loading) return <p className="text-sm text-subtle">Loading reminders...</p>;
+  if (isLoading) return <p className="text-sm text-subtle">Loading reminders...</p>;
 
   if (reminders.length === 0) {
     return (

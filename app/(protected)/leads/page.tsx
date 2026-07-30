@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Upload } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { leadsApi, LeadResponseDto } from '@/lib/api/leads';
-import { PaginationMeta } from '@/lib/types/common';
 import { colors } from '@/lib/theme/colors';
+import { useLeadsList } from '@/lib/hooks/use-leads';
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
 import PageHeader from '@/components/page-header';
@@ -23,15 +23,12 @@ export default function LeadsPage() {
   const searchParams = useSearchParams();
   const view: ViewMode = searchParams.get('view') === 'list' ? 'list' : 'board';
 
-  const [leads, setLeads] = useState<LeadResponseDto[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput, 300);
   const [sortBy, setSortBy] = useState<
     'createdAt' | 'firstName' | 'lastName' | 'status' | 'leadType'
   >('createdAt');
@@ -39,37 +36,26 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [leadTypeFilter, setLeadTypeFilter] = useState('');
 
-  const fetchLeads = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await leadsApi.getLeads({
-        page,
-        limit,
-        ...(search && { search }),
-        sortBy,
-        sortOrder,
-        ...(statusFilter && { status: statusFilter }),
-        ...(leadTypeFilter && { leadType: leadTypeFilter }),
-      });
+  const {
+    data,
+    isLoading: loading,
+    isError,
+  } = useLeadsList(
+    {
+      page,
+      limit,
+      ...(search && { search }),
+      sortBy,
+      sortOrder,
+      ...(statusFilter && { status: statusFilter }),
+      ...(leadTypeFilter && { leadType: leadTypeFilter }),
+    },
+    { enabled: view === 'list' },
+  );
 
-      if ((response as any).data) {
-        setLeads((response as any).data);
-        setMeta((response as any).meta);
-      } else {
-        setLeads(response as any);
-        setMeta(null);
-      }
-      setError(null);
-    } catch {
-      setError('Failed to fetch leads');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, search, sortBy, sortOrder, statusFilter, leadTypeFilter]);
-
-  useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
+  const leads = data?.data ?? [];
+  const meta = data?.meta ?? null;
+  const error = isError ? 'Failed to fetch leads' : null;
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -80,23 +66,6 @@ export default function LeadsPage() {
     }
     setPage(1);
   };
-
-  const handleStatusChange = useCallback(
-    async (leadId: string, newStatus: string, oldStatus: string) => {
-      setLeads((prev) =>
-        prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)),
-      );
-      try {
-        await leadsApi.updateLead(leadId, { status: newStatus });
-      } catch {
-        setLeads((prev) =>
-          prev.map((l) => (l.id === leadId ? { ...l, status: oldStatus } : l)),
-        );
-        setError('Failed to update lead status');
-      }
-    },
-    [],
-  );
 
   return (
     <div className="p-8">
@@ -131,17 +100,17 @@ export default function LeadsPage() {
       <LeadCreateModal
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        onCreated={() => { setPage(1); fetchLeads(); }}
+        onCreated={() => setPage(1)}
       />
 
       {view === 'list' && (
         <>
           <LeadFilters
-            search={search}
+            search={searchInput}
             statusFilter={statusFilter}
             leadTypeFilter={leadTypeFilter}
             sortBy={sortBy}
-            onSearch={(v) => { setSearch(v); setPage(1); }}
+            onSearch={(v) => { setSearchInput(v); setPage(1); }}
             onStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
             onLeadTypeFilter={(v) => { setLeadTypeFilter(v); setPage(1); }}
             onSortChange={(v) => setSortBy(v as any)}
@@ -150,9 +119,9 @@ export default function LeadsPage() {
         </>
       )}
 
-      {loading ? (
+      {view === 'list' && loading ? (
         <LoadingSpinner message="Loading leads..." />
-      ) : leads.length === 0 ? (
+      ) : view === 'list' && leads.length === 0 ? (
         <EmptyState
           message={search ? 'No leads found. Try adjusting your search.' : 'Create your first lead to get started!'}
         />
@@ -166,7 +135,7 @@ export default function LeadsPage() {
             transition={{ duration: 0.15, ease: 'easeInOut' }}
           >
             {view === 'board' ? (
-              <LeadBoardView onStatusChange={handleStatusChange} />
+              <LeadBoardView />
             ) : (
               <LeadListView
                 leads={leads}

@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { leadsApi, LeadResponseDto } from '@/lib/api/leads';
-import { tasksApi } from '@/lib/api/tasks';
-import { documentsApi } from '@/lib/api/documents';
+import { useLead } from '@/lib/hooks/use-lead-detail';
 import LoadingSpinner from '@/components/loading-spinner';
 import LeadProfilePanel from './components/lead-profile-panel';
 import LeadStatsBar from './components/lead-stats-bar';
@@ -26,35 +24,14 @@ export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
-  const [lead, setLead] = useState<LeadResponseDto | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('activity');
-  const [openTasksCount, setOpenTasksCount] = useState(0);
-  const [documentsCount, setDocumentsCount] = useState(0);
-
-  const fetchLead = useCallback(async () => {
-    try {
-      const data = await leadsApi.getLead(id);
-      setLead(data);
-    } catch {
-      router.push('/leads');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, router]);
+  const { data: lead, isLoading, isError } = useLead(id);
 
   useEffect(() => {
-    fetchLead();
-    // Fetch counts for stats bar
-    tasksApi.getTasksByLeadId(id)
-      .then((tasks) => setOpenTasksCount(tasks.filter((t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED').length))
-      .catch(() => {});
-    documentsApi.getLeadDocuments(id)
-      .then((docs) => setDocumentsCount(docs.length))
-      .catch(() => {});
-  }, [id, fetchLead]);
+    if (isError) router.push('/leads');
+  }, [isError, router]);
 
-  if (loading) return <LoadingSpinner message="Loading lead..." />;
+  if (isLoading) return <LoadingSpinner message="Loading lead..." />;
   if (!lead) return null;
 
   return (
@@ -69,21 +46,15 @@ export default function LeadDetailPage() {
 
       {/* Stats bar */}
       <LeadStatsBar
+        leadId={id}
         createdAt={lead.createdAt}
         lastContactedAt={lead.lastContactedAt}
-        openTasksCount={openTasksCount}
-        documentsCount={documentsCount}
       />
 
       {/* 2-column layout */}
       <div className="flex gap-6 items-start">
         {/* Left: profile panel */}
-        <LeadProfilePanel
-          lead={lead}
-          onStatusChange={(newStatus) => setLead((prev) => prev ? { ...prev, status: newStatus } : prev)}
-          onAssigneeChange={(agentId) => setLead((prev) => prev ? { ...prev, assignedAgentId: agentId ?? undefined } : prev)}
-          onEditClick={() => {}}
-        />
+        <LeadProfilePanel lead={lead} onEditClick={() => {}} />
 
         {/* Right: tabs */}
         <div className="flex-1 min-w-0">

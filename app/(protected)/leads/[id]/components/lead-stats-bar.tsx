@@ -1,5 +1,7 @@
 'use client';
 
+import { useLeadTasks, useLeadDocuments } from '@/lib/hooks/use-lead-detail';
+
 interface Stat {
   label: string;
   value: string | number;
@@ -7,22 +9,23 @@ interface Stat {
 }
 
 interface LeadStatsBarProps {
+  leadId: string;
   createdAt: string;
   lastContactedAt?: string | null;
-  openTasksCount: number;
-  documentsCount: number;
 }
 
 function daysSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
 }
 
-export default function LeadStatsBar({
-  createdAt,
-  lastContactedAt,
-  openTasksCount,
-  documentsCount,
-}: LeadStatsBarProps) {
+export default function LeadStatsBar({ leadId, createdAt, lastContactedAt }: LeadStatsBarProps) {
+  const { data: tasks } = useLeadTasks(leadId);
+  const { data: documents } = useLeadDocuments(leadId);
+  const openTasksCount = (tasks ?? []).filter(
+    (t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED',
+  ).length;
+  const documentsCount = (documents ?? []).length;
+
   const stats: Stat[] = [
     {
       label: 'Days in pipeline',

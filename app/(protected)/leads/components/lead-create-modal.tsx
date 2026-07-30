@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { leadsApi } from '@/lib/api/leads';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
+import { useCreateLead } from '@/lib/hooks/use-leads';
 
 function formatDateTime(isoString: string): string {
   return new Date(isoString).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
@@ -26,6 +26,7 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const [reminderTimeInput, setReminderTimeInput] = useState('');
   const [demoMode, setDemoMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const createLead = useCreateLead();
 
   const reset = () => {
     setFormData({ firstName: '', lastName: '', leadType: 'PROSPECT', status: 'NEW' });
@@ -59,7 +60,7 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await leadsApi.createLead({
+      await createLead.mutateAsync({
         ...formData,
         ...(reminderTimes.length > 0 && {
           reminderTimes: reminderTimes.map((t) => new Date(t).toISOString()),
