@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { tasksApi } from '@/lib/api/tasks';
-import { usersApi, UserResponseDto } from '@/lib/api/users';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import { PaginationMeta } from '@/lib/types/common';
 import { colors } from '@/lib/theme/colors';
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
+import { useUsers } from '@/lib/hooks/use-users';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -27,34 +28,20 @@ export default function TasksPage() {
   const view: ViewMode = searchParams.get('view') === 'list' ? 'list' : 'board';
 
   const [tasks, setTasks] = useState<TaskResponseDto[]>([]);
-  const [users, setUsers] = useState<UserResponseDto[]>([]);
+  const { data: users = [], isLoading: usersLoading } = useUsers();
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [usersLoading, setUsersLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput, 300);
   const [sortBy, setSortBy] = useState<SortField>('dueDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-
-  useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        setUsersLoading(true);
-        setUsers(await usersApi.getUsers());
-      } catch {
-        // non-critical
-      } finally {
-        setUsersLoading(false);
-      }
-    };
-    loadUsers();
-  }, []);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -101,17 +88,6 @@ export default function TasksPage() {
   const getUserEmail = (userId: string) =>
     users.find((u) => u.id === userId)?.email ?? 'Unknown User';
 
-  const handleStatusChange = useCallback(
-    async (taskId: string, newStatus: string, oldStatus: string) => {
-      try {
-        await tasksApi.updateTask(taskId, { status: newStatus });
-      } catch {
-        setError('Failed to update task status');
-      }
-    },
-    [],
-  );
-
   return (
     <div className="p-8">
       <PageHeader
@@ -131,12 +107,12 @@ export default function TasksPage() {
       {view === 'list' && (
         <>
           <TaskFilters
-            search={search}
+            search={searchInput}
             statusFilter={statusFilter}
             priorityFilter={priorityFilter}
             typeFilter={typeFilter}
             sortBy={sortBy}
-            onSearch={(v) => { setSearch(v); setPage(1); }}
+            onSearch={(v) => { setSearchInput(v); setPage(1); }}
             onStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
             onPriorityFilter={(v) => { setPriorityFilter(v); setPage(1); }}
             onTypeFilter={(v) => { setTypeFilter(v); setPage(1); }}
@@ -155,7 +131,7 @@ export default function TasksPage() {
           transition={{ duration: 0.15, ease: 'easeInOut' }}
         >
           {view === 'board' ? (
-            <TaskBoardView users={users} onStatusChange={handleStatusChange} />
+            <TaskBoardView users={users} />
           ) : loading ? (
             <LoadingSpinner message="Loading tasks..." />
           ) : tasks.length === 0 ? (

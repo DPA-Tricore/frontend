@@ -15,7 +15,7 @@ interface TaskCardProps {
 export default function TaskCard({ task, getUserEmail, isOverlay = false }: TaskCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
-    data: { status: task.status },
+    data: { task },
   });
 
   const isOverdue =

@@ -4,9 +4,16 @@ import type {
   PaginatedTaskResponse,
   ListTasksParams,
   CreateTaskRequest,
+  TaskBoardResponse,
 } from '@/lib/types/tasks';
 
 export const tasksApi = {
+  /** First page of every status column + totals, in one call — backs the board view. */
+  async getTasksBoard(): Promise<TaskBoardResponse> {
+    const response = await axiosClient.get<TaskBoardResponse>('/tasks/board');
+    return response.data;
+  },
+
   async getTasks(params?: ListTasksParams): Promise<PaginatedTaskResponse | TaskResponseDto[]> {
     const query = new URLSearchParams();
     if (params) {

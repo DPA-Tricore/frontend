@@ -28,6 +28,16 @@ export interface PaginatedTaskResponse {
   meta: PaginationMeta;
 }
 
+export interface TaskBoardColumn {
+  status: string;
+  data: TaskResponseDto[];
+  meta: PaginationMeta;
+}
+
+export interface TaskBoardResponse {
+  columns: TaskBoardColumn[];
+}
+
 export interface ListTasksParams {
   page?: number;
   limit?: number;
