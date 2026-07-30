@@ -5,6 +5,7 @@ import { documentsApi } from '@/lib/api/documents';
 import type { DocumentResponseDto } from '@/lib/types/documents';
 import { PaginationMeta } from '@/lib/types/common';
 import { colors } from '@/lib/theme/colors';
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -23,7 +24,8 @@ export default function DocumentsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput, 300);
   const [sortBy, setSortBy] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -75,9 +77,9 @@ export default function DocumentsPage() {
       />
 
       <DocumentFilters
-        search={search}
+        search={searchInput}
         sortBy={sortBy}
-        onSearch={(v) => { setSearch(v); setPage(1); }}
+        onSearch={(v) => { setSearchInput(v); setPage(1); }}
         onSortChange={(v) => { setSortBy(v); setPage(1); }}
       />
 

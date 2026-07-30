@@ -9,6 +9,7 @@ import { reminderAPI } from '@/lib/api/reminders';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
 import { PaginationMeta } from '@/lib/types/common';
 import { colors } from '@/lib/theme/colors';
+import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -40,7 +41,8 @@ export default function RemindersPage() {
   const [createAtDate, setCreateAtDate] = useState<Date | null>(null);
 
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput, 300);
   const [sortBy, setSortBy] = useState<SortField>('reminderTime');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [statusFilter, setStatusFilter] = useState('');
@@ -198,10 +200,10 @@ export default function RemindersPage() {
       {view === 'list' && (
         <>
           <ReminderFilters
-            search={search}
+            search={searchInput}
             statusFilter={statusFilter}
             sortBy={sortBy}
-            onSearch={(v) => { setSearch(v); setPage(1); }}
+            onSearch={(v) => { setSearchInput(v); setPage(1); }}
             onStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
             onSortChange={(v) => { setSortBy(v); setPage(1); }}
           />
