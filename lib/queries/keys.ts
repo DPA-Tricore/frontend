@@ -1,4 +1,5 @@
 import type { ListLeadsParams } from '@/lib/types/leads';
+import type { ListRemindersParams } from '@/lib/types/reminders';
 
 export type LeadListFilters = Omit<ListLeadsParams, 'status'> & { status?: string };
 
@@ -27,7 +28,10 @@ export const leadActivityKeys = {
 };
 
 export const reminderKeys = {
-  pending: () => ['reminders', 'pending'] as const,
+  all: ['reminders'] as const,
+  pending: () => [...reminderKeys.all, 'pending'] as const,
+  list: (filters: ListRemindersParams) => [...reminderKeys.all, 'list', filters] as const,
+  calendar: () => [...reminderKeys.all, 'calendar'] as const,
 };
 
 export const taskKeys = {

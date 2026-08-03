@@ -1,15 +1,23 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { Bell } from 'lucide-react';
-import { reminderAPI } from '@/lib/api/reminders';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
-import { PaginationMeta } from '@/lib/types/common';
 import { colors } from '@/lib/theme/colors';
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
+import {
+  useRemindersList,
+  useRemindersCalendar,
+  useAcknowledgeReminder,
+  useDismissReminder,
+  useDeleteReminder,
+  useRescheduleReminder,
+} from '@/lib/hooks/use-reminders-page';
+import { reminderKeys } from '@/lib/queries/keys';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -27,16 +35,12 @@ const ReminderCalendarView = dynamic(() => import('./components/reminder-calenda
 type SortField = 'reminderTime' | 'dueDate' | 'title' | 'status' | 'createdAt';
 
 const LIMIT = 10;
-const CALENDAR_LIMIT = 200;
 
 export default function RemindersPage() {
   const searchParams = useSearchParams();
   const view: ViewMode = searchParams.get('view') === 'list' ? 'list' : 'calendar';
+  const queryClient = useQueryClient();
 
-  const [reminders, setReminders] = useState<ReminderResponseDto[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [createAtDate, setCreateAtDate] = useState<Date | null>(null);
 
@@ -47,57 +51,36 @@ export default function RemindersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const [calendarReminders, setCalendarReminders] = useState<ReminderResponseDto[]>([]);
-  const [calendarLoading, setCalendarLoading] = useState(true);
+  const {
+    data: listData,
+    isLoading: loading,
+    isError: listErrored,
+  } = useRemindersList(
+    {
+      page,
+      limit: LIMIT,
+      ...(search && { search }),
+      sortBy,
+      sortOrder,
+      ...(statusFilter && { status: statusFilter }),
+    },
+    { enabled: view === 'list' },
+  );
+  const reminders = listData?.data ?? [];
+  const meta = listData?.meta ?? null;
 
-  const fetchReminders = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await reminderAPI.list({
-        page,
-        limit: LIMIT,
-        ...(search && { search }),
-        sortBy,
-        sortOrder,
-        ...(statusFilter && { status: statusFilter }),
-      });
-      setReminders(response.data);
-      setMeta(response.meta);
-      setError(null);
-    } catch {
-      setError('Failed to fetch reminders');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, sortBy, sortOrder, statusFilter]);
+  const {
+    data: calendarReminders = [],
+    isLoading: calendarLoading,
+    isError: calendarErrored,
+  } = useRemindersCalendar({ enabled: view === 'calendar' });
 
-  // Calendar view shows every reminder (not just the current page/filter) so a
-  // month grid isn't missing entries; ListRemindersParams has no date-range
-  // filter yet, so this fetches a generous page instead of the true range.
-  const fetchCalendarReminders = useCallback(async () => {
-    try {
-      setCalendarLoading(true);
-      const response = await reminderAPI.list({
-        limit: CALENDAR_LIMIT,
-        sortBy: 'dueDate',
-        sortOrder: 'asc',
-      });
-      setCalendarReminders(response.data);
-      setError(null);
-    } catch {
-      setError('Failed to fetch reminders');
-    } finally {
-      setCalendarLoading(false);
-    }
-  }, []);
+  const error = listErrored || calendarErrored ? 'Failed to fetch reminders' : null;
 
-  useEffect(() => {
-    if (view === 'calendar') {
-      fetchCalendarReminders();
-    } else {
-      fetchReminders();
-    }
-  }, [view, fetchReminders, fetchCalendarReminders]);
+  const acknowledgeReminder = useAcknowledgeReminder();
+  const dismissReminder = useDismissReminder();
+  const deleteReminder = useDeleteReminder();
+  const rescheduleReminder = useRescheduleReminder();
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -108,71 +91,19 @@ export default function RemindersPage() {
     }
   };
 
-  // Calendar mutations patch calendarReminders in place with the server's
-  // response instead of refetching: refetching flips calendarLoading, which
-  // unmounts/remounts the whole calendar (losing drag state, view, scroll
-  // position) and reads as a flicker instead of a smooth update.
-  const handleAcknowledge = async (id: string) => {
-    try {
-      const updated = await reminderAPI.acknowledge(id);
-      if (view === 'calendar') {
-        setCalendarReminders((rs) => rs.map((r) => (r.id === id ? updated : r)));
-      } else {
-        fetchReminders();
-      }
-    } catch {
-      setError('Failed to acknowledge reminder');
-    }
-  };
-
-  const handleDismiss = async (id: string) => {
-    try {
-      const updated = await reminderAPI.dismiss(id);
-      if (view === 'calendar') {
-        setCalendarReminders((rs) => rs.map((r) => (r.id === id ? updated : r)));
-      } else {
-        fetchReminders();
-      }
-    } catch {
-      setError('Failed to dismiss reminder');
-    }
-  };
-
-  const handleDelete = async (id: string) => {
+  const handleAcknowledge = (id: string) => acknowledgeReminder.mutate(id);
+  const handleDismiss = (id: string) => dismissReminder.mutate(id);
+  const handleDelete = (id: string) => {
     if (!confirm('Are you sure you want to delete this reminder?')) return;
-    try {
-      await reminderAPI.delete(id);
-      if (view === 'calendar') {
-        setCalendarReminders((rs) => rs.filter((r) => r.id !== id));
-      } else {
-        fetchReminders();
-      }
-    } catch {
-      setError('Failed to delete reminder');
-    }
+    deleteReminder.mutate(id);
+  };
+  const handleReschedule = (id: string, reminderTime: string) => {
+    rescheduleReminder.mutate({ id, reminderTime });
   };
 
   const handleCreateAt = (atDate: Date) => {
     setCreateAtDate(atDate);
     setShowModal(true);
-  };
-
-  const handleReschedule = async (id: string, reminderTime: string) => {
-    // Apply the new position immediately: react-big-calendar's drag preview
-    // already shows the event at the drop target, so waiting for the network
-    // round-trip before updating state means it snaps back to the old slot
-    // for a moment, then jumps to the new one once the request resolves.
-    const previous = calendarReminders;
-    setCalendarReminders((rs) =>
-      rs.map((r) => (r.id === id ? { ...r, reminderTime, dueDate: reminderTime } : r))
-    );
-    try {
-      const updated = await reminderAPI.update(id, { reminderTime, dueDate: reminderTime });
-      setCalendarReminders((rs) => rs.map((r) => (r.id === id ? updated : r)));
-    } catch {
-      setCalendarReminders(previous);
-      setError('Failed to reschedule reminder');
-    }
   };
 
   return (
@@ -268,9 +199,11 @@ export default function RemindersPage() {
           setShowModal(false);
           setCreateAtDate(null);
           if (view === 'calendar') {
-            setCalendarReminders((rs) => [...rs, created]);
+            queryClient.setQueryData<ReminderResponseDto[]>(reminderKeys.calendar(), (old) =>
+              old ? [...old, created] : [created],
+            );
           } else {
-            fetchReminders();
+            queryClient.invalidateQueries({ queryKey: [...reminderKeys.all, 'list'] });
           }
         }}
       />
