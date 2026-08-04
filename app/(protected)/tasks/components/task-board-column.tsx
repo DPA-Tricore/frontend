@@ -47,7 +47,7 @@ export default function TaskBoardColumn({
     <div
       ref={setNodeRef}
       className={[
-        'surface rounded-lg border flex flex-col transition-colors h-full min-w-0',
+        'w-64 flex-shrink-0 surface rounded-lg border flex flex-col transition-colors h-full',
         isOver ? 'border-blue-400 ring-2 ring-blue-200' : 'border-[var(--border)]',
       ].join(' ')}
     >

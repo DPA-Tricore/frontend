@@ -71,8 +71,8 @@ export default function TaskBoardView({ users }: TaskBoardViewProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="pb-4 h-[calc(100vh-200px)]">
-        <div className="grid grid-cols-5 gap-4 h-full">
+      <div className="overflow-x-auto pb-4 h-[calc(100vh-200px)]">
+        <div className="flex gap-4 min-w-max h-full">
           {BOARD_COLUMNS.map(({ status, label }) => (
             <TaskBoardColumnContainer
               key={status}
