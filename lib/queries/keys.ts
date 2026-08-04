@@ -1,6 +1,5 @@
 import type { ListLeadsParams } from '@/lib/types/leads';
 import type { ListRemindersParams } from '@/lib/types/reminders';
-import type { ListTasksParams } from '@/lib/types/tasks';
 
 export type LeadListFilters = Omit<ListLeadsParams, 'status'> & { status?: string };
 
@@ -37,7 +36,6 @@ export const reminderKeys = {
 
 export const taskKeys = {
   all: ['tasks'] as const,
-  list: (filters: ListTasksParams) => [...taskKeys.all, 'list', filters] as const,
   boardSummary: () => [...taskKeys.all, 'board-summary'] as const,
   boardColumn: (status: string) => [...taskKeys.all, 'board', status] as const,
 };
