@@ -1,5 +1,6 @@
 'use client';
 
+import { CheckSquare, Bell, RefreshCw, Paperclip, Activity as ActivityIcon, type LucideIcon } from 'lucide-react';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
 import type { DocumentResponseDto } from '@/lib/types/documents';
@@ -7,6 +8,14 @@ import type { ActivityResponseDto } from '@/lib/types/activities';
 import { getStatusColor, getPriorityColor } from '@/lib/theme/colors';
 import { formatDate, formatTime } from '@/lib/utils/date';
 import { useLeadActivityFeed } from '@/lib/hooks/use-lead-detail';
+import EmptyState from '@/components/empty-state';
+
+const FEED_ICONS: Record<string, { icon: LucideIcon; className: string }> = {
+  task: { icon: CheckSquare, className: 'bg-purple-500/15 text-purple-600 dark:text-purple-400' },
+  reminder: { icon: Bell, className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+  activity: { icon: RefreshCw, className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+  document: { icon: Paperclip, className: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+};
 
 interface LeadActivityTabProps {
   leadId: string;
@@ -18,12 +27,7 @@ export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
   if (isLoading) return <p className="text-sm text-subtle">Loading activity...</p>;
 
   if (feed.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-4xl mb-3">📋</p>
-        <p className="text-sm text-subtle">No activity yet</p>
-      </div>
-    );
+    return <EmptyState message="No activity yet" icon={<ActivityIcon size={32} className="mx-auto text-subtle" />} />;
   }
 
   return (
@@ -32,13 +36,13 @@ export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
       <div className="absolute left-4 top-0 bottom-0 w-px bg-[var(--border)]" />
 
       <div className="space-y-0">
-        {feed.map((item, i) => (
+        {feed.map((item) => {
+          const { icon: Icon, className } = FEED_ICONS[item.kind];
+          return (
           <div key={item.id} className="relative flex gap-4 pb-6">
             {/* Dot */}
-            <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm
-              ${item.kind === 'task' ? 'bg-purple-100' : item.kind === 'reminder' ? 'bg-yellow-100' : item.kind === 'activity' ? 'bg-green-100' : 'bg-blue-100'}`}
-            >
-              {item.kind === 'task' ? '✓' : item.kind === 'reminder' ? '🔔' : item.kind === 'activity' ? '🔄' : '📎'}
+            <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${className}`}>
+              <Icon size={14} />
             </div>
 
             {/* Content */}
@@ -57,7 +61,8 @@ export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

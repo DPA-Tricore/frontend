@@ -1,16 +1,11 @@
 'use client';
 
+import { Bell } from 'lucide-react';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
+import { getReminderStatusColor } from '@/lib/theme/colors';
 import { formatDate, formatTime } from '@/lib/utils/date';
 import { useLeadReminders } from '@/lib/hooks/use-lead-detail';
-
-const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  TRIGGERED: 'bg-orange-100 text-orange-800',
-  ACKNOWLEDGED: 'bg-green-100 text-green-800',
-  DISMISSED: 'bg-gray-100 text-gray-600',
-  CANCELLED: 'bg-red-100 text-red-700',
-};
+import EmptyState from '@/components/empty-state';
 
 interface LeadRemindersTabProps {
   leadId: string;
@@ -23,10 +18,7 @@ export default function LeadRemindersTab({ leadId }: LeadRemindersTabProps) {
 
   if (reminders.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-4xl mb-3">🔔</p>
-        <p className="text-sm text-subtle">No reminders for this lead</p>
-      </div>
+      <EmptyState message="No reminders for this lead" icon={<Bell size={32} className="mx-auto text-subtle" />} />
     );
   }
 
@@ -59,13 +51,15 @@ function ReminderRow({ reminder }: { reminder: ReminderResponseDto }) {
   const isPast = new Date(reminder.dueDate) < new Date();
   return (
     <div className="surface border border-[var(--border)] rounded-lg px-4 py-3 flex items-center gap-3">
-      <div className="text-xl">🔔</div>
+      <div className="w-8 h-8 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <Bell size={14} />
+      </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-primary truncate">{reminder.title}</p>
         {reminder.description && (
           <p className="text-xs text-subtle mt-0.5 truncate">{reminder.description}</p>
         )}
-        <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[reminder.status] ?? 'bg-gray-100 text-gray-700'}`}>
+        <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full font-medium ${getReminderStatusColor(reminder.status)}`}>
           {reminder.status}
         </span>
       </div>

@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useLead } from '@/lib/hooks/use-lead-detail';
 import LoadingSpinner from '@/components/loading-spinner';
-import LeadProfilePanel from './components/lead-profile-panel';
+import LeadTopBar from './components/lead-top-bar';
+import LeadHero from './components/lead-hero';
+import LeadNextAction from './components/lead-next-action';
 import LeadStatsBar from './components/lead-stats-bar';
+import LeadPropertiesPanel from './components/lead-properties-panel';
 import LeadActivityTab from './components/lead-activity-tab';
 import LeadTasksTab from './components/lead-tasks-tab';
 import LeadRemindersTab from './components/lead-reminders-tab';
@@ -35,53 +38,48 @@ export default function LeadDetailPage() {
   if (!lead) return null;
 
   return (
-    <div className="p-8">
-      {/* Back */}
-      <button
-        onClick={() => router.back()}
-        className="text-sm text-subtle hover:text-primary transition-colors mb-6 flex items-center gap-1"
-      >
-        ← Back to Leads
-      </button>
+    <div className="min-h-screen">
+      <LeadTopBar onBack={() => router.back()} />
 
-      {/* Stats bar */}
-      <LeadStatsBar
-        leadId={id}
-        createdAt={lead.createdAt}
-        lastContactedAt={lead.lastContactedAt}
-      />
+      <div className="px-8 py-10 max-w-6xl mx-auto">
+        <LeadHero lead={lead} onEditClick={() => {}} />
 
-      {/* 2-column layout */}
-      <div className="flex gap-6 items-start">
-        {/* Left: profile panel */}
-        <LeadProfilePanel lead={lead} onEditClick={() => {}} />
+        <div className="mt-6">
+          <LeadNextAction leadId={id} onJump={setActiveTab} />
+          <LeadStatsBar leadId={id} createdAt={lead.createdAt} lastContactedAt={lead.lastContactedAt} />
+        </div>
 
-        {/* Right: tabs */}
-        <div className="flex-1 min-w-0">
-          {/* Tab bar */}
-          <div className="border-b border-[var(--border)] mb-6">
-            <nav className="flex gap-6">
-              {TABS.map(({ id: tabId, label }) => (
-                <button
-                  key={tabId}
-                  onClick={() => setActiveTab(tabId)}
-                  className={`pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                    activeTab === tabId
-                      ? 'border-gray-900 text-primary dark:border-white'
-                      : 'border-transparent text-subtle hover:text-primary'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
+        <div className="border-b border-[var(--border)] my-8" />
+
+        <div className="grid grid-cols-3 gap-10 items-start">
+          <div className="col-span-2 min-w-0">
+            {/* Tab bar */}
+            <div className="border-b border-[var(--border)] mb-6">
+              <nav className="flex gap-6">
+                {TABS.map(({ id: tabId, label }) => (
+                  <button
+                    key={tabId}
+                    onClick={() => setActiveTab(tabId)}
+                    className={`pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                      activeTab === tabId
+                        ? 'border-gray-900 text-primary dark:border-white'
+                        : 'border-transparent text-subtle hover:text-primary'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Tab content */}
+            {activeTab === 'activity' && <LeadActivityTab leadId={id} />}
+            {activeTab === 'tasks' && <LeadTasksTab leadId={id} />}
+            {activeTab === 'reminders' && <LeadRemindersTab leadId={id} />}
+            {activeTab === 'documents' && <LeadDocumentsTab leadId={id} />}
           </div>
 
-          {/* Tab content */}
-          {activeTab === 'activity' && <LeadActivityTab leadId={id} />}
-          {activeTab === 'tasks' && <LeadTasksTab leadId={id} />}
-          {activeTab === 'reminders' && <LeadRemindersTab leadId={id} />}
-          {activeTab === 'documents' && <LeadDocumentsTab leadId={id} />}
+          <LeadPropertiesPanel lead={lead} />
         </div>
       </div>
     </div>

@@ -97,6 +97,42 @@ export function useLeadActivityFeed(leadId: string) {
   };
 }
 
+export interface NextActionItem {
+  kind: 'task' | 'reminder';
+  id: string;
+  title: string;
+  dueDate: string;
+  taskType?: string;
+}
+
+/**
+ * Earliest-due open task or pending reminder, i.e. "what should happen next"
+ * for this lead. Composed from useLeadTasks/useLeadReminders (shared cache)
+ * rather than its own fetch, same reasoning as useLeadActivityFeed above.
+ */
+export function useLeadNextAction(leadId: string) {
+  const tasksQuery = useLeadTasks(leadId);
+  const remindersQuery = useLeadReminders(leadId);
+
+  const openTasks = (tasksQuery.data ?? []).filter(
+    (t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED',
+  );
+  const openReminders = (remindersQuery.data ?? []).filter(
+    (r) => r.status === 'PENDING' || r.status === 'TRIGGERED',
+  );
+
+  const candidates: NextActionItem[] = [
+    ...openTasks.map((t) => ({ kind: 'task' as const, id: t.id, title: t.title, dueDate: String(t.dueDate), taskType: t.type })),
+    ...openReminders.map((r) => ({ kind: 'reminder' as const, id: r.id, title: r.title, dueDate: r.dueDate })),
+  ];
+  candidates.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+  return {
+    nextAction: candidates[0] ?? null,
+    isLoading: tasksQuery.isLoading || remindersQuery.isLoading,
+  };
+}
+
 export function useUploadLeadDocument(leadId: string) {
   const queryClient = useQueryClient();
   return useMutation({

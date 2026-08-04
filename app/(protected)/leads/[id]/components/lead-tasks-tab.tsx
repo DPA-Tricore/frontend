@@ -1,9 +1,11 @@
 'use client';
 
+import { CheckSquare } from 'lucide-react';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import { getStatusColor, getPriorityColor, getTaskTypeColor } from '@/lib/theme/colors';
 import { formatDate } from '@/lib/utils/date';
 import { useLeadTasks } from '@/lib/hooks/use-lead-detail';
+import EmptyState from '@/components/empty-state';
 
 interface LeadTasksTabProps {
   leadId: string;
@@ -16,10 +18,10 @@ export default function LeadTasksTab({ leadId }: LeadTasksTabProps) {
 
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-4xl mb-3">✓</p>
-        <p className="text-sm text-subtle">No tasks linked to this lead</p>
-      </div>
+      <EmptyState
+        message="No tasks linked to this lead"
+        icon={<CheckSquare size={32} className="mx-auto text-subtle" />}
+      />
     );
   }
 

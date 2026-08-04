@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { Upload, Image, FileText, FileSpreadsheet, File as FileIcon, type LucideIcon } from 'lucide-react';
 import { documentsApi, DocumentResponseDto } from '@/lib/api/documents';
 import { formatDate } from '@/lib/utils/date';
 import { useLeadDocuments, useUploadLeadDocument, useDeleteLeadDocument } from '@/lib/hooks/use-lead-detail';
@@ -11,12 +12,12 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function fileIcon(mimeType: string): string {
-  if (mimeType.startsWith('image/')) return '🖼';
-  if (mimeType === 'application/pdf') return '📄';
-  if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
-  if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
-  return '📎';
+function fileIcon(mimeType: string): LucideIcon {
+  if (mimeType.startsWith('image/')) return Image;
+  if (mimeType === 'application/pdf') return FileText;
+  if (mimeType.includes('word') || mimeType.includes('document')) return FileText;
+  if (mimeType.includes('sheet') || mimeType.includes('excel')) return FileSpreadsheet;
+  return FileIcon;
 }
 
 interface Props {
@@ -96,6 +97,7 @@ export default function LeadDocumentsTab({ leadId }: Props) {
           <p className="text-sm text-subtle">Uploading...</p>
         ) : (
           <>
+            <Upload size={20} className="mx-auto mb-2 text-subtle" />
             <p className="text-sm font-medium text-primary">Drop a file here or click to upload</p>
             <p className="text-xs text-subtle mt-1">Max 20 MB</p>
           </>
@@ -113,12 +115,16 @@ export default function LeadDocumentsTab({ leadId }: Props) {
         <p className="text-sm text-subtle text-center py-4">No documents yet</p>
       ) : (
         <ul className="space-y-2">
-          {documents.map((doc) => (
+          {documents.map((doc) => {
+            const Icon = fileIcon(doc.mimeType);
+            return (
             <li
               key={doc.id}
               className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border)] surface"
             >
-              <span className="text-xl">{fileIcon(doc.mimeType)}</span>
+              <span className="w-8 h-8 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <Icon size={14} />
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-primary truncate">{doc.originalName}</p>
                 <p className="text-xs text-subtle">
@@ -143,7 +149,8 @@ export default function LeadDocumentsTab({ leadId }: Props) {
                 </button>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>
