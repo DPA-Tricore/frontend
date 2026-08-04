@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Tailwind v4 defaults `dark:` to prefers-color-scheme; this app toggles a
+   `.dark` class on <html> instead (see context/theme-context.tsx), so opt
+   back into class-based dark mode or every `dark:` utility in the app is
+   inert unless the OS is also in dark mode. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Global styles and CSS variables */
 @import "../styles/_variables.scss";
 
