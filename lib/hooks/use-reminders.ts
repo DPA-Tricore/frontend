@@ -21,6 +21,11 @@ export const useReminders = () => {
     queryKey: reminderKeys.pending(),
     queryFn: () => reminderAPI.getPending(),
     refetchInterval: REFRESH_INTERVAL,
+    // Several components mount this hook on the same page (header badge, header
+    // panel, dashboard summary, action queue) at slightly different times. Without
+    // a staleTime, the default staleTime:0 makes every later mount refetch instead
+    // of reusing the still-fresh cached list.
+    staleTime: REFRESH_INTERVAL / 2,
   });
 
   const pendingCount = reminders.filter((r) => r.status === 'PENDING').length;

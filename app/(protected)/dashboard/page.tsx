@@ -1,56 +1,21 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
-import { leadsApi } from '@/lib/api/leads';
-import { tasksApi } from '@/lib/api/tasks';
+import { useDashboardSummary } from '@/lib/hooks/use-dashboard';
 import { formatMoney } from '@/lib/utils/format';
-import {
-  type LeadLike,
-  toCoverageAmount,
-  safeDate,
-  monthKey,
-  getDisplayNameFromEmail,
-} from '@/lib/utils/dashboard';
+import { getDisplayNameFromEmail } from '@/lib/utils/dashboard';
 import { useReminders } from '@/lib/hooks/use-reminders';
-import type { LeadResponseDto } from '@/lib/types/leads';
-import type { TaskResponseDto } from '@/lib/types/tasks';
 import DashboardRecentLeads from './components/dashboard-recent-leads';
 import DashboardActionQueue from './components/dashboard-action-queue';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { pendingCount } = useReminders();
-  const [leads, setLeads] = useState<LeadResponseDto[]>([]);
-  const [tasks, setTasks] = useState<TaskResponseDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [leadsRes, tasksRes] = await Promise.all([
-          leadsApi.getLeads(),
-          tasksApi.getTasks({ sortBy: 'dueDate', sortOrder: 'asc', limit: 50 }),
-        ]);
-        if (!cancelled) {
-          setLeads(Array.isArray(leadsRes) ? leadsRes : (leadsRes as any).data ?? []);
-          const raw = Array.isArray(tasksRes) ? tasksRes : (tasksRes as any).data ?? [];
-          setTasks(raw);
-        }
-      } catch {
-        if (!cancelled) setError('Failed to load dashboard data');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    load();
-    return () => { cancelled = true; };
-  }, []);
+  const { data: summary, isLoading: loading, isError } = useDashboardSummary();
+  const error = isError ? 'Failed to load dashboard data' : null;
 
   const name = useMemo(() => getDisplayNameFromEmail(user?.email), [user?.email]);
 
@@ -63,41 +28,6 @@ export default function DashboardPage() {
         day: 'numeric',
       }).format(new Date()),
     [],
-  );
-
-  const metrics = useMemo(() => {
-    const totalLeads = leads.length;
-
-    const now = new Date();
-    const todayEnd = new Date(now);
-    todayEnd.setHours(23, 59, 59, 999);
-
-    const pendingTasks = tasks.filter(
-      (t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED',
-    );
-    const dueTodayCount = pendingTasks.filter(
-      (t) => new Date(t.dueDate) <= todayEnd,
-    ).length;
-
-    const converted = leads.filter((l) => l.status === 'CONVERTED' || !!l.convertedCustomerId);
-    const currentMonth = monthKey(now);
-    const revenueThisMonth = converted
-      .filter((l) => {
-        const d = safeDate((l as LeadLike).convertedAt as string) || safeDate(l.createdAt);
-        return d && monthKey(d) === currentMonth;
-      })
-      .reduce((sum, l) => sum + toCoverageAmount((l as LeadLike).coverageAmount), 0);
-
-    return { totalLeads, dueTodayCount, revenueThisMonth, pendingTasks };
-  }, [leads, tasks]);
-
-  const recentLeads = useMemo(
-    () =>
-      leads
-        .slice()
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 8),
-    [leads],
   );
 
   const skeleton = <div className="animate-pulse bg-[var(--border)] rounded-lg min-h-[120px]" />;
@@ -113,7 +43,7 @@ export default function DashboardPage() {
         {!loading && (
           <div className="text-right">
             <p className="text-xs text-muted mb-0.5">Revenue this month</p>
-            <p className="text-2xl font-bold text-primary">{formatMoney(metrics.revenueThisMonth)}</p>
+            <p className="text-2xl font-bold text-primary">{formatMoney(summary?.revenueThisMonth ?? 0)}</p>
           </div>
         )}
       </div>
@@ -125,12 +55,12 @@ export default function DashboardPage() {
         ) : (
           <>
             <span>
-              <span className="text-base font-bold text-primary">{metrics.totalLeads}</span>
+              <span className="text-base font-bold text-primary">{summary?.totalLeads ?? 0}</span>
               <span className="text-sm text-muted ml-1.5">leads</span>
             </span>
             <span className="text-[var(--border)]" aria-hidden>·</span>
             <span>
-              <span className="text-base font-bold text-primary">{metrics.dueTodayCount}</span>
+              <span className="text-base font-bold text-primary">{summary?.dueTodayCount ?? 0}</span>
               <span className="text-sm text-muted ml-1.5">tasks due</span>
             </span>
             <span className="text-[var(--border)]" aria-hidden>·</span>
@@ -157,12 +87,12 @@ export default function DashboardPage() {
               View all →
             </Link>
           </div>
-          {loading ? skeleton : <DashboardRecentLeads leads={recentLeads} />}
+          {loading ? skeleton : <DashboardRecentLeads leads={summary?.recentLeads ?? []} />}
         </section>
 
         <section className="surface rounded-lg border border-[var(--border)] p-6">
           <h2 className="text-base font-semibold text-primary mb-5">Today's Actions</h2>
-          {loading ? skeleton : <DashboardActionQueue tasks={metrics.pendingTasks} />}
+          {loading ? skeleton : <DashboardActionQueue dueTasks={summary?.dueTasks ?? []} />}
         </section>
       </div>
     </div>

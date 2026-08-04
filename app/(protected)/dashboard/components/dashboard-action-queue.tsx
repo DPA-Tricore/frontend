@@ -7,7 +7,7 @@ import { useReminders } from '@/lib/hooks/use-reminders';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 
 interface Props {
-  tasks: TaskResponseDto[];
+  dueTasks: TaskResponseDto[];
 }
 
 function relativeLabel(dateStr: string): string {
@@ -33,7 +33,7 @@ function taskDueLabel(dueDate: Date | string): string {
   return `Due in ${diffDays}d`;
 }
 
-export default function DashboardActionQueue({ tasks }: Props) {
+export default function DashboardActionQueue({ dueTasks }: Props) {
   const { reminders } = useReminders();
 
   const { overdueReminders, upcomingReminders } = useMemo(() => {
@@ -50,16 +50,6 @@ export default function DashboardActionQueue({ tasks }: Props) {
         .slice(0, 2),
     };
   }, [reminders]);
-
-  const dueTasks = useMemo(() => {
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
-    const todayEndTime = todayEnd.getTime();
-    return tasks.filter(t => {
-      const time = t.dueDate instanceof Date ? t.dueDate.getTime() : new Date(t.dueDate).getTime();
-      return time <= todayEndTime;
-    }).slice(0, 4);
-  }, [tasks]);
 
   const isEmpty =
     overdueReminders.length === 0 &&
