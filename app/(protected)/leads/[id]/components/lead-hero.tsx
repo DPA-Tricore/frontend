@@ -1,6 +1,7 @@
 'use client';
 
-import { Pencil, CheckCircle2, XCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { MoreHorizontal } from 'lucide-react';
 import { LeadResponseDto } from '@/lib/api/leads';
 import { useUpdateLeadStatus } from '@/lib/hooks/use-leads';
 import { useUsers } from '@/lib/hooks/use-users';
@@ -22,12 +23,24 @@ interface LeadHeroProps {
 export default function LeadHero({ lead, onEditClick }: LeadHeroProps) {
   const { data: users = [] } = useUsers();
   const updateStatus = useUpdateLeadStatus();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const fullName = `${lead.firstName} ${lead.lastName}`;
   const initials = `${lead.firstName[0] ?? ''}${lead.lastName[0] ?? ''}`.toUpperCase();
   const assignedAgentEmail = users.find((u) => u.id === lead.assignedAgentId)?.email;
 
   const handleStatusChange = (newStatus: string) => updateStatus.mutate({ lead, newStatus });
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   return (
     <div>
@@ -48,31 +61,45 @@ export default function LeadHero({ lead, onEditClick }: LeadHeroProps) {
           <h1 className="text-3xl font-bold text-primary leading-tight truncate">{fullName}</h1>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="relative shrink-0" ref={menuRef}>
           <button
-            onClick={onEditClick}
-            aria-label="Edit lead"
+            onClick={() => setMenuOpen((o) => !o)}
             className="w-9 h-9 flex items-center justify-center rounded-lg text-subtle hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+            aria-label="More actions"
           >
-            <Pencil size={16} />
+            <MoreHorizontal size={20} />
           </button>
-          {lead.status !== 'CONVERTED' && (
-            <button
-              onClick={() => handleStatusChange('CONVERTED')}
-              disabled={updateStatus.isPending}
-              className="flex items-center gap-1.5 text-sm px-3.5 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
-            >
-              <CheckCircle2 size={15} /> Convert
-            </button>
-          )}
-          {lead.status !== 'LOST' && (
-            <button
-              onClick={() => handleStatusChange('LOST')}
-              disabled={updateStatus.isPending}
-              className="flex items-center gap-1.5 text-sm px-3.5 py-2 border border-[var(--border)] text-subtle rounded-lg hover:text-red-600 hover:border-red-200 dark:hover:border-red-900 transition-colors font-medium disabled:opacity-50"
-            >
-              <XCircle size={15} /> Mark Lost
-            </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-44 surface border border-[var(--border)] rounded-xl shadow-lg overflow-hidden z-20">
+              <button
+                onClick={() => { setMenuOpen(false); onEditClick(); }}
+                className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              >
+                Edit
+              </button>
+              {lead.status !== 'CONVERTED' && (
+                <button
+                  onClick={() => { setMenuOpen(false); handleStatusChange('CONVERTED'); }}
+                  disabled={updateStatus.isPending}
+                  className="w-full text-left px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors disabled:opacity-40"
+                >
+                  Convert
+                </button>
+              )}
+              {lead.status !== 'LOST' && (
+                <>
+                  <div className="border-t border-[var(--border)]" />
+                  <button
+                    onClick={() => { setMenuOpen(false); handleStatusChange('LOST'); }}
+                    disabled={updateStatus.isPending}
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-40"
+                  >
+                    Mark Lost
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>
