@@ -27,6 +27,10 @@ export const leadActivityKeys = {
   byLead: (leadId: string) => ['leadActivity', leadId] as const,
 };
 
+export const leadNoteKeys = {
+  byLead: (leadId: string) => ['leadNotes', leadId] as const,
+};
+
 export const reminderKeys = {
   all: ['reminders'] as const,
   pending: () => [...reminderKeys.all, 'pending'] as const,

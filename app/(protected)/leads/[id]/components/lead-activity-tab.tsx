@@ -1,10 +1,11 @@
 'use client';
 
-import { CheckSquare, Bell, RefreshCw, Paperclip, Activity as ActivityIcon, type LucideIcon } from 'lucide-react';
+import { CheckSquare, Bell, RefreshCw, Paperclip, MessageSquare, Activity as ActivityIcon, type LucideIcon } from 'lucide-react';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
 import type { DocumentResponseDto } from '@/lib/types/documents';
 import type { ActivityResponseDto } from '@/lib/types/activities';
+import type { NoteResponseDto } from '@/lib/types/notes';
 import { getStatusColor, getPriorityColor } from '@/lib/theme/colors';
 import { formatDate, formatTime } from '@/lib/utils/date';
 import { useLeadActivityFeed } from '@/lib/hooks/use-lead-detail';
@@ -15,6 +16,7 @@ const FEED_ICONS: Record<string, { icon: LucideIcon; className: string }> = {
   reminder: { icon: Bell, className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
   activity: { icon: RefreshCw, className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
   document: { icon: Paperclip, className: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+  note: { icon: MessageSquare, className: 'bg-rose-500/15 text-rose-600 dark:text-rose-400' },
 };
 
 interface LeadActivityTabProps {
@@ -59,6 +61,9 @@ export default function LeadActivityTab({ leadId }: LeadActivityTabProps) {
               {item.kind === 'activity' && item.activity && (
                 <StatusActivity activity={item.activity} date={item.date} />
               )}
+              {item.kind === 'note' && item.note && (
+                <NoteActivity note={item.note} date={item.date} />
+              )}
             </div>
           </div>
           );
@@ -101,6 +106,20 @@ function StatusActivity({ activity, date }: { activity: ActivityResponseDto; dat
     <div>
       <span className="text-sm font-medium text-primary">{activity.message ?? activity.action}</span>
       <p className="text-xs text-subtle mt-1">{formatDate(date)} · {formatTime(date)}</p>
+    </div>
+  );
+}
+
+function NoteActivity({ note, date }: { note: NoteResponseDto; date: string }) {
+  return (
+    <div>
+      <span className="text-sm font-medium text-primary">
+        {note.type === 'VOICE' ? 'Voice note added' : 'Note added'}
+      </span>
+      {note.type === 'TEXT' && note.body && (
+        <p className="text-sm text-muted mt-0.5 line-clamp-2">{note.body}</p>
+      )}
+      <p className="text-xs text-subtle mt-1">{formatDate(date)} · by {note.authorName ?? 'Unknown'}</p>
     </div>
   );
 }

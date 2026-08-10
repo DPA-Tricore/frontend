@@ -13,14 +13,16 @@ import LeadActivityTab from './components/lead-activity-tab';
 import LeadTasksTab from './components/lead-tasks-tab';
 import LeadRemindersTab from './components/lead-reminders-tab';
 import LeadDocumentsTab from './components/lead-documents-tab';
+import LeadNotesTab from './components/lead-notes-tab';
 
-type Tab = 'activity' | 'tasks' | 'reminders' | 'documents';
+type Tab = 'activity' | 'tasks' | 'reminders' | 'documents' | 'notes';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'activity', label: 'Activity' },
   { id: 'tasks', label: 'Tasks' },
   { id: 'reminders', label: 'Reminders' },
   { id: 'documents', label: 'Documents' },
+  { id: 'notes', label: 'Notes' },
 ];
 
 export default function LeadDetailPage() {
@@ -77,6 +79,7 @@ export default function LeadDetailPage() {
             {activeTab === 'tasks' && <LeadTasksTab leadId={id} />}
             {activeTab === 'reminders' && <LeadRemindersTab leadId={id} />}
             {activeTab === 'documents' && <LeadDocumentsTab leadId={id} />}
+            {activeTab === 'notes' && <LeadNotesTab leadId={id} />}
           </div>
 
           <LeadPropertiesPanel lead={lead} />

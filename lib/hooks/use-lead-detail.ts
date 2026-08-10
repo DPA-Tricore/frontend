@@ -7,7 +7,16 @@ import { reminderAPI } from '@/lib/api/reminders';
 import type { ReminderResponseDto } from '@/lib/types/reminders';
 import { activitiesApi } from '@/lib/api/activities';
 import type { ActivityResponseDto } from '@/lib/types/activities';
-import { leadKeys, leadTaskKeys, leadDocumentKeys, leadReminderKeys, leadActivityKeys } from '@/lib/queries/keys';
+import { notesApi } from '@/lib/api/notes';
+import type { NoteResponseDto } from '@/lib/types/notes';
+import {
+  leadKeys,
+  leadTaskKeys,
+  leadDocumentKeys,
+  leadReminderKeys,
+  leadActivityKeys,
+  leadNoteKeys,
+} from '@/lib/queries/keys';
 
 export function useLead(id: string) {
   return useQuery({
@@ -42,7 +51,7 @@ export function useLeadReminders(leadId: string) {
   });
 }
 
-type ActivityKind = 'task' | 'reminder' | 'document' | 'activity';
+type ActivityKind = 'task' | 'reminder' | 'document' | 'activity' | 'note';
 
 export interface ActivityItem {
   id: string;
@@ -52,6 +61,7 @@ export interface ActivityItem {
   reminder?: ReminderResponseDto;
   document?: DocumentResponseDto;
   activity?: ActivityResponseDto;
+  note?: NoteResponseDto;
 }
 
 function buildFeed(
@@ -59,26 +69,29 @@ function buildFeed(
   reminders: ReminderResponseDto[],
   documents: DocumentResponseDto[],
   activities: ActivityResponseDto[],
+  notes: NoteResponseDto[],
 ): ActivityItem[] {
   const items: ActivityItem[] = [
     ...tasks.map((t) => ({ id: `task-${t.id}`, kind: 'task' as const, date: String(t.createdAt), task: t })),
     ...reminders.map((r) => ({ id: `rem-${r.id}`, kind: 'reminder' as const, date: r.createdAt, reminder: r })),
     ...documents.map((d) => ({ id: `doc-${d.id}`, kind: 'document' as const, date: d.createdAt, document: d })),
     ...activities.map((a) => ({ id: `act-${a.id}`, kind: 'activity' as const, date: a.createdAt, activity: a })),
+    ...notes.map((n) => ({ id: `note-${n.id}`, kind: 'note' as const, date: n.createdAt, note: n })),
   ];
   return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 /**
- * Merges tasks/reminders/documents/activities into one timeline. Composed from
- * useLeadTasks/useLeadDocuments/useLeadReminders (rather than its own fetch) so
- * that landing on the detail page — stats bar + activity tab mount together —
- * doesn't fetch tasks/documents twice.
+ * Merges tasks/reminders/documents/activities/notes into one timeline. Composed
+ * from useLeadTasks/useLeadDocuments/useLeadReminders/useLeadNotes (rather than
+ * its own fetch) so that landing on the detail page — stats bar + activity tab
+ * mount together — doesn't fetch tasks/documents twice.
  */
 export function useLeadActivityFeed(leadId: string) {
   const tasksQuery = useLeadTasks(leadId);
   const documentsQuery = useLeadDocuments(leadId);
   const remindersQuery = useLeadReminders(leadId);
+  const notesQuery = useLeadNotes(leadId);
   const activitiesQuery = useQuery({
     queryKey: leadActivityKeys.byLead(leadId),
     queryFn: () => activitiesApi.list({ entityType: 'LEAD', entityId: leadId }),
@@ -91,9 +104,14 @@ export function useLeadActivityFeed(leadId: string) {
       remindersQuery.data ?? [],
       documentsQuery.data ?? [],
       activitiesQuery.data ?? [],
+      notesQuery.data ?? [],
     ),
     isLoading:
-      tasksQuery.isLoading || documentsQuery.isLoading || remindersQuery.isLoading || activitiesQuery.isLoading,
+      tasksQuery.isLoading ||
+      documentsQuery.isLoading ||
+      remindersQuery.isLoading ||
+      activitiesQuery.isLoading ||
+      notesQuery.isLoading,
   };
 }
 
@@ -152,6 +170,65 @@ export function useDeleteLeadDocument(leadId: string) {
     onSuccess: (_data, documentId) => {
       queryClient.setQueryData<DocumentResponseDto[]>(leadDocumentKeys.byLead(leadId), (old) =>
         old?.filter((d) => d.id !== documentId),
+      );
+    },
+  });
+}
+
+export function useLeadNotes(leadId: string) {
+  return useQuery({
+    queryKey: leadNoteKeys.byLead(leadId),
+    queryFn: () => notesApi.getByLead(leadId),
+    enabled: !!leadId,
+  });
+}
+
+export function useCreateLeadTextNote(leadId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: string) => notesApi.createText(leadId, { body }),
+    onSuccess: (note) => {
+      queryClient.setQueryData<NoteResponseDto[]>(leadNoteKeys.byLead(leadId), (old) =>
+        old ? [note, ...old] : [note],
+      );
+    },
+  });
+}
+
+export function useCreateLeadVoiceNote(leadId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (blob: Blob) => notesApi.createVoice(leadId, blob),
+    onSuccess: (note) => {
+      queryClient.setQueryData<NoteResponseDto[]>(leadNoteKeys.byLead(leadId), (old) =>
+        old ? [note, ...old] : [note],
+      );
+    },
+  });
+}
+
+/** Edits never mutate a row server-side — the mutation returns a brand new
+ * note that supersedes `id`, so the cache patch replaces that entry wholesale
+ * rather than merging fields into it. */
+export function useEditLeadNote(leadId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: string }) => notesApi.edit(id, { body }),
+    onSuccess: (updated, variables) => {
+      queryClient.setQueryData<NoteResponseDto[]>(leadNoteKeys.byLead(leadId), (old) =>
+        old?.map((n) => (n.id === variables.id ? updated : n)),
+      );
+    },
+  });
+}
+
+export function useDeleteLeadNote(leadId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => notesApi.delete(id),
+    onSuccess: (_data, id) => {
+      queryClient.setQueryData<NoteResponseDto[]>(leadNoteKeys.byLead(leadId), (old) =>
+        old?.filter((n) => n.id !== id),
       );
     },
   });
