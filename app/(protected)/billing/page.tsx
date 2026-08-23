@@ -39,6 +39,7 @@ export default function BillingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isStartingSetup, setIsStartingSetup] = useState(false);
+  const [isPayingNow, setIsPayingNow] = useState(false);
 
   const fetchData = useCallback(async (pageToFetch: number) => {
     setIsLoading(true);
@@ -92,6 +93,28 @@ export default function BillingPage() {
     }
   };
 
+  const handlePayNow = async () => {
+    setIsPayingNow(true);
+    setError(null);
+    try {
+      await billingApi.payNow();
+      // Charging happens asynchronously in background-job — poll a few
+      // times so the real outcome shows up here without a manual refresh.
+      for (let i = 0; i < 4; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await fetchData(page);
+      }
+    } catch (err) {
+      const message =
+        err instanceof AxiosError && typeof err.response?.data?.message === 'string'
+          ? err.response.data.message
+          : 'Failed to retry payment — please try again';
+      setError(message);
+    } finally {
+      setIsPayingNow(false);
+    }
+  };
+
   if (isAuthLoading || !isOrgAdmin) return <LoadingSpinner fullPage />;
 
   return (
@@ -131,16 +154,30 @@ export default function BillingPage() {
                   </div>
                 </div>
 
-                {schedule.status === 'PENDING_PAYMENT_METHOD' && (
+                <div className="flex items-center gap-3">
+                  {page === 1 && ['FAILED', 'OVERDUE'].includes(invoices[0]?.status) && (
+                    <button
+                      type="button"
+                      onClick={handlePayNow}
+                      disabled={isPayingNow}
+                      className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium interactive disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isPayingNow ? 'Processing...' : 'Pay Now'}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={handleAddPaymentMethod}
                     disabled={isStartingSetup}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium interactive disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 border border-[var(--border)] rounded-lg text-sm font-medium text-primary interactive disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isStartingSetup ? 'Redirecting...' : 'Add Payment Method'}
+                    {isStartingSetup
+                      ? 'Redirecting...'
+                      : schedule.stripeCustomerId
+                        ? 'Update Payment Method'
+                        : 'Add Payment Method'}
                   </button>
-                )}
+                </div>
               </div>
             </div>
           )}

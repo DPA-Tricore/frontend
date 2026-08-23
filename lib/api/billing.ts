@@ -21,6 +21,10 @@ class BillingAPI {
     const response = await axiosClient.post<SetupPaymentMethodResponse>('/billing/setup-payment-method');
     return response.data;
   }
+
+  async payNow(): Promise<void> {
+    await axiosClient.post('/billing/pay-now');
+  }
 }
 
 export const billingApi = new BillingAPI();
