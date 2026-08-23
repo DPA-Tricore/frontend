@@ -16,6 +16,7 @@ import {
   Search,
   Users,
   ShieldCheck,
+  CreditCard,
 } from 'lucide-react';
 import React from 'react';
 
@@ -35,6 +36,7 @@ const menuItems: MenuItem[] = [
   { name: 'Reports', icon: FileBarChart, href: '/reports' },
   { name: 'Team', icon: Users, href: '/team', minRole: ['ORG_ADMIN'] },
   { name: 'Audit Log', icon: ShieldCheck, href: '/audit-log', minRole: ['ORG_ADMIN'] },
+  { name: 'Billing', icon: CreditCard, href: '/billing', minRole: ['ORG_ADMIN'] },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 

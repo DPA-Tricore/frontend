@@ -126,6 +126,26 @@ export const getReminderStatusColor = (status: string): string => {
   return map[status] ?? map.DISMISSED;
 };
 
+export const getBillingScheduleStatusColor = (status: string): string => {
+  const map: Record<string, string> = {
+    PENDING_PAYMENT_METHOD: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
+    ACTIVE: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    SUSPENDED: 'bg-red-500/15 text-red-600 dark:text-red-400',
+    SUPERSEDED: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
+  };
+  return map[status] ?? map.SUPERSEDED;
+};
+
+export const getInvoiceStatusColor = (status: string): string => {
+  const map: Record<string, string> = {
+    PENDING: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
+    PAID: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    FAILED: 'bg-red-500/15 text-red-600 dark:text-red-400',
+    OVERDUE: 'bg-orange-500/15 text-orange-600 dark:text-orange-400',
+  };
+  return map[status] ?? 'bg-gray-500/15 text-gray-600 dark:text-gray-400';
+};
+
 export const getScopeColor = (scope: string): string => {
   const map: Record<string, string> = {
     GLOBAL: 'bg-blue-100 text-blue-800',
