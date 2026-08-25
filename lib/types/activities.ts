@@ -1,6 +1,6 @@
 import type { PaginationMeta } from './common';
 
-export type ActivityEntityType = 'LEAD' | 'TASK' | 'REMINDER' | 'USER' | 'TEAM' | 'ORGANIZATION';
+export type ActivityEntityType = 'LEAD' | 'TASK' | 'REMINDER' | 'USER' | 'TEAM' | 'ORGANIZATION' | 'CUSTOMER' | 'POLICY';
 
 export interface ActivityResponseDto {
   id: string;

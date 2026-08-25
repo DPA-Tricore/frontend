@@ -8,6 +8,7 @@ import type {
   ImportResultDto,
   LeadBoardResponse,
 } from '@/lib/types/leads';
+import type { ConvertLeadResponseDto, ConvertLeadRequest } from '@/lib/types/customers';
 
 export type {
   ContactResponseDto,
@@ -23,6 +24,8 @@ export type {
   LeadBoardResponse,
 } from '@/lib/types/leads';
 export { ContactType } from '@/lib/types/leads';
+export type { ConvertLeadResponseDto, ConvertLeadRequest, PotentialCustomerMatchDto } from '@/lib/types/customers';
+export { ConvertLeadStatus } from '@/lib/types/customers';
 
 // Bulk import can process up to 1,000 rows server-side; give it more room than the default 5s.
 const IMPORT_TIMEOUT_MS = 60000;
@@ -47,6 +50,7 @@ export const leadsApi = {
       if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
       if (params.status) queryParams.append('status', params.status);
       if (params.leadType) queryParams.append('leadType', params.leadType);
+      if (params.customerId) queryParams.append('customerId', params.customerId);
     }
     const url = queryParams.toString() ? `/leads?${queryParams}` : '/leads';
     const response = await axiosClient.get<PaginatedLeadResponse | LeadResponseDto[]>(url);
@@ -81,6 +85,16 @@ export const leadsApi = {
 
   async deleteLead(id: string): Promise<void> {
     await axiosClient.delete(`/leads/${id}`);
+  },
+
+  /**
+   * Two-phase: call with `{}` first — no match converts immediately, a match comes back
+   * POTENTIAL_MATCH_FOUND without converting. Re-call with `{ customerId }` to confirm the
+   * match, or `{ forceNew: true }` to create a new customer anyway.
+   */
+  async convertLead(id: string, data: ConvertLeadRequest = {}): Promise<ConvertLeadResponseDto> {
+    const response = await axiosClient.post<ConvertLeadResponseDto>(`/leads/${id}/convert`, data);
+    return response.data;
   },
 
   /** Downloads a CSV of every lead matching the given filters (server applies the same role-based scoping as getLeads). */

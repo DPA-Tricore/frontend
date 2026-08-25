@@ -15,6 +15,7 @@ import {
   FileBarChart,
   Search,
   Users,
+  Contact,
   ShieldCheck,
   CreditCard,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ const menuItems: MenuItem[] = [
   { name: 'Dashboard', icon: BarChart3, href: '/dashboard' },
   { name: 'Search', icon: Search, href: '/search' },
   { name: 'Leads', icon: TrendingUp, href: '/leads' },
+  { name: 'Customers', icon: Contact, href: '/customers' },
   { name: 'Tasks', icon: CheckSquare, href: '/tasks' },
   { name: 'Reminders', icon: Bell, href: '/reminders' },
   { name: 'Reviews', icon: Star, href: '/reviews' },

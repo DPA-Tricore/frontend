@@ -146,6 +146,25 @@ export const getInvoiceStatusColor = (status: string): string => {
   return map[status] ?? 'bg-gray-500/15 text-gray-600 dark:text-gray-400';
 };
 
+export const getCustomerStatusColor = (status: string): string => {
+  const map: Record<string, string> = {
+    ACTIVE: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    INACTIVE: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
+    CHURNED: 'bg-red-500/15 text-red-600 dark:text-red-400',
+  };
+  return map[status] ?? map.INACTIVE;
+};
+
+export const getPolicyStatusColor = (status: string): string => {
+  const map: Record<string, string> = {
+    ACTIVE: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    LAPSED: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+    CANCELLED: 'bg-red-500/15 text-red-600 dark:text-red-400',
+    RENEWED: 'bg-teal-500/15 text-teal-700 dark:text-teal-400',
+  };
+  return map[status] ?? 'bg-gray-500/15 text-gray-600 dark:text-gray-400';
+};
+
 export const getScopeColor = (scope: string): string => {
   const map: Record<string, string> = {
     GLOBAL: 'bg-blue-100 text-blue-800',

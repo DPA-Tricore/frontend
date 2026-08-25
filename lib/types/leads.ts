@@ -41,6 +41,7 @@ export interface LeadResponseDto {
   budgetRange?: string;
   coverageAmount?: number;
   riskProfile?: string;
+  customerId?: string;
   convertedCustomerId?: string;
   convertedAt?: string;
   lastContactedAt?: string;
@@ -72,6 +73,7 @@ export interface ListLeadsParams {
   sortOrder?: 'asc' | 'desc';
   status?: string;
   leadType?: string;
+  customerId?: string;
 }
 
 export interface CreateLeadRequest {

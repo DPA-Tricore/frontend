@@ -1,7 +1,9 @@
 import type { ListLeadsParams } from '@/lib/types/leads';
 import type { ListRemindersParams } from '@/lib/types/reminders';
+import type { ListCustomersParams } from '@/lib/types/customers';
 
 export type LeadListFilters = Omit<ListLeadsParams, 'status'> & { status?: string };
+export type CustomerListFilters = Omit<ListCustomersParams, 'status'> & { status?: string };
 
 export const leadKeys = {
   all: ['leads'] as const,
@@ -29,6 +31,20 @@ export const leadActivityKeys = {
 
 export const leadNoteKeys = {
   byLead: (leadId: string) => ['leadNotes', leadId] as const,
+};
+
+export const customerKeys = {
+  all: ['customers'] as const,
+  list: (filters: CustomerListFilters) => [...customerKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...customerKeys.all, 'detail', id] as const,
+};
+
+export const customerPolicyKeys = {
+  byCustomer: (customerId: string) => ['customerPolicies', customerId] as const,
+};
+
+export const customerActivityKeys = {
+  byCustomer: (customerId: string) => ['customerActivity', customerId] as const,
 };
 
 export const reminderKeys = {
