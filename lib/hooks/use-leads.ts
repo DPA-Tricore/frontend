@@ -10,6 +10,7 @@ import {
   type CreateLeadRequest,
   type LeadResponseDto,
   type PaginatedLeadResponse,
+  type ConvertLeadRequest,
 } from '@/lib/api/leads';
 import { leadKeys, type LeadListFilters } from '@/lib/queries/keys';
 
@@ -85,6 +86,23 @@ export function useAssignLead() {
       leadsApi.assignLead(id, agentId),
     onSuccess: (updated) => {
       queryClient.setQueryData(leadKeys.detail(updated.id), updated);
+      queryClient.invalidateQueries({ queryKey: leadKeys.all });
+    },
+  });
+}
+
+/** Only patches caches on an actual CONVERTED result — a POTENTIAL_MATCH_FOUND response means nothing changed server-side yet. */
+export function useConvertLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data?: ConvertLeadRequest }) => leadsApi.convertLead(id, data),
+    onSuccess: (result, { id }) => {
+      if (result.status !== 'CONVERTED') return;
+      queryClient.setQueryData<LeadResponseDto>(leadKeys.detail(id), (old) =>
+        old && result.customer
+          ? { ...old, status: 'CONVERTED', customerId: result.customer.id, convertedCustomerId: result.customer.id }
+          : old,
+      );
       queryClient.invalidateQueries({ queryKey: leadKeys.all });
     },
   });

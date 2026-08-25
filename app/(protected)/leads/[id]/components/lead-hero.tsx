@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { MoreHorizontal } from 'lucide-react';
 import { LeadResponseDto } from '@/lib/api/leads';
 import { useUpdateLeadStatus } from '@/lib/hooks/use-leads';
@@ -8,6 +9,7 @@ import { useUsers } from '@/lib/hooks/use-users';
 import { formatDate } from '@/lib/utils/date';
 import { AVATAR_COLORS } from '@/lib/constants/leads';
 import LeadStageStepper from './lead-stage-stepper';
+import ConvertLeadModal from './convert-lead-modal';
 
 function avatarColor(name: string): string {
   let hash = 0;
@@ -21,16 +23,27 @@ interface LeadHeroProps {
 }
 
 export default function LeadHero({ lead, onEditClick }: LeadHeroProps) {
+  const router = useRouter();
   const { data: users = [] } = useUsers();
   const updateStatus = useUpdateLeadStatus();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showConvertModal, setShowConvertModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const fullName = `${lead.firstName} ${lead.lastName}`;
   const initials = `${lead.firstName[0] ?? ''}${lead.lastName[0] ?? ''}`.toUpperCase();
   const assignedAgentEmail = users.find((u) => u.id === lead.assignedAgentId)?.email;
 
-  const handleStatusChange = (newStatus: string) => updateStatus.mutate({ lead, newStatus });
+  // CONVERTED is intercepted — it goes through the dedicated convert flow (dedupe check
+  // against existing customers) rather than a plain status PATCH, so it's routed here
+  // whether triggered from the stage stepper's dot or the menu item below.
+  const handleStatusChange = (newStatus: string) => {
+    if (newStatus === 'CONVERTED') {
+      setShowConvertModal(true);
+      return;
+    }
+    updateStatus.mutate({ lead, newStatus });
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -81,10 +94,9 @@ export default function LeadHero({ lead, onEditClick }: LeadHeroProps) {
               {lead.status !== 'CONVERTED' && (
                 <button
                   onClick={() => { setMenuOpen(false); handleStatusChange('CONVERTED'); }}
-                  disabled={updateStatus.isPending}
-                  className="w-full text-left px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors disabled:opacity-40"
+                  className="w-full text-left px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                 >
-                  Convert
+                  Convert to Customer
                 </button>
               )}
               {lead.status !== 'LOST' && (
@@ -126,6 +138,16 @@ export default function LeadHero({ lead, onEditClick }: LeadHeroProps) {
           </>
         )}
       </div>
+
+      <ConvertLeadModal
+        leadId={lead.id}
+        isOpen={showConvertModal}
+        onClose={() => setShowConvertModal(false)}
+        onConverted={(customerId) => {
+          setShowConvertModal(false);
+          router.push(`/customers/${customerId}`);
+        }}
+      />
     </div>
   );
 }
