@@ -61,7 +61,7 @@ export default function ChatSidebar() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-2">
             <Sparkles size={16} className="text-[var(--accent)]" />
-            <span className="font-semibold text-sm text-[var(--text-primary)]">AI Assistant</span>
+            <span className="font-semibold text-sm text-[var(--fg)]">AI Assistant</span>
           </div>
           <div className="flex items-center gap-1">
             {messages.length > 0 && (
@@ -86,7 +86,7 @@ export default function ChatSidebar() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
           {messages.length === 0 && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center text-[var(--text-muted)]">
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center text-[var(--muted)]">
               <Sparkles size={32} className="opacity-30" />
               <div>
                 <p className="text-sm font-medium">Ask me anything about your leads</p>
@@ -113,7 +113,7 @@ export default function ChatSidebar() {
               onKeyDown={handleKeyDown}
               placeholder="Ask about your leads..."
               rows={1}
-              className="flex-1 resize-none bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none max-h-32 overflow-y-auto leading-5"
+              className="flex-1 resize-none bg-transparent text-sm text-[var(--fg)] placeholder:text-[var(--muted)] outline-none max-h-32 overflow-y-auto leading-5"
               style={{ height: 'auto' }}
               onInput={(e) => {
                 const el = e.currentTarget;
@@ -130,7 +130,7 @@ export default function ChatSidebar() {
               <Send size={14} />
             </button>
           </div>
-          <p className="text-xs text-[var(--text-muted)] mt-1.5 text-center">
+          <p className="text-xs text-[var(--muted)] mt-1.5 text-center">
             Enter to send · Shift+Enter for new line
           </p>
         </div>
