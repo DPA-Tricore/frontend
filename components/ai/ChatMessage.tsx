@@ -1,5 +1,7 @@
 'use client';
 
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatMessage as ChatMessageType } from '@/lib/hooks/useChatStream';
 
 const TOOL_LABELS: Record<string, string> = {
@@ -22,7 +24,7 @@ export default function ChatMessage({ message }: { message: ChatMessageType }) {
           {message.toolCalls.map((tc, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 text-xs px-2 py-1 rounded bg-[var(--surface-2)] text-[var(--text-muted)] w-fit"
+              className="flex items-center gap-2 text-xs px-2 py-1 rounded bg-[var(--surface-2)] text-[var(--muted)] w-fit"
             >
               {tc.status === 'running' ? (
                 <>
@@ -43,18 +45,26 @@ export default function ChatMessage({ message }: { message: ChatMessageType }) {
       {/* Message bubble */}
       {(message.content || isUser) && (
         <div
-          className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
+          className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm break-words ${
             isUser
-              ? 'bg-[var(--accent)] text-white rounded-br-sm'
-              : 'bg-[var(--surface-2)] text-[var(--text-primary)] rounded-bl-sm'
+              ? 'bg-[var(--accent)] text-white rounded-br-sm whitespace-pre-wrap'
+              : 'bg-[var(--surface-2)] text-[var(--fg)] rounded-bl-sm'
           }`}
         >
-          {message.content || (
+          {!message.content ? (
             <span className="flex gap-1 items-center h-4">
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:0ms]" />
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:150ms]" />
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:300ms]" />
             </span>
+          ) : isUser ? (
+            message.content
+          ) : (
+            <div className="chat-markdown">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
       )}
