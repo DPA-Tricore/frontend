@@ -16,6 +16,7 @@ import PaginationSummary from '@/components/pagination-summary';
 import { getBillingScheduleStatusColor, getInvoiceStatusColor } from '@/lib/theme/colors';
 import { formatCentsAsMoney } from '@/lib/utils/format';
 import { formatDate } from '@/lib/utils/date';
+import { APP_NAME } from '@/lib/constants/brand';
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING_PAYMENT_METHOD: 'Pending Payment Method',
@@ -125,7 +126,7 @@ export default function BillingPage() {
         <LoadingSpinner message="Loading billing information..." />
       ) : !hasSchedule ? (
         <EmptyState
-          message="No billing has been set up for your organization yet. Reach out to DPA if you think this is a mistake."
+          message={`No billing has been set up for your organization yet. Reach out to ${APP_NAME} if you think this is a mistake.`}
           icon={<CreditCard size={32} className="mx-auto text-subtle" />}
         />
       ) : (

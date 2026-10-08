@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
+import { APP_NAME } from '@/lib/constants/brand';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -80,7 +81,7 @@ export default function LoginPage() {
             Sign in
           </h1>
           <p className="text-base text-gray-600">
-            Welcome back to DPA
+            Welcome back to {APP_NAME}
           </p>
         </div>
 
@@ -163,7 +164,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-600">New to DPA?</span>
+              <span className="px-2 bg-white text-gray-600">New to {APP_NAME}?</span>
             </div>
           </div>
 

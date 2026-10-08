@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
+import { APP_NAME } from '@/lib/constants/brand';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -97,7 +98,7 @@ export default function SignupPage() {
             Create account
           </h1>
           <p className="text-base text-gray-600">
-            Join DPA and start managing your insurance business
+            Join {APP_NAME} and start managing your insurance business
           </p>
         </div>
 

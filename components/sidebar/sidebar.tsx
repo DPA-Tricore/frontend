@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import SidebarNav from './sidebar-nav';
 import SidebarUser from './sidebar-user';
+import { APP_NAME } from '@/lib/constants/brand';
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -28,8 +29,7 @@ export default function Sidebar() {
             isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 delay-300'
           }`}
         >
-          <h1 className="text-2xl font-bold text-primary whitespace-nowrap">DPA</h1>
-          <p className="text-sm text-muted">Insurance CRM</p>
+          <h1 className="text-2xl font-bold text-primary whitespace-nowrap">{APP_NAME}</h1>
         </div>
       </div>
 

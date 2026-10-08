@@ -6,6 +6,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
 import { ThemeProvider } from "@/context/theme-context";
 import { QueryProvider } from "@/context/query-provider";
+import { APP_NAME } from "@/lib/constants/brand";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DPA - Insurance CRM",
+  title: APP_NAME,
   description: "Customer Relationship Management for Insurance Brokers",
 };
 
