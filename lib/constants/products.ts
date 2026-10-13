@@ -23,3 +23,6 @@ export const PRODUCT_FORM_DEFAULTS = {
   billingInterval: BillingInterval.MONTH as string,
   isActive: true,
 };
+
+// Picker value for "no catalog product" — the agent types the details in.
+export const NO_PRODUCT = '';

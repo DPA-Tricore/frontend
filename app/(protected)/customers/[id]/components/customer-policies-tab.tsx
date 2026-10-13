@@ -45,8 +45,10 @@ export default function CustomerPoliciesTab({ customerId }: CustomerPoliciesTabP
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-semibold text-primary">{policy.policyNumber}</span>
-                    {policy.productType && (
-                      <span className="text-xs text-subtle">{policy.productType}</span>
+                    {(policy.productName || policy.productType) && (
+                      <span className="text-xs text-subtle">
+                        {[policy.productName, policy.productType].filter(Boolean).join(' · ')}
+                      </span>
                     )}
                   </div>
                   <p className="text-sm text-muted mt-1">

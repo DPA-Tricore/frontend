@@ -61,6 +61,9 @@ export interface PolicyResponseDto {
   leadId?: string;
   organizationId: string;
   policyNumber: string;
+  productId?: string;
+  // The linked product's current name, for display.
+  productName?: string;
   productType?: string;
   premiumAmountCents: number;
   billingInterval: BillingInterval;
@@ -74,6 +77,7 @@ export interface PolicyResponseDto {
 
 export interface CreatePolicyRequest {
   policyNumber: string;
+  productId?: string;
   productType?: string;
   premiumAmountCents: number;
   billingInterval?: BillingInterval;

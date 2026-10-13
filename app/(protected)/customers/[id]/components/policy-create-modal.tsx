@@ -5,6 +5,8 @@ import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import { useCreatePolicy } from '@/lib/hooks/use-customer-detail';
 import { BillingInterval } from '@/lib/api/policies';
+import { useProducts } from '@/lib/hooks/use-products';
+import { NO_PRODUCT } from '@/lib/constants/products';
 
 interface PolicyCreateModalProps {
   customerId: string;
@@ -14,6 +16,7 @@ interface PolicyCreateModalProps {
 
 const initialForm = {
   policyNumber: '',
+  productId: NO_PRODUCT,
   productType: '',
   premiumAmount: '',
   billingInterval: 'MONTH',
@@ -25,6 +28,23 @@ export default function PolicyCreateModal({ customerId, isOpen, onClose }: Polic
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState<string | null>(null);
   const createPolicy = useCreatePolicy(customerId);
+  const { data: products = [] } = useProducts();
+
+  // Picking a product fills in its type, premium and billing; all stay editable.
+  const pickProduct = (productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    setForm((prev) =>
+      product
+        ? {
+            ...prev,
+            productId,
+            productType: product.productType ?? prev.productType,
+            premiumAmount: (product.basePremiumCents / 100).toFixed(2),
+            billingInterval: product.billingInterval,
+          }
+        : { ...prev, productId: NO_PRODUCT },
+    );
+  };
 
   const reset = () => {
     setForm(initialForm);
@@ -51,6 +71,7 @@ export default function PolicyCreateModal({ customerId, isOpen, onClose }: Polic
     try {
       await createPolicy.mutateAsync({
         policyNumber: form.policyNumber,
+        productId: form.productId || undefined,
         productType: form.productType || undefined,
         premiumAmountCents,
         billingInterval: form.billingInterval as BillingInterval,
@@ -85,6 +106,23 @@ export default function PolicyCreateModal({ customerId, isOpen, onClose }: Polic
             placeholder="POL-00123"
           />
         </div>
+        {products.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">Product</label>
+            <select
+              value={form.productId}
+              onChange={(e) => pickProduct(e.target.value)}
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+            >
+              <option value={NO_PRODUCT}>None — type it in below</option>
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-muted mb-2">
             Product Type <span className="text-xs text-subtle font-normal">(optional)</span>
