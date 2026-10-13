@@ -36,10 +36,11 @@ export default function Sidebar() {
         isCollapsed ? 'w-16' : 'w-60'
       }`}
     >
-      {/* Right padding centres the toggle in the collapsed width, so it stays put either way. */}
-      <div className="h-[69px] flex-shrink-0 flex items-center justify-between pl-5 pr-[17px] border-b border-[var(--border)]">
+      {/* The toggle is pinned to the right edge, centred in the collapsed width,
+          so the fading app name can never push it out of view. */}
+      <div className="relative h-[69px] flex-shrink-0 flex items-center pl-5 pr-14 border-b border-[var(--border)]">
         <span
-          className={`text-base font-semibold text-[var(--fg)] whitespace-nowrap transition-opacity duration-200 ${
+          className={`min-w-0 truncate text-base font-semibold text-[var(--fg)] transition-opacity duration-200 ${
             isCollapsed ? 'opacity-0' : 'opacity-100 delay-75'
           }`}
         >
@@ -47,7 +48,7 @@ export default function Sidebar() {
         </span>
         <button
           onClick={toggle}
-          className="flex-shrink-0 p-1.5 rounded-md text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
+          className="absolute right-[17px] top-1/2 -translate-y-1/2 p-1.5 rounded-md text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
