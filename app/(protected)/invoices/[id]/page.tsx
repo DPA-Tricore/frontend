@@ -80,6 +80,13 @@ export default function InvoiceDetailPage() {
             </Link>
             <span className="text-subtle text-sm"> · {invoice.customerId ? 'Customer' : 'Lead'}</span>
           </p>
+          {status === CustomerInvoiceStatus.DRAFT && (
+            <p className="text-sm text-subtle mt-1">
+              {invoice.billToEmail
+                ? `Sending emails it to ${invoice.billToEmail}`
+                : 'No email on file — add one to their contacts to email invoices'}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -88,13 +95,26 @@ export default function InvoiceDetailPage() {
               <button onClick={() => setIsEditOpen(true)} disabled={busy} className={colors.button.secondary}>
                 Edit
               </button>
-              <button
-                onClick={() => act('send', 'Mark this invoice as sent? It can no longer be edited after.')}
-                disabled={busy}
-                className={colors.button.primary}
-              >
-                Mark as Sent
-              </button>
+              {invoice.billToEmail ? (
+                <button
+                  onClick={() =>
+                    act('send', `Email ${invoice.invoiceNumber} to ${invoice.billToEmail}? It can no longer be edited after.`)
+                  }
+                  disabled={busy}
+                  className={colors.button.primary}
+                >
+                  Send Invoice
+                </button>
+              ) : (
+                <button
+                  onClick={() => act('send', 'Mark this invoice as sent? It can no longer be edited after.')}
+                  disabled={busy}
+                  title="No email on file — deliver it yourself, then mark it sent"
+                  className={colors.button.primary}
+                >
+                  Mark as Sent
+                </button>
+              )}
             </>
           )}
           {canEdit && isOpen && (

@@ -24,6 +24,8 @@ export interface CustomerInvoiceResponseDto {
   leadId: string | null;
   customerId: string | null;
   billToName: string | null;
+  // Where Send emails it. Null when they have no usable email on file.
+  billToEmail: string | null;
   issuedById: string | null;
   issueDate: string;
   dueDate: string;
