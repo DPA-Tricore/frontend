@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { APP_NAME } from '@/lib/constants/brand';
+import { AUTOFILL_SUBMIT_DELAY_MS, MIN_PASSWORD_LENGTH } from '@/lib/constants/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,56 +16,77 @@ export default function LoginPage() {
   });
   const [localError, setLocalError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
-  const [lastChangeTime, setLastChangeTime] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submittingRef = useRef(false);
+  const autofillTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const now = Date.now();
-    const wasEmpty = !formData[name as keyof typeof formData];
-    const newFormData = { ...formData, [name]: value };
+  useEffect(() => () => {
+    if (autofillTimerRef.current) clearTimeout(autofillTimerRef.current);
+  }, []);
 
-    setFormData(newFormData);
-    if (localError) setLocalError(null);
-    if (error) clearError();
-
-    if (wasEmpty && value && newFormData.email && newFormData.password && now - lastChangeTime < 200) {
-      setTimeout(() => handleAutoSubmit(newFormData), 100);
-    }
-    setLastChangeTime(now);
+  // Reads straight from the inputs: Safari can fill them before React state
+  // catches up, so state alone may still hold half the values.
+  const readForm = () => {
+    const form = formRef.current;
+    return {
+      email: (form?.elements.namedItem('email') as HTMLInputElement | null)?.value ?? '',
+      password: (form?.elements.namedItem('password') as HTMLInputElement | null)?.value ?? '',
+    };
   };
 
-  const handleAutoSubmit = async (data: typeof formData) => {
+  const showError = (message: string) => {
+    setLocalError(message);
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
+  };
+
+  // One sign-in at a time — a second call while one is running is ignored.
+  const signIn = async (data: typeof formData) => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     try {
       await login(data);
       router.push('/dashboard');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      setLocalError(message);
-      setShake(true);
-      setTimeout(() => setShake(false), 400);
+      showError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      submittingRef.current = false;
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const previous = formData[name as keyof typeof formData];
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (localError) setLocalError(null);
+    if (error) clearError();
+
+    // Typing adds one character at a time. A jump of several means a password
+    // manager (or a paste) filled it — wait for both fields, then sign in once.
+    if (value.length - previous.length > 1) {
+      if (autofillTimerRef.current) clearTimeout(autofillTimerRef.current);
+      autofillTimerRef.current = setTimeout(() => {
+        const data = readForm();
+        if (data.email.includes('@') && data.password.length >= MIN_PASSWORD_LENGTH) {
+          setFormData(data);
+          signIn(data);
+        }
+      }, AUTOFILL_SUBMIT_DELAY_MS);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (autofillTimerRef.current) clearTimeout(autofillTimerRef.current);
     setLocalError(null);
 
-    if (!formData.email || !formData.password) {
-      setLocalError('Email and password are required');
-      setShake(true);
-      setTimeout(() => setShake(false), 400);
+    const data = readForm();
+    if (!data.email || !data.password) {
+      showError('Email and password are required');
       return;
     }
-
-    try {
-      await login(formData);
-      router.push('/dashboard');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      setLocalError(message);
-      setShake(true);
-      setTimeout(() => setShake(false), 400);
-    }
+    setFormData(data);
+    await signIn(data);
   };
 
   return (
@@ -86,7 +108,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form ref={formRef} className="space-y-6" onSubmit={handleSubmit}>
           {/* Error Message with animation */}
           {(error || localError) && (
             <div className={`rounded-xl bg-red-50 border border-red-200 p-4 animate-slideInLeft ${shake ? 'animate-shake' : ''}`}>
