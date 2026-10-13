@@ -146,6 +146,18 @@ export const getInvoiceStatusColor = (status: string): string => {
   return map[status] ?? 'bg-gray-500/15 text-gray-600 dark:text-gray-400';
 };
 
+// An agency's invoice to its own client — see getInvoiceStatusColor for the platform's.
+export const getCustomerInvoiceStatusColor = (status: string): string => {
+  const map: Record<string, string> = {
+    DRAFT: 'bg-gray-500/15 text-gray-600 dark:text-gray-400',
+    SENT: 'bg-blue-500/15 text-blue-700 dark:text-blue-400',
+    PAID: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+    OVERDUE: 'bg-orange-500/15 text-orange-600 dark:text-orange-400',
+    VOID: 'bg-gray-500/10 text-gray-500 dark:text-gray-500 line-through',
+  };
+  return map[status] ?? map.DRAFT;
+};
+
 export const getCustomerStatusColor = (status: string): string => {
   const map: Record<string, string> = {
     ACTIVE: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',

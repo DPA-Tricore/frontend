@@ -1,6 +1,7 @@
 import type { ListLeadsParams } from '@/lib/types/leads';
 import type { ListRemindersParams } from '@/lib/types/reminders';
 import type { ListCustomersParams } from '@/lib/types/customers';
+import type { CustomerInvoiceFilters } from '@/lib/types/invoices';
 
 export type LeadListFilters = Omit<ListLeadsParams, 'status'> & { status?: string };
 export type CustomerListFilters = Omit<ListCustomersParams, 'status'> & { status?: string };
@@ -71,4 +72,10 @@ export const dashboardKeys = {
 export const productKeys = {
   all: ['products'] as const,
   list: (includeInactive: boolean) => [...productKeys.all, 'list', { includeInactive }] as const,
+};
+
+export const invoiceKeys = {
+  all: ['customerInvoices'] as const,
+  list: (filters: CustomerInvoiceFilters) => [...invoiceKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...invoiceKeys.all, 'detail', id] as const,
 };

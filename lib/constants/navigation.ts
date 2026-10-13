@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   CreditCard,
   Package,
+  Receipt,
 } from 'lucide-react';
 import type { NavGroup } from '@/lib/types/navigation';
 import { PRODUCT_MANAGER_ROLES } from '@/lib/constants/products';
@@ -29,6 +30,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: 'Leads', icon: TrendingUp, href: '/leads' },
       { name: 'Customers', icon: Contact, href: '/customers' },
+      { name: 'Invoices', icon: Receipt, href: '/invoices' },
     ],
   },
   {

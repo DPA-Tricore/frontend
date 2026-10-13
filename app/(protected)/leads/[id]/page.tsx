@@ -14,8 +14,9 @@ import LeadTasksTab from './components/lead-tasks-tab';
 import LeadRemindersTab from './components/lead-reminders-tab';
 import LeadDocumentsTab from './components/lead-documents-tab';
 import LeadNotesTab from './components/lead-notes-tab';
+import EntityInvoicesTab from '@/components/invoices/entity-invoices-tab';
 
-type Tab = 'activity' | 'tasks' | 'reminders' | 'documents' | 'notes';
+type Tab = 'activity' | 'tasks' | 'reminders' | 'documents' | 'notes' | 'invoices';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'activity', label: 'Activity' },
@@ -23,6 +24,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'reminders', label: 'Reminders' },
   { id: 'documents', label: 'Documents' },
   { id: 'notes', label: 'Notes' },
+  { id: 'invoices', label: 'Invoices' },
 ];
 
 export default function LeadDetailPage() {
@@ -80,6 +82,9 @@ export default function LeadDetailPage() {
             {activeTab === 'reminders' && <LeadRemindersTab leadId={id} />}
             {activeTab === 'documents' && <LeadDocumentsTab leadId={id} />}
             {activeTab === 'notes' && <LeadNotesTab leadId={id} />}
+            {activeTab === 'invoices' && (
+              <EntityInvoicesTab billTo={{ type: 'lead', id, name: `${lead.firstName} ${lead.lastName}` }} />
+            )}
           </div>
 
           <LeadPropertiesPanel lead={lead} />

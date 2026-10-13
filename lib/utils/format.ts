@@ -15,3 +15,11 @@ export function formatCentsAsMoney(cents: number): string {
     currency: 'USD',
   }).format(cents / 100);
 }
+
+// Parses a typed dollar amount ("120", "120.5") into whole cents. Null when
+// it isn't a valid non-negative number.
+export function parseDollarsToCents(value: string): number | null {
+  const amount = parseFloat(value);
+  if (Number.isNaN(amount) || amount < 0) return null;
+  return Math.round(amount * 100);
+}

@@ -5,7 +5,8 @@ import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import type { BillingInterval } from '@/lib/types/customers';
 import type { ProductResponseDto } from '@/lib/types/products';
-import { BILLING_INTERVAL_OPTIONS, PRODUCT_FORM_DEFAULTS, FORM_INPUT_CLASS } from '@/lib/constants/products';
+import { BILLING_INTERVAL_OPTIONS, PRODUCT_FORM_DEFAULTS } from '@/lib/constants/products';
+import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
 import { useCreateProduct, useDeleteProduct, useUpdateProduct } from '@/lib/hooks/use-products';
 
 interface ProductFormModalProps {
