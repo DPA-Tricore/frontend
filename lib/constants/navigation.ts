@@ -11,8 +11,10 @@ import {
   Contact,
   ShieldCheck,
   CreditCard,
+  Package,
 } from 'lucide-react';
 import type { NavGroup } from '@/lib/types/navigation';
+import { PRODUCT_MANAGER_ROLES } from '@/lib/constants/products';
 
 export const NAV_GROUPS: NavGroup[] = [
   {
@@ -45,11 +47,11 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: 'Admin',
-    roles: ['ORG_ADMIN'],
     items: [
-      { name: 'Team', icon: Users, href: '/team' },
-      { name: 'Audit Log', icon: ShieldCheck, href: '/audit-log' },
-      { name: 'Billing', icon: CreditCard, href: '/billing' },
+      { name: 'Products', icon: Package, href: '/products', roles: PRODUCT_MANAGER_ROLES },
+      { name: 'Team', icon: Users, href: '/team', roles: ['ORG_ADMIN'] },
+      { name: 'Audit Log', icon: ShieldCheck, href: '/audit-log', roles: ['ORG_ADMIN'] },
+      { name: 'Billing', icon: CreditCard, href: '/billing', roles: ['ORG_ADMIN'] },
     ],
   },
 ];

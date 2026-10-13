@@ -67,3 +67,8 @@ export const userKeys = {
 export const dashboardKeys = {
   summary: () => ['dashboard', 'summary'] as const,
 };
+
+export const productKeys = {
+  all: ['products'] as const,
+  list: (includeInactive: boolean) => [...productKeys.all, 'list', { includeInactive }] as const,
+};
