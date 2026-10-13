@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Receipt } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { colors } from '@/lib/theme/colors';
 import { INVOICE_EDITOR_ROLES } from '@/lib/constants/invoices';
@@ -32,7 +32,7 @@ export default function EntityInvoicesTab({ billTo }: { billTo: BillTo }) {
       )}
 
       {invoices.length === 0 ? (
-        <EmptyState message="No invoices yet" icon={<Receipt size={32} className="mx-auto text-subtle" />} />
+        <EmptyState message="No invoices yet" icon={<FileText size={32} className="mx-auto text-subtle" />} />
       ) : (
         <InvoiceTable invoices={invoices} showBillTo={false} />
       )}
