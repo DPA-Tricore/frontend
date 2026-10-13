@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { storageService } from '@/lib/services/storage';
+import { CREDENTIAL_ENDPOINTS } from '@/lib/constants/auth';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -34,8 +35,9 @@ class AxiosClient {
     this.instance.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          // Handle unauthorized - clear token and redirect to login
+        const isCredentialCheck = CREDENTIAL_ENDPOINTS.includes(error.config?.url ?? '');
+        if (error.response?.status === 401 && !isCredentialCheck) {
+          // Session expired - clear token and redirect to login
           if (typeof window !== 'undefined') {
             storageService.clearAuth();
             window.location.href = '/login';
