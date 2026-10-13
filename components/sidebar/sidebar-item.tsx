@@ -6,50 +6,36 @@ import React from 'react';
 interface SidebarItemProps {
   name: string;
   icon: React.ElementType;
-  href?: string;
+  href: string;
   isActive: boolean;
   isCollapsed: boolean;
 }
 
-export default function SidebarItem({
-  name,
-  icon: Icon,
-  href,
-  isActive,
-  isCollapsed,
-}: SidebarItemProps) {
-  const sharedClass = `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors w-full text-left ${
-    isActive ? 'bg-blue-600 text-white' : 'text-muted interactive'
-  }`;
-
-  const label = (
-    <>
-      <Icon size={20} className="flex-shrink-0" />
+// The icon never moves: padding is fixed and the label fades while the
+// sidebar's width slides, so collapsing reads as one smooth motion.
+export default function SidebarItem({ name, icon: Icon, href, isActive, isCollapsed }: SidebarItemProps) {
+  return (
+    <Link
+      href={href}
+      title={isCollapsed ? name : undefined}
+      aria-current={isActive ? 'page' : undefined}
+      className={`flex items-center gap-3 h-9 px-3 rounded-md text-sm whitespace-nowrap transition-colors duration-150 ${
+        isActive
+          ? 'bg-[var(--surface-2)] text-[var(--fg)] font-medium'
+          : 'text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]'
+      }`}
+    >
+      <Icon
+        size={18}
+        className={`flex-shrink-0 transition-colors duration-150 ${isActive ? 'text-[var(--accent)]' : ''}`}
+      />
       <span
-        className={`font-medium transition-opacity duration-300 ${
-          isCollapsed ? 'opacity-0' : 'opacity-100'
+        className={`truncate transition-opacity duration-200 ${
+          isCollapsed ? 'opacity-0' : 'opacity-100 delay-75'
         }`}
       >
         {name}
       </span>
-    </>
-  );
-
-  return href ? (
-    <Link
-      href={href}
-      className={sharedClass}
-      title={isCollapsed ? name : ''}
-    >
-      {label}
     </Link>
-  ) : (
-    <button
-      type="button"
-      className={sharedClass}
-      title={isCollapsed ? name : ''}
-    >
-      {label}
-    </button>
   );
 }

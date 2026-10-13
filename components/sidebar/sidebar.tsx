@@ -1,42 +1,61 @@
 'use client';
 
-import { useState } from 'react';
-import { Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import SidebarNav from './sidebar-nav';
 import SidebarUser from './sidebar-user';
 import { APP_NAME } from '@/lib/constants/brand';
+import { SIDEBAR_COLLAPSED_KEY } from '@/lib/constants/navigation';
+
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  useEffect(() => {
+    try {
+      setIsCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true');
+    } catch {
+      // Storage blocked — start expanded.
+    }
+  }, []);
+
+  const toggle = () => {
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
+    } catch {
+      // Not saved; the choice still holds for this visit.
+    }
+  };
+
+  const ToggleIcon = isCollapsed ? PanelLeftOpen : PanelLeftClose;
+
   return (
     <aside
-      className={`border-r border-[var(--border)] text-primary min-h-screen flex flex-col transition-all duration-300 overflow-hidden ${
-        isCollapsed ? 'w-20' : 'w-64'
+      className={`flex-shrink-0 h-screen border-r border-[var(--border)] flex flex-col transition-[width] duration-200 ease-out overflow-hidden ${
+        isCollapsed ? 'w-16' : 'w-60'
       }`}
     >
-      {/* Header */}
-      <div className="relative py-8 px-4 border-b border-primary flex items-center min-h-24">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 interactive icon-btn"
-          title={isCollapsed ? 'Expand' : 'Collapse'}
-        >
-          <Menu size={24} />
-        </button>
-
-        <div
-          className={`absolute top-1/2 left-16 -translate-y-1/2 transition-opacity ${
-            isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 delay-300'
+      {/* Right padding centres the toggle in the collapsed width, so it stays put either way. */}
+      <div className="h-[69px] flex-shrink-0 flex items-center justify-between pl-5 pr-[17px] border-b border-[var(--border)]">
+        <span
+          className={`text-base font-semibold text-[var(--fg)] whitespace-nowrap transition-opacity duration-200 ${
+            isCollapsed ? 'opacity-0' : 'opacity-100 delay-75'
           }`}
         >
-          <h1 className="text-2xl font-bold text-primary whitespace-nowrap">{APP_NAME}</h1>
-        </div>
+          {APP_NAME}
+        </span>
+        <button
+          onClick={toggle}
+          className="flex-shrink-0 p-1.5 rounded-md text-[var(--muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <ToggleIcon size={18} />
+        </button>
       </div>
 
-      {/* Navigation */}
       <SidebarNav isCollapsed={isCollapsed} />
-
-      {/* User Profile */}
       <SidebarUser isCollapsed={isCollapsed} />
     </aside>
   );
