@@ -1,6 +1,7 @@
-import Link from 'next/link';
 import { formatDateTime } from '@/lib/utils/date';
+import { TASK_PRIORITIES } from '@/lib/constants/tasks';
 import type { TaskResponseDto } from '@/lib/types/tasks';
+import type { UserResponseDto } from '@/lib/api/users';
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -12,52 +13,55 @@ function Row({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
+const selectClass =
+  'w-full text-xs px-3 py-2 rounded-lg border border-[var(--border)] bg-transparent text-primary cursor-pointer focus:ring-2 focus:ring-blue-500 disabled:opacity-60';
+
 interface TaskPropertiesPanelProps {
   task: TaskResponseDto;
+  users: UserResponseDto[];
   getUserEmail: (id: string) => string;
+  updating: boolean;
+  onChange: (data: { assignedToId?: string; priority?: string }) => void;
 }
 
-export default function TaskPropertiesPanel({ task, getUserEmail }: TaskPropertiesPanelProps) {
+export default function TaskPropertiesPanel({ task, users, getUserEmail, updating, onChange }: TaskPropertiesPanelProps) {
+  const assignable = users.filter((u) => u.isActive || u.id === task.assignedToId);
+
   return (
     <aside className="surface border border-[var(--border)] rounded-xl p-5 space-y-0">
-      {/* Properties */}
-      <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-1">Properties</p>
-      <Row label="Type" value={task.type.replace(/_/g, ' ')} />
-      <Row label="Priority" value={task.priority} />
-      <Row label="Status" value={task.status.replace(/_/g, ' ')} />
-      <Row label="Assignee" value={getUserEmail(task.assignedToId)} />
-      <Row label="Created by" value={getUserEmail(task.createdById)} />
+      <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-2">Assigned To</p>
+      <select
+        value={task.assignedToId}
+        onChange={(e) => onChange({ assignedToId: e.target.value })}
+        disabled={updating}
+        className={selectClass}
+      >
+        {assignable.map((u) => (
+          <option key={u.id} value={u.id}>{u.email}</option>
+        ))}
+      </select>
+
+      <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 mt-4">Priority</p>
+      <select
+        value={task.priority}
+        onChange={(e) => onChange({ priority: e.target.value })}
+        disabled={updating}
+        className={selectClass}
+      >
+        {TASK_PRIORITIES.map((p) => (
+          <option key={p} value={p}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
+        ))}
+      </select>
 
       <div className="border-b border-[var(--border)] my-4" />
 
-      {/* Timeline */}
       <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-1">Timeline</p>
       <Row label="Due" value={formatDateTime(task.dueDate)} />
       {task.startDate && <Row label="Start" value={formatDateTime(task.startDate)} />}
       {task.completedAt && <Row label="Completed" value={formatDateTime(task.completedAt)} />}
       <Row label="Created" value={formatDateTime(task.createdAt)} />
+      <Row label="Created by" value={getUserEmail(task.createdById)} />
       <Row label="Updated" value={formatDateTime(task.updatedAt)} />
-
-      {task.reminderAt && (
-        <>
-          <div className="border-b border-[var(--border)] my-4" />
-          <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-1">Reminder</p>
-          <Row label="Remind at" value={formatDateTime(task.reminderAt)} />
-          <Row label="Sent" value={task.reminderSent ? 'Yes' : 'Pending'} />
-        </>
-      )}
-
-      {task.leadId && (
-        <>
-          <div className="border-b border-[var(--border)] my-4" />
-          <Link
-            href={`/leads/${task.leadId}`}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
-          >
-            View Related Lead →
-          </Link>
-        </>
-      )}
 
       <div className="border-b border-[var(--border)] my-4" />
       <p className="text-xs text-subtle font-mono break-all">{task.id}</p>

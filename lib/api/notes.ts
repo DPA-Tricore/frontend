@@ -26,6 +26,27 @@ export const notesApi = {
     return res.data;
   },
 
+  async getByTask(taskId: string): Promise<NoteResponseDto[]> {
+    const res = await axiosClient.get<NoteResponseDto[]>(`/tasks/${taskId}/notes`);
+    return res.data;
+  },
+
+  async createTaskText(taskId: string, data: CreateNoteRequest): Promise<NoteResponseDto> {
+    const res = await axiosClient.post<NoteResponseDto>(`/tasks/${taskId}/notes`, data);
+    return res.data;
+  },
+
+  async createTaskVoice(taskId: string, blob: Blob): Promise<NoteResponseDto> {
+    const form = new FormData();
+    form.append('file', blob, `voice-note-${Date.now()}.webm`);
+    const res = await axiosClient.post<NoteResponseDto>(
+      `/tasks/${taskId}/notes/audio`,
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
+    return res.data;
+  },
+
   async edit(id: string, data: UpdateNoteRequest): Promise<NoteResponseDto> {
     const res = await axiosClient.patch<NoteResponseDto>(`/notes/${id}`, data);
     return res.data;

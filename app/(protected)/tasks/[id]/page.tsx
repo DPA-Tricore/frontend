@@ -1,68 +1,60 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { tasksApi } from '@/lib/api/tasks';
-import type { TaskResponseDto } from '@/lib/types/tasks';
+import type { CreateTaskRequest } from '@/lib/types/tasks';
 import { useUsers } from '@/lib/hooks/use-users';
+import { useTask, useUpdateTask } from '@/lib/hooks/use-task-detail';
 import LoadingSpinner from '@/components/loading-spinner';
 import TaskTopBar from './components/task-top-bar';
 import TaskHero from './components/task-hero';
+import TaskRelatedLead from './components/task-related-lead';
 import TaskContent from './components/task-description-card';
 import TaskPropertiesPanel from './components/task-properties-panel';
+import TaskActivityTab from './components/task-activity-tab';
+import TaskNotesTab from './components/task-notes-tab';
+import TaskDocumentsTab from './components/task-documents-tab';
+import TaskRemindersTab from './components/task-reminders-tab';
 import TaskEditModal from './components/task-edit-modal';
+import TaskCompleteModal from './components/task-complete-modal';
 import TaskDeleteDialog from './components/task-delete-dialog';
+
+type Tab = 'activity' | 'notes' | 'documents' | 'reminders';
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'activity', label: 'Activity' },
+  { id: 'notes', label: 'Notes' },
+  { id: 'documents', label: 'Documents' },
+  { id: 'reminders', label: 'Reminders' },
+];
 
 export default function TaskDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
-  const [task, setTask] = useState<TaskResponseDto | null>(null);
+  const { data: task, isLoading, isError } = useTask(id);
   const { data: users = [] } = useUsers();
-  const [loading, setLoading] = useState(true);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [completing, setCompleting] = useState(false);
+  const updateTask = useUpdateTask(id);
 
-  const fetchTask = useCallback(async () => {
-    try {
-      const data = await tasksApi.getTask(id);
-      setTask(data);
-    } catch {
-      router.push('/tasks');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, router]);
+  const [activeTab, setActiveTab] = useState<Tab>('activity');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
-    fetchTask();
-  }, [fetchTask]);
+    if (isError) router.push('/tasks');
+  }, [isError, router]);
 
   const getUserEmail = (userId: string) =>
     users.find((u) => u.id === userId)?.email ?? 'Unknown';
 
-  const handleMarkComplete = async () => {
-    if (!task || task.status === 'COMPLETED') return;
-    setCompleting(true);
-    try {
-      const updated = await tasksApi.updateTask(task.id, {
-        status: 'COMPLETED',
-        completedAt: new Date(),
-      });
-      setTask(updated);
-    } finally {
-      setCompleting(false);
-    }
-  };
+  const handleUpdate = (data: Partial<CreateTaskRequest>) => updateTask.mutateAsync(data);
 
-  const handleStatusChange = async (status: string) => {
-    if (!task) return;
-    const updated = await tasksApi.updateTask(task.id, { status });
-    setTask(updated);
-  };
+  // Reopening clears completedAt so the task doesn't look done-and-open at once.
+  const handleStatusChange = (status: string) =>
+    handleUpdate(status === 'COMPLETED' ? { status } : { status, completedAt: null });
 
-  if (loading) return <LoadingSpinner message="Loading task..." />;
+  if (isLoading) return <LoadingSpinner message="Loading task..." />;
   if (!task) return null;
 
   return (
@@ -73,20 +65,56 @@ export default function TaskDetailPage() {
         <TaskHero
           task={task}
           getUserEmail={getUserEmail}
-          completing={completing}
+          updating={updateTask.isPending}
           onStatusChange={handleStatusChange}
-          onMarkComplete={handleMarkComplete}
+          onComplete={() => setShowCompleteModal(true)}
           onEdit={() => setShowEditModal(true)}
           onDelete={() => setShowDeleteDialog(true)}
         />
 
+        {task.lead && (
+          <div className="mt-6">
+            <TaskRelatedLead lead={task.lead} />
+          </div>
+        )}
+
         <div className="border-b border-[var(--border)] my-8" />
 
         <div className="grid grid-cols-3 gap-10 items-start">
-          <div className="col-span-2">
+          <div className="col-span-2 min-w-0">
             <TaskContent task={task} />
+
+            <div className="border-b border-[var(--border)] mt-10 mb-6">
+              <nav className="flex gap-6">
+                {TABS.map(({ id: tabId, label }) => (
+                  <button
+                    key={tabId}
+                    onClick={() => setActiveTab(tabId)}
+                    className={`pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                      activeTab === tabId
+                        ? 'border-gray-900 text-primary dark:border-white'
+                        : 'border-transparent text-subtle hover:text-primary'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {activeTab === 'activity' && <TaskActivityTab task={task} getUserEmail={getUserEmail} />}
+            {activeTab === 'notes' && <TaskNotesTab taskId={id} />}
+            {activeTab === 'documents' && <TaskDocumentsTab taskId={id} />}
+            {activeTab === 'reminders' && <TaskRemindersTab taskId={id} />}
           </div>
-          <TaskPropertiesPanel task={task} getUserEmail={getUserEmail} />
+
+          <TaskPropertiesPanel
+            task={task}
+            users={users}
+            getUserEmail={getUserEmail}
+            updating={updateTask.isPending}
+            onChange={handleUpdate}
+          />
         </div>
       </div>
 
@@ -95,9 +123,19 @@ export default function TaskDetailPage() {
         task={task}
         users={users}
         onClose={() => setShowEditModal(false)}
-        onUpdated={(updated) => {
-          setTask(updated);
+        onSave={async (data) => {
+          await handleUpdate(data);
           setShowEditModal(false);
+        }}
+      />
+
+      <TaskCompleteModal
+        isOpen={showCompleteModal}
+        saving={updateTask.isPending}
+        onCancel={() => setShowCompleteModal(false)}
+        onConfirm={async (data) => {
+          await handleUpdate(data);
+          setShowCompleteModal(false);
         }}
       />
 

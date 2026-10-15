@@ -1,4 +1,26 @@
 import type { PaginationMeta } from './common';
+import type { ContactType } from './leads';
+import type { ActivityResponseDto } from './activities';
+import type { NoteResponseDto } from './notes';
+import type { DocumentResponseDto } from './documents';
+
+export interface TaskLeadContact {
+  id: string;
+  type: ContactType;
+  value: string;
+  isPrimary: boolean;
+  doNotContact: boolean;
+}
+
+/** Slim lead attached to GET /tasks/:id only. */
+export interface TaskLeadSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  status: string;
+  leadType: string;
+  contacts: TaskLeadContact[];
+}
 
 export interface TaskResponseDto {
   id: string;
@@ -21,6 +43,7 @@ export interface TaskResponseDto {
   customFields?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  lead?: TaskLeadSummary;
 }
 
 export interface PaginatedTaskResponse {
@@ -69,5 +92,17 @@ export interface CreateTaskRequest {
   customReminderTimes?: string[];
   demoMode?: boolean;
   status?: string;
-  completedAt?: Date | string;
+  /** null clears it, e.g. when a task is reopened. */
+  completedAt?: Date | string | null;
+}
+
+export type TaskFeedKind = 'created' | 'activity' | 'note' | 'document';
+
+export interface TaskFeedItem {
+  id: string;
+  kind: TaskFeedKind;
+  date: string;
+  activity?: ActivityResponseDto;
+  note?: NoteResponseDto;
+  document?: DocumentResponseDto;
 }

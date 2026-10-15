@@ -59,6 +59,23 @@ export const taskKeys = {
   all: ['tasks'] as const,
   boardSummary: () => [...taskKeys.all, 'board-summary'] as const,
   boardColumn: (status: string) => [...taskKeys.all, 'board', status] as const,
+  detail: (id: string) => [...taskKeys.all, 'detail', id] as const,
+};
+
+export const taskReminderKeys = {
+  byTask: (taskId: string) => ['taskReminders', taskId] as const,
+};
+
+export const taskActivityKeys = {
+  byTask: (taskId: string) => ['taskActivity', taskId] as const,
+};
+
+export const taskDocumentKeys = {
+  byTask: (taskId: string) => ['taskDocuments', taskId] as const,
+};
+
+export const taskNoteKeys = {
+  byTask: (taskId: string) => ['taskNotes', taskId] as const,
 };
 
 export const userKeys = {

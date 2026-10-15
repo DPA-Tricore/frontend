@@ -1,16 +1,9 @@
 'use client';
 
-import { Phone, Mail, Calendar, CheckSquare, Bell, CalendarClock, type LucideIcon } from 'lucide-react';
+import { CheckSquare, Bell, CalendarClock } from 'lucide-react';
 import { useLeadNextAction } from '@/lib/hooks/use-lead-detail';
 import { formatDate, formatTime } from '@/lib/utils/date';
-
-const TASK_TYPE_ICONS: Record<string, LucideIcon> = {
-  CALL: Phone,
-  EMAIL: Mail,
-  MEETING: Calendar,
-  FOLLOW_UP: CheckSquare,
-  CUSTOM: CheckSquare,
-};
+import { TASK_TYPE_ICONS } from '@/lib/constants/tasks';
 
 interface LeadNextActionProps {
   leadId: string;

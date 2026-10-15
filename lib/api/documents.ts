@@ -32,6 +32,22 @@ export const documentsApi = {
     return res.data;
   },
 
+  async getTaskDocuments(taskId: string): Promise<DocumentResponseDto[]> {
+    const res = await axiosClient.get<DocumentResponseDto[]>(`/tasks/${taskId}/documents`);
+    return res.data;
+  },
+
+  async uploadTaskDocument(taskId: string, file: File): Promise<DocumentResponseDto> {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await axiosClient.post<DocumentResponseDto>(
+      `/tasks/${taskId}/documents`,
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
+    return res.data;
+  },
+
   async downloadDocument(documentId: string, fileName: string): Promise<void> {
     const res = await axiosClient.get(`/documents/${documentId}/download`, {
       responseType: 'blob',

@@ -5,7 +5,7 @@ function asUrl(value: string, base: string): string {
 }
 
 /** Best-effort deep link for a contact channel. Never links do-not-contact entries. */
-export function contactHref(contact: ContactResponseDto): string | null {
+export function contactHref(contact: Pick<ContactResponseDto, 'type' | 'value' | 'doNotContact'>): string | null {
   if (contact.doNotContact) return null;
   const value = contact.value.trim();
   if (!value) return null;

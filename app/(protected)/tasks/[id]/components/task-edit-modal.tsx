@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { tasksApi } from '@/lib/api/tasks';
-import type { TaskResponseDto } from '@/lib/types/tasks';
+import type { CreateTaskRequest, TaskResponseDto } from '@/lib/types/tasks';
 import type { UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
@@ -12,7 +11,7 @@ interface TaskEditModalProps {
   task: TaskResponseDto;
   users: UserResponseDto[];
   onClose: () => void;
-  onUpdated: (task: TaskResponseDto) => void;
+  onSave: (data: Partial<CreateTaskRequest>) => Promise<unknown>;
 }
 
 function toDatetimeLocal(date: Date | string | undefined): string {
@@ -22,7 +21,7 @@ function toDatetimeLocal(date: Date | string | undefined): string {
   return new Date(d.getTime() - offset * 60_000).toISOString().slice(0, 16);
 }
 
-export default function TaskEditModal({ isOpen, task, users, onClose, onUpdated }: TaskEditModalProps) {
+export default function TaskEditModal({ isOpen, task, users, onClose, onSave }: TaskEditModalProps) {
   const [formData, setFormData] = useState({
     title: task.title,
     description: task.description ?? '',
@@ -64,7 +63,7 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onUpdated 
     setError(null);
     setSaving(true);
     try {
-      const updated = await tasksApi.updateTask(task.id, {
+      await onSave({
         title: formData.title,
         description: formData.description || undefined,
         type: formData.type,
@@ -75,7 +74,6 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onUpdated 
         ...(formData.outcome && { outcome: formData.outcome }),
         ...(formData.resultType && { resultType: formData.resultType }),
       });
-      onUpdated(updated);
     } catch {
       setError('Failed to update task. Please try again.');
     } finally {
