@@ -110,7 +110,6 @@ export default function RemindersPage() {
     <div className="p-8">
       <PageHeader
         title="Reminders"
-        subtitle="Manage your reminders and notifications"
         error={error}
         actions={
           <>

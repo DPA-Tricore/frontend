@@ -72,7 +72,6 @@ export default function DocumentsPage() {
     <div className="p-8">
       <PageHeader
         title="Documents"
-        subtitle="All files attached across your leads"
         error={error}
       />
 

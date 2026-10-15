@@ -12,6 +12,7 @@ import LoadingSpinner from '@/components/loading-spinner';
 import TeamList from './components/team-list';
 import UserRoleTable from './components/user-role-table';
 import AddUserForm from './components/add-user-form';
+import PageHeader from '@/components/page-header';
 
 export default function TeamPage() {
   const router = useRouter();
@@ -47,12 +48,7 @@ export default function TeamPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-primary">Team</h1>
-        <p className="text-sm text-[var(--muted)] mt-1">
-          Manage teams and assign roles for people in your organization.
-        </p>
-      </div>
+      <PageHeader title="Team" />
 
       {isLoading ? (
         <LoadingSpinner />

@@ -70,8 +70,7 @@ export default function LeadsPage() {
   return (
     <div className="p-8">
       <PageHeader
-        title="Leads Management"
-        subtitle="Track and manage your sales pipeline"
+        title="Leads"
         error={error}
         actions={
           <>

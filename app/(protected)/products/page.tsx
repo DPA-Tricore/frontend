@@ -40,7 +40,6 @@ export default function ProductsPage() {
     <div className="p-8">
       <PageHeader
         title="Products"
-        subtitle="What your agency sells — pick from this list when you raise an invoice"
         error={isError ? 'Failed to fetch products' : null}
         actions={
           <button onClick={() => openForm(null)} className={colors.button.primary}>

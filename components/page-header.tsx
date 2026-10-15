@@ -1,18 +1,15 @@
 interface PageHeaderProps {
   title: string;
-  subtitle?: string;
   actions?: React.ReactNode;
   error?: string | null;
 }
 
-export default function PageHeader({ title, subtitle, actions, error }: PageHeaderProps) {
+/** One slim row: the sidebar already says where you are, so no subtitle. */
+export default function PageHeader({ title, actions, error }: PageHeaderProps) {
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-primary">{title}</h1>
-          {subtitle && <p className="text-muted mt-2">{subtitle}</p>}
-        </div>
+      <div className="flex justify-between items-center gap-4 mb-6 min-h-9">
+        <h1 className="text-xl font-semibold text-primary">{title}</h1>
         {actions && <div className="flex items-center gap-3">{actions}</div>}
       </div>
 

@@ -146,10 +146,6 @@ export default function AutomationsPage() {
       <div className="flex-1 p-8">
         <PageHeader
           title="Automations"
-          subtitle={selectedStage
-            ? `Manage automations for ${LEAD_STAGES.find(s => s.value === selectedStage)?.label}`
-            : 'Manage lifecycle automation sequences for your leads'
-          }
           error={error}
           actions={
             <button onClick={() => setShowModal(true)} className={colors.button.primary}>

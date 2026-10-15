@@ -25,7 +25,6 @@ export default function InvoicesPage() {
     <div className="p-8">
       <PageHeader
         title="Invoices"
-        subtitle="What your clients owe you — raise, send and track payment"
         error={isError ? 'Failed to fetch invoices' : null}
         actions={
           canEdit && (

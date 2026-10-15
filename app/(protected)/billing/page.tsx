@@ -120,7 +120,7 @@ export default function BillingPage() {
 
   return (
     <div className="p-8">
-      <PageHeader title="Billing" subtitle="Your subscription and payment history" error={error} />
+      <PageHeader title="Billing" error={error} />
 
       {isLoading ? (
         <LoadingSpinner message="Loading billing information..." />

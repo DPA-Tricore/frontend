@@ -51,7 +51,6 @@ export default function CustomersPage() {
     <div className="p-8">
       <PageHeader
         title="Customers"
-        subtitle="People who've converted from a lead — policies, renewals, and repeat business"
         error={error}
         actions={
           <button onClick={() => setShowForm(true)} className={colors.button.primary}>

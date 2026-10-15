@@ -120,7 +120,6 @@ export default function LeadImportPage() {
     <div className="p-8 max-w-4xl mx-auto">
       <PageHeader
         title="Import Leads"
-        subtitle="Bulk-create leads from a CSV file"
         error={error}
         actions={
           <button

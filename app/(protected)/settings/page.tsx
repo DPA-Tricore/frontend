@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/context/theme-context';
 import { Moon, Sun } from 'lucide-react';
+import PageHeader from '@/components/page-header';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -9,15 +10,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">
-            Settings
-          </h1>
-          <p className="text-muted">
-            Manage your preferences and application settings
-          </p>
-        </div>
+        <PageHeader title="Settings" />
 
         {/* Settings Card */}
         <div className="surface rounded-xl border border-[var(--border)] shadow-sm">

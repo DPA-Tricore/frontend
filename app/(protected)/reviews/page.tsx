@@ -71,7 +71,6 @@ export default function ReviewsPage() {
     <div className="p-8">
       <PageHeader
         title="Google Reviews"
-        subtitle="Monitor and manage your client reviews"
         error={error}
       />
 

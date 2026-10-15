@@ -91,8 +91,7 @@ export default function TasksPage() {
   return (
     <div className="p-8">
       <PageHeader
-        title="Tasks Management"
-        subtitle="Track and manage your sales activities"
+        title="Tasks"
         error={error}
         actions={
           <>

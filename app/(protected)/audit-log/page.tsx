@@ -7,6 +7,7 @@ import { activitiesApi } from '@/lib/api/activities';
 import type { AuditLogEntryDto } from '@/lib/types/activities';
 import LoadingSpinner from '@/components/loading-spinner';
 import { formatDateTime } from '@/lib/utils/date';
+import PageHeader from '@/components/page-header';
 
 const ENTITY_LABELS: Record<string, string> = {
   LEAD: 'Lead',
@@ -55,12 +56,7 @@ export default function AuditLogPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-primary">Audit Log</h1>
-        <p className="text-sm text-[var(--muted)] mt-1">
-          Who changed what, across leads, users, teams, and organization settings.
-        </p>
-      </div>
+      <PageHeader title="Audit Log" />
 
       <div className="surface rounded-xl border border-[var(--border)] shadow-sm p-6 space-y-4">
         {error && (
