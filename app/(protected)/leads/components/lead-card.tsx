@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useDraggable } from '@dnd-kit/core';
 import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { getStatusColor } from '@/lib/theme/colors';
@@ -16,6 +16,7 @@ export interface LeadCardProps {
 }
 
 export default function LeadCard({ lead, isOverlay = false }: LeadCardProps) {
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: lead.id,
     data: { lead },
@@ -28,8 +29,9 @@ export default function LeadCard({ lead, isOverlay = false }: LeadCardProps) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      onClick={() => !isOverlay && router.push(`/leads/${lead.id}`)}
       className={[
-        'surface rounded-lg border border-[var(--border)] p-3 cursor-grab active:cursor-grabbing transition-all select-none',
+        'surface rounded-lg border border-[var(--border)] p-3 cursor-pointer active:cursor-grabbing transition-all select-none',
         isDragging ? 'opacity-40' : 'hover:border-blue-400',
         isOverlay ? 'rotate-1 shadow-xl scale-105' : '',
       ]
@@ -59,13 +61,6 @@ export default function LeadCard({ lead, isOverlay = false }: LeadCardProps) {
           {new Date(lead.createdAt).toLocaleDateString()}
         </p>
       )}
-      <Link
-        href={`/leads/${lead.id}`}
-        onClick={(e) => e.stopPropagation()}
-        className="text-xs text-subtle hover:text-primary mt-2 inline-block transition-colors"
-      >
-        View →
-      </Link>
     </div>
   );
 }

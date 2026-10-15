@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { CheckSquare } from 'lucide-react';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import { getStatusColor, getPriorityColor, getTaskTypeColor } from '@/lib/theme/colors';
@@ -52,7 +53,10 @@ export default function LeadTasksTab({ leadId }: LeadTasksTabProps) {
 
 function TaskRow({ task }: { task: TaskResponseDto }) {
   return (
-    <div className="surface border border-[var(--border)] rounded-lg px-4 py-3 flex items-center gap-3">
+    <Link
+      href={`/tasks/${task.id}`}
+      className="surface border border-[var(--border)] rounded-lg px-4 py-3 flex items-center gap-3 hover:border-blue-400 transition-colors"
+    >
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-primary truncate">{task.title}</p>
         {task.description && (
@@ -74,6 +78,6 @@ function TaskRow({ task }: { task: TaskResponseDto }) {
         <p className="text-xs text-subtle">Due</p>
         <p className="text-xs text-primary font-medium">{formatDate(task.dueDate)}</p>
       </div>
-    </div>
+    </Link>
   );
 }

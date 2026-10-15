@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useDraggable } from '@dnd-kit/core';
 import { formatDate } from '@/lib/utils/date';
 import { getTaskTypeColor, getPriorityColor } from '@/lib/theme/colors';
@@ -13,6 +13,7 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, getUserEmail, isOverlay = false }: TaskCardProps) {
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
     data: { task },
@@ -31,8 +32,9 @@ export default function TaskCard({ task, getUserEmail, isOverlay = false }: Task
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      onClick={() => !isOverlay && router.push(`/tasks/${task.id}`)}
       className={[
-        'surface rounded-lg border border-[var(--border)] p-3 cursor-grab active:cursor-grabbing transition-all select-none',
+        'surface rounded-lg border border-[var(--border)] p-3 cursor-pointer active:cursor-grabbing transition-all select-none',
         isDragging ? 'opacity-40' : 'hover:border-blue-400',
         isOverlay ? 'rotate-1 shadow-xl scale-105' : '',
       ]
@@ -57,21 +59,14 @@ export default function TaskCard({ task, getUserEmail, isOverlay = false }: Task
         Due {formatDate(task.dueDate)}{isOverdue ? ' · Overdue' : ''}
       </p>
 
-      {/* Assignee + View link */}
-      <div className="flex items-center justify-between gap-2 mt-1">
+      {/* Assignee */}
+      <div className="flex items-center gap-2 mt-1">
         <div className="flex items-center gap-1.5 min-w-0">
           <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
             <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>{assigneeInitial}</span>
           </div>
           <span className="text-xs text-subtle truncate">{assigneeEmail}</span>
         </div>
-        <Link
-          href={`/tasks/${task.id}`}
-          onClick={(e) => e.stopPropagation()}
-          className="text-xs text-subtle hover:text-primary transition-colors shrink-0"
-        >
-          View →
-        </Link>
       </div>
     </div>
   );
