@@ -3,6 +3,8 @@
 import { useRef, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import type { TaskResponseDto } from '@/lib/types/tasks';
+import BoardDropSlot from '@/components/board/board-drop-slot';
+import AnimatedCount from '@/components/board/animated-count';
 import TaskCard from './task-card';
 
 interface TaskBoardColumnProps {
@@ -26,7 +28,8 @@ export default function TaskBoardColumn({
   getUserEmail,
   onLoadMore,
 }: TaskBoardColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { setNodeRef, isOver, active } = useDroppable({ id: status });
+  const sourceStatus = (active?.data.current?.task as TaskResponseDto | undefined)?.status;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,7 +58,7 @@ export default function TaskBoardColumn({
       <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
         <span className="text-sm font-semibold text-primary">{label}</span>
         <span className="text-xs font-medium text-muted bg-[var(--bg)] border border-[var(--border)] rounded-full px-2 py-0.5">
-          {tasks.length}/{totalCount}
+          <AnimatedCount value={tasks.length} />/<AnimatedCount value={totalCount} />
         </span>
       </div>
 
@@ -72,6 +75,7 @@ export default function TaskBoardColumn({
           </div>
         ) : (
           <>
+            <BoardDropSlot isOver={isOver} isSourceColumn={sourceStatus === status} />
             {tasks.map((task) => (
               <TaskCard key={task.id} task={task} getUserEmail={getUserEmail} />
             ))}

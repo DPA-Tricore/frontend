@@ -3,6 +3,8 @@
 import { useRef, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { LeadResponseDto } from '@/lib/api/leads';
+import BoardDropSlot from '@/components/board/board-drop-slot';
+import AnimatedCount from '@/components/board/animated-count';
 import LeadCard from './lead-card';
 
 interface BoardColumnProps {
@@ -24,7 +26,8 @@ export default function BoardColumn({
   hasMore = false,
   totalCount = leads.length,
 }: BoardColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { setNodeRef, isOver, active } = useDroppable({ id: status });
+  const sourceStatus = (active?.data.current?.lead as LeadResponseDto | undefined)?.status;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function BoardColumn({
       <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
         <span className="text-sm font-semibold text-primary">{label}</span>
         <span className="text-xs font-medium text-muted bg-[var(--bg)] border border-[var(--border)] rounded-full px-2 py-0.5">
-          {leads.length}/{totalCount}
+          <AnimatedCount value={leads.length} />/<AnimatedCount value={totalCount} />
         </span>
       </div>
 
@@ -73,6 +76,7 @@ export default function BoardColumn({
           </div>
         ) : (
           <>
+            <BoardDropSlot isOver={isOver} isSourceColumn={sourceStatus === status} />
             {leads.map((lead) => (
               <LeadCard key={lead.id} lead={lead} />
             ))}

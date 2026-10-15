@@ -68,3 +68,41 @@
 .animate-shake {
   animation: shake 0.4s ease-in-out;
 }
+/* Board column counts: the new number rolls in like an odometer —
+   from below when the count goes up, from above when it goes down. */
+@keyframes count-roll-up {
+  from {
+    opacity: 0;
+    transform: translateY(70%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes count-roll-down {
+  from {
+    opacity: 0;
+    transform: translateY(-70%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-count-up {
+  animation: count-roll-up 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.animate-count-down {
+  animation: count-roll-down 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-count-up,
+  .animate-count-down {
+    animation: none;
+  }
+}

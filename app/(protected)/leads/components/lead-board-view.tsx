@@ -13,6 +13,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { LeadResponseDto } from '@/lib/api/leads';
+import { BOARD_DROP_ANIMATION } from '@/lib/constants/board';
 import { useUpdateLeadStatus, useLeadsBoardSummary } from '@/lib/hooks/use-leads';
 import LoadingSpinner from '@/components/loading-spinner';
 import BoardColumnContainer from './lead-board-column-container';
@@ -73,7 +74,7 @@ export default function LeadBoardView() {
         </div>
       </div>
 
-      <DragOverlay dropAnimation={{ duration: 150, easing: 'ease' }}>
+      <DragOverlay dropAnimation={BOARD_DROP_ANIMATION}>
         {activeLead ? <LeadCard lead={activeLead} isOverlay /> : null}
       </DragOverlay>
     </DndContext>

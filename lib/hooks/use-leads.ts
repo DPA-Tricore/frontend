@@ -132,12 +132,15 @@ export function useUpdateLeadStatus() {
 
   return useMutation<LeadResponseDto, Error, UpdateLeadStatusPayload, UpdateLeadStatusContext>({
     mutationFn: ({ lead, newStatus }) => leadsApi.updateLead(lead.id, { status: newStatus }),
-    onMutate: async ({ lead, newStatus }) => {
+    onMutate: ({ lead, newStatus }) => {
       const oldColumnKey = leadKeys.boardColumn(lead.status);
       const newColumnKey = leadKeys.boardColumn(newStatus);
       const detailKey = leadKeys.detail(lead.id);
 
-      await Promise.all([
+      // Not awaited on purpose: the cache must move in the same tick as the drop, or the
+      // board's drop animation measures the card in its old column and it flickers.
+      // Safe — setQueryData also updates the state a cancelled fetch reverts to.
+      void Promise.all([
         queryClient.cancelQueries({ queryKey: oldColumnKey }),
         queryClient.cancelQueries({ queryKey: newColumnKey }),
         queryClient.cancelQueries({ queryKey: detailKey }),

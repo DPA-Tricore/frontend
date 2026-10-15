@@ -14,6 +14,7 @@ import {
 } from '@dnd-kit/core';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import type { UserResponseDto } from '@/lib/api/users';
+import { BOARD_DROP_ANIMATION } from '@/lib/constants/board';
 import { useUpdateTaskStatus, useTasksBoardSummary } from '@/lib/hooks/use-tasks';
 import LoadingSpinner from '@/components/loading-spinner';
 import TaskBoardColumnContainer from './task-board-column-container';
@@ -84,7 +85,7 @@ export default function TaskBoardView({ users }: TaskBoardViewProps) {
         </div>
       </div>
 
-      <DragOverlay dropAnimation={{ duration: 150, easing: 'ease' }}>
+      <DragOverlay dropAnimation={BOARD_DROP_ANIMATION}>
         {activeTask ? (
           <TaskCard task={activeTask} getUserEmail={getUserEmail} isOverlay />
         ) : null}

@@ -67,11 +67,14 @@ export function useUpdateTaskStatus() {
 
   return useMutation<TaskResponseDto, Error, UpdateTaskStatusPayload, UpdateTaskStatusContext>({
     mutationFn: ({ task, newStatus }) => tasksApi.updateTask(task.id, { status: newStatus }),
-    onMutate: async ({ task, newStatus }) => {
+    onMutate: ({ task, newStatus }) => {
       const oldColumnKey = taskKeys.boardColumn(task.status);
       const newColumnKey = taskKeys.boardColumn(newStatus);
 
-      await Promise.all([
+      // Not awaited on purpose: the cache must move in the same tick as the drop, or the
+      // board's drop animation measures the card in its old column and it flickers.
+      // Safe — setQueryData also updates the state a cancelled fetch reverts to.
+      void Promise.all([
         queryClient.cancelQueries({ queryKey: oldColumnKey }),
         queryClient.cancelQueries({ queryKey: newColumnKey }),
       ]);
