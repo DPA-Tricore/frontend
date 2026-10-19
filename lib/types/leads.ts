@@ -15,7 +15,8 @@ export enum ContactType {
 
 export interface ContactResponseDto {
   id: string;
-  leadId: string;
+  leadId?: string;
+  customerId?: string;
   type: ContactType;
   value: string;
   isPrimary: boolean;
@@ -84,6 +85,7 @@ export interface CreateLeadRequest {
   leadType: string;
   status: string;
   email?: string;
+  phone?: string;
   source?: string;
   reminderTimes?: string[];
   demoMode?: boolean;
@@ -121,3 +123,18 @@ export interface ImportResultDto {
   createdCount: number;
   rows: ImportRowResultDto[];
 }
+
+/** Whose contacts — mirrors EmailParty / BillTo. */
+export interface ContactOwner {
+  type: 'lead' | 'customer';
+  id: string;
+}
+
+export interface CreateContactRequest {
+  type: ContactType;
+  value: string;
+  isPrimary?: boolean;
+  doNotContact?: boolean;
+}
+
+export type UpdateContactRequest = Partial<Omit<CreateContactRequest, 'type'>>;

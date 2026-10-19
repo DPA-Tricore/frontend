@@ -19,6 +19,8 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    email: '',
+    phone: '',
     leadType: 'PROSPECT',
     status: 'NEW',
   });
@@ -29,7 +31,7 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const createLead = useCreateLead();
 
   const reset = () => {
-    setFormData({ firstName: '', lastName: '', leadType: 'PROSPECT', status: 'NEW' });
+    setFormData({ firstName: '', lastName: '', email: '', phone: '', leadType: 'PROSPECT', status: 'NEW' });
     setReminderTimes([]);
     setReminderTimeInput('');
     setDemoMode(false);
@@ -60,8 +62,12 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const { email, phone, ...rest } = formData;
       await createLead.mutateAsync({
-        ...formData,
+        ...rest,
+        // Blank fields are left out — the backend makes each one the lead's primary contact.
+        ...(email.trim() && { email: email.trim() }),
+        ...(phone.trim() && { phone: phone.trim() }),
         ...(reminderTimes.length > 0 && {
           reminderTimes: reminderTimes.map((t) => new Date(t).toISOString()),
         }),
@@ -107,6 +113,34 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
             className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
             placeholder="Doe"
           />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">
+              Email <span className="text-subtle font-normal">(optional)</span>
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+              placeholder="john@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">
+              Phone <span className="text-subtle font-normal">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+              placeholder="+1 555 0100"
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-muted mb-2">Lead Type</label>

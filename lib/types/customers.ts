@@ -37,6 +37,8 @@ export interface ListCustomersParams {
 export interface CreateCustomerRequest {
   firstName: string;
   lastName: string;
+  email?: string;
+  phone?: string;
   status?: CustomerStatus;
   teamId?: string;
   ownerId?: string;

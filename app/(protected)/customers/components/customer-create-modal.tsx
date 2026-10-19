@@ -12,12 +12,12 @@ interface CustomerCreateModalProps {
 }
 
 export default function CustomerCreateModal({ isOpen, onClose, onCreated }: CustomerCreateModalProps) {
-  const [formData, setFormData] = useState({ firstName: '', lastName: '' });
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' });
   const [error, setError] = useState<string | null>(null);
   const createCustomer = useCreateCustomer();
 
   const reset = () => {
-    setFormData({ firstName: '', lastName: '' });
+    setFormData({ firstName: '', lastName: '', email: '', phone: '' });
     setError(null);
   };
 
@@ -34,7 +34,12 @@ export default function CustomerCreateModal({ isOpen, onClose, onCreated }: Cust
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createCustomer.mutateAsync(formData);
+      const { email, phone, ...rest } = formData;
+      await createCustomer.mutateAsync({
+        ...rest,
+        ...(email.trim() && { email: email.trim() }),
+        ...(phone.trim() && { phone: phone.trim() }),
+      });
       reset();
       onClose();
       onCreated();
@@ -80,6 +85,34 @@ export default function CustomerCreateModal({ isOpen, onClose, onCreated }: Cust
             className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
             placeholder="Doe"
           />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">
+              Email <span className="text-subtle font-normal">(optional)</span>
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+              placeholder="jane@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">
+              Phone <span className="text-subtle font-normal">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+              placeholder="+1 555 0100"
+            />
+          </div>
         </div>
 
         <div className="flex gap-3 pt-4">

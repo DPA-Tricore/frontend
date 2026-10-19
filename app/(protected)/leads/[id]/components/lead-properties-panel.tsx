@@ -1,13 +1,13 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
-import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
+import { LeadResponseDto } from '@/lib/api/leads';
 import { useAuth } from '@/context/auth-context';
 import { useAssignLead } from '@/lib/hooks/use-leads';
 import { useUsers } from '@/lib/hooks/use-users';
 import { userDisplayName } from '@/lib/utils/user-name';
-import { contactHref } from '@/lib/utils/contact-links';
-import { CONTACT_ICONS, ASSIGNABLE_ROLES, CAN_ASSIGN_ROLES } from '@/lib/constants/leads';
+import { ASSIGNABLE_ROLES, CAN_ASSIGN_ROLES } from '@/lib/constants/leads';
+import ContactsSection from '@/components/contacts/contacts-section';
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -41,49 +41,8 @@ export default function LeadPropertiesPanel({ lead }: LeadPropertiesPanelProps) 
 
   return (
     <aside className="surface border border-[var(--border)] rounded-xl p-5 space-y-0">
-      {/* Contact */}
-      {lead.contacts && lead.contacts.length > 0 && (
-        <>
-          <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-2">Contact</p>
-          <div className="space-y-1 mb-1">
-            {lead.contacts.map((c: ContactResponseDto) => {
-              const Icon = CONTACT_ICONS[c.type];
-              const href = contactHref(c);
-              const content = (
-                <>
-                  <span className="w-7 h-7 rounded-full bg-gray-500/10 flex items-center justify-center shrink-0 text-subtle">
-                    <Icon size={13} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-xs font-medium text-primary truncate">{c.value}</span>
-                    <span className="block text-xs text-subtle">
-                      {c.type.toLowerCase()}
-                      {c.isPrimary ? ' · primary' : ''}
-                      {c.doNotContact ? ' · DNC' : ''}
-                    </span>
-                  </span>
-                </>
-              );
-              return href ? (
-                <a
-                  key={c.id}
-                  href={href}
-                  target={href.startsWith('http') ? '_blank' : undefined}
-                  rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  className="flex items-center gap-2.5 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 -mx-1.5 px-1.5 transition-colors"
-                >
-                  {content}
-                </a>
-              ) : (
-                <div key={c.id} className={`flex items-center gap-2.5 py-1.5 ${c.doNotContact ? 'opacity-40' : ''}`}>
-                  {content}
-                </div>
-              );
-            })}
-          </div>
-          <div className="border-b border-[var(--border)] my-4" />
-        </>
-      )}
+      <ContactsSection owner={{ type: 'lead', id: lead.id }} contacts={lead.contacts ?? []} />
+      <div className="border-b border-[var(--border)] my-4" />
 
       {/* Assigned to */}
       <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-2">Assigned To</p>

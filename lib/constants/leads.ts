@@ -35,3 +35,27 @@ export const LEAD_STAGE_DOT_COLORS: Record<(typeof LEAD_STAGES)[number], string>
   IN_NEGOTIATION: 'bg-violet-500',
   CONVERTED: 'bg-teal-500',
 };
+
+/** Viewers can see contacts but not change them — matches the backend contact routes. */
+export const CONTACT_EDITOR_ROLES = ['ORG_ADMIN', 'MANAGER', 'AGENT'];
+
+export const CONTACT_TYPE_LABELS: Record<ContactType, string> = {
+  [ContactType.EMAIL]: 'Email',
+  [ContactType.PHONE]: 'Phone',
+  [ContactType.WHATSAPP]: 'WhatsApp',
+  [ContactType.FACEBOOK]: 'Facebook',
+  [ContactType.TELEGRAM]: 'Telegram',
+  [ContactType.LINKEDIN]: 'LinkedIn',
+  [ContactType.TWITTER]: 'Twitter / X',
+  [ContactType.INSTAGRAM]: 'Instagram',
+  [ContactType.WEBSITE]: 'Website',
+  [ContactType.OTHER]: 'Other',
+};
+
+export const CONTACT_VALUE_PLACEHOLDERS: Partial<Record<ContactType, string>> = {
+  [ContactType.EMAIL]: 'john@example.com',
+  [ContactType.PHONE]: '+1 555 0100',
+  [ContactType.WHATSAPP]: '+1 555 0100',
+  [ContactType.WEBSITE]: 'https://example.com',
+  [ContactType.LINKEDIN]: 'linkedin.com/in/…',
+};
