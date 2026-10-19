@@ -171,9 +171,14 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
           />
         </div>
 
-        {documents.length > 0 && (
+        {party.type === 'lead' && (
           <div>
             <label className="block text-sm font-medium text-muted mb-2">Attach from Documents</label>
+            {documents.length === 0 && (
+              <p className="text-sm text-subtle">
+                No documents on this lead yet. Upload files in the Documents tab, then attach them here.
+              </p>
+            )}
             <div className="space-y-2">
               {documents.map((d) => {
                 const checked = documentIds.includes(d.id);
