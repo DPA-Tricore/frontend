@@ -5,6 +5,7 @@ import type { CreateTaskRequest, TaskResponseDto } from '@/lib/types/tasks';
 import type { UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 interface TaskEditModalProps {
   isOpen: boolean;
@@ -160,7 +161,7 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onSave }: 
           >
             {users.map((user) => (
               <option key={user.id} value={user.id}>
-                {user.email}
+                {userDisplayName(user)}
               </option>
             ))}
           </select>

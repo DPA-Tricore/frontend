@@ -15,10 +15,10 @@ const FEED_ICONS: Record<TaskFeedKind, { icon: LucideIcon; className: string }> 
 
 interface TaskActivityTabProps {
   task: TaskResponseDto;
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
 }
 
-export default function TaskActivityTab({ task, getUserEmail }: TaskActivityTabProps) {
+export default function TaskActivityTab({ task, getUserName }: TaskActivityTabProps) {
   const { data: feed, isLoading } = useTaskActivityFeed(task);
 
   if (isLoading) return <p className="text-sm text-subtle">Loading activity...</p>;
@@ -45,7 +45,7 @@ export default function TaskActivityTab({ task, getUserEmail }: TaskActivityTabP
                 {item.kind === 'created' && (
                   <>
                     <span className="text-sm font-medium text-primary">Task created</span>
-                    <p className="text-xs text-subtle mt-1">{when} · by {getUserEmail(task.createdById)}</p>
+                    <p className="text-xs text-subtle mt-1">{when} · by {getUserName(task.createdById)}</p>
                   </>
                 )}
                 {item.kind === 'activity' && item.activity && (
@@ -55,7 +55,7 @@ export default function TaskActivityTab({ task, getUserEmail }: TaskActivityTabP
                     </span>
                     <p className="text-xs text-subtle mt-1">
                       {when}
-                      {item.activity.actorId && ` · by ${getUserEmail(item.activity.actorId)}`}
+                      {item.activity.actorId && ` · by ${getUserName(item.activity.actorId)}`}
                     </p>
                   </>
                 )}

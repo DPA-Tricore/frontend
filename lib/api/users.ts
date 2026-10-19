@@ -1,5 +1,5 @@
 import { axiosClient } from '@/lib/api/axios-client';
-import type { OrgUserResponseDto, UpdateOrgUserRequest, CreateOrgUserRequest } from '@/lib/types/users';
+import type { OrgUserResponseDto, UpdateOrgUserRequest, CreateOrgUserRequest, UpdateProfileRequest } from '@/lib/types/users';
 
 export type { OrgUserResponseDto as UserResponseDto, UpdateOrgUserRequest, CreateOrgUserRequest } from '@/lib/types/users';
 export type { UserRole, AssignableRole } from '@/lib/types/users';
@@ -18,6 +18,22 @@ export const usersApi = {
    */
   async createUser(data: CreateOrgUserRequest): Promise<OrgUserResponseDto> {
     const response = await axiosClient.post<OrgUserResponseDto>('/users', data);
+    return response.data;
+  },
+
+  /**
+   * Get the signed-in user's own profile
+   */
+  async getMe(): Promise<OrgUserResponseDto> {
+    const response = await axiosClient.get<OrgUserResponseDto>('/users/me');
+    return response.data;
+  },
+
+  /**
+   * Update the signed-in user's own name
+   */
+  async updateMe(data: UpdateProfileRequest): Promise<OrgUserResponseDto> {
+    const response = await axiosClient.patch<OrgUserResponseDto>('/users/me', data);
     return response.data;
   },
 

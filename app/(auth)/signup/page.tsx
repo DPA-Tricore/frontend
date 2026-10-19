@@ -10,6 +10,9 @@ export default function SignupPage() {
   const router = useRouter();
   const { signup, isLoading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
+    companyName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -45,7 +48,14 @@ export default function SignupPage() {
     setLocalError(null);
     setSuccessMessage(null);
 
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
+    if (
+      !formData.companyName.trim() ||
+      !formData.firstName.trim() ||
+      !formData.lastName.trim() ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
       setLocalError('All fields are required');
       setShake(true);
       setTimeout(() => setShake(false), 400);
@@ -68,11 +78,21 @@ export default function SignupPage() {
 
     try {
       await signup({
+        companyName: formData.companyName.trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
         email: formData.email,
         password: formData.password,
       });
       setSuccessMessage('Account created successfully! Redirecting to login...');
-      setFormData({ email: '', password: '', confirmPassword: '' });
+      setFormData({
+        companyName: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      });
       setTimeout(() => {
         router.push('/login');
       }, 2000);
@@ -126,6 +146,63 @@ export default function SignupPage() {
               </div>
             </div>
           )}
+
+          {/* Agency */}
+          <div className="space-y-2">
+            <label htmlFor="companyName" className="text-sm font-medium text-gray-700">
+              Agency name
+            </label>
+            <input
+              id="companyName"
+              name="companyName"
+              type="text"
+              autoComplete="organization"
+              required
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 text-black placeholder-gray-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 transition-all duration-200 bg-white"
+              placeholder="ABC Insurance"
+              value={formData.companyName}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Name */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                First name
+              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                autoComplete="given-name"
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 text-black placeholder-gray-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 transition-all duration-200 bg-white"
+                placeholder="Sarah"
+                value={formData.firstName}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                Last name
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                autoComplete="family-name"
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 text-black placeholder-gray-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 transition-all duration-200 bg-white"
+                placeholder="Lim"
+                value={formData.lastName}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
 
           {/* Email Input */}
           <div className="space-y-2">

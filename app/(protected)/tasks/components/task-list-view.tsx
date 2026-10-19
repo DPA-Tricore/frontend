@@ -21,7 +21,7 @@ interface TaskListViewProps {
   sortOrder: 'asc' | 'desc';
   onSort: (field: SortField) => void;
   onPageChange: (page: number) => void;
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
 }
 
 export default function TaskListView({
@@ -32,7 +32,7 @@ export default function TaskListView({
   sortOrder,
   onSort,
   onPageChange,
-  getUserEmail,
+  getUserName,
 }: TaskListViewProps) {
   return (
     <div className="space-y-4">
@@ -79,7 +79,7 @@ export default function TaskListView({
           </thead>
           <tbody>
             {tasks.map((task) => (
-              <TaskListItem key={task.id} task={task} getUserEmail={getUserEmail} />
+              <TaskListItem key={task.id} task={task} getUserName={getUserName} />
             ))}
           </tbody>
         </table>

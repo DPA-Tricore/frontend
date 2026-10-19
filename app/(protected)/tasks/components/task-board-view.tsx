@@ -19,6 +19,7 @@ import { useUpdateTaskStatus, useTasksBoardSummary } from '@/lib/hooks/use-tasks
 import LoadingSpinner from '@/components/loading-spinner';
 import TaskBoardColumnContainer from './task-board-column-container';
 import TaskCard from './task-card';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 const BOARD_COLUMNS: { status: string; label: string }[] = [
   { status: 'TODO', label: 'Todo' },
@@ -44,8 +45,10 @@ export default function TaskBoardView({ users }: TaskBoardViewProps) {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
   );
 
-  const getUserEmail = (userId: string) =>
-    users.find((u) => u.id === userId)?.email ?? 'Unknown';
+  const getUserName = (userId: string) => {
+    const user = users.find((u) => u.id === userId);
+    return user ? userDisplayName(user) : 'Unknown';
+  };
 
   const handleDragStart = ({ active }: DragStartEvent) => {
     setActiveTask((active.data.current?.task as TaskResponseDto) ?? null);
@@ -79,7 +82,7 @@ export default function TaskBoardView({ users }: TaskBoardViewProps) {
               key={status}
               status={status}
               label={label}
-              getUserEmail={getUserEmail}
+              getUserName={getUserName}
             />
           ))}
         </div>
@@ -87,7 +90,7 @@ export default function TaskBoardView({ users }: TaskBoardViewProps) {
 
       <DragOverlay dropAnimation={BOARD_DROP_ANIMATION}>
         {activeTask ? (
-          <TaskCard task={activeTask} getUserEmail={getUserEmail} isOverlay />
+          <TaskCard task={activeTask} getUserName={getUserName} isOverlay />
         ) : null}
       </DragOverlay>
     </DndContext>

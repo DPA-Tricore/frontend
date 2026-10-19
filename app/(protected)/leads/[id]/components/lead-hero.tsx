@@ -6,6 +6,7 @@ import { MoreHorizontal } from 'lucide-react';
 import { LeadResponseDto } from '@/lib/api/leads';
 import { useUpdateLeadStatus } from '@/lib/hooks/use-leads';
 import { useUsers } from '@/lib/hooks/use-users';
+import { userDisplayName } from '@/lib/utils/user-name';
 import { formatDate } from '@/lib/utils/date';
 import { AVATAR_COLORS } from '@/lib/constants/leads';
 import LeadStageStepper from './lead-stage-stepper';
@@ -32,7 +33,8 @@ export default function LeadHero({ lead, onEditClick }: LeadHeroProps) {
 
   const fullName = `${lead.firstName} ${lead.lastName}`;
   const initials = `${lead.firstName[0] ?? ''}${lead.lastName[0] ?? ''}`.toUpperCase();
-  const assignedAgentEmail = users.find((u) => u.id === lead.assignedAgentId)?.email;
+  const assignedAgent = users.find((u) => u.id === lead.assignedAgentId);
+  const assignedAgentName = assignedAgent ? userDisplayName(assignedAgent) : undefined;
 
   // CONVERTED is intercepted — it goes through the dedicated convert flow (dedupe check
   // against existing customers) rather than a plain status PATCH, so it's routed here
@@ -125,9 +127,9 @@ export default function LeadHero({ lead, onEditClick }: LeadHeroProps) {
       <div className="flex items-center gap-4 flex-wrap text-sm">
         <div className="flex items-center gap-1.5">
           <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
-            <span className="text-white text-xs font-bold">{assignedAgentEmail?.[0]?.toUpperCase() ?? '?'}</span>
+            <span className="text-white text-xs font-bold">{assignedAgentName?.[0]?.toUpperCase() ?? '?'}</span>
           </div>
-          <span className="text-subtle">{assignedAgentEmail ?? 'Unassigned'}</span>
+          <span className="text-subtle">{assignedAgentName ?? 'Unassigned'}</span>
         </div>
         <span className="text-[var(--border)]">·</span>
         <span className="text-subtle">Created {formatDate(lead.createdAt)}</span>

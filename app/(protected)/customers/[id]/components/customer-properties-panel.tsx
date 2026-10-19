@@ -5,6 +5,7 @@ import type { ContactResponseDto } from '@/lib/types/leads';
 import { useAuth } from '@/context/auth-context';
 import { useAssignCustomer } from '@/lib/hooks/use-customers';
 import { useUsers } from '@/lib/hooks/use-users';
+import { userDisplayName } from '@/lib/utils/user-name';
 import { contactHref } from '@/lib/utils/contact-links';
 import { CONTACT_ICONS, ASSIGNABLE_ROLES, CAN_ASSIGN_ROLES } from '@/lib/constants/leads';
 
@@ -18,7 +19,8 @@ export default function CustomerPropertiesPanel({ customer }: CustomerProperties
   const agents = users.filter((u) => u.isActive && ASSIGNABLE_ROLES.includes(u.role));
   const assignCustomer = useAssignCustomer();
   const canAssign = !!user?.role && CAN_ASSIGN_ROLES.includes(user.role);
-  const ownerEmail = agents.find((a) => a.id === customer.ownerId)?.email;
+  const owner = agents.find((a) => a.id === customer.ownerId);
+  const ownerName = owner ? userDisplayName(owner) : undefined;
 
   const handleOwnerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     assignCustomer.mutate({ id: customer.id, ownerId: e.target.value || null });
@@ -81,11 +83,11 @@ export default function CustomerPropertiesPanel({ customer }: CustomerProperties
         >
           <option value="">Unassigned</option>
           {agents.map((a) => (
-            <option key={a.id} value={a.id}>{a.email}</option>
+            <option key={a.id} value={a.id}>{userDisplayName(a)}</option>
           ))}
         </select>
       ) : (
-        <p className="text-xs text-primary font-medium">{ownerEmail ?? 'Unassigned'}</p>
+        <p className="text-xs text-primary font-medium">{ownerName ?? 'Unassigned'}</p>
       )}
 
       <div className="border-b border-[var(--border)] my-4" />

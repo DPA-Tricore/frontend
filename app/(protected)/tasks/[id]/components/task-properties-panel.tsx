@@ -2,6 +2,7 @@ import { formatDateTime } from '@/lib/utils/date';
 import { TASK_PRIORITIES } from '@/lib/constants/tasks';
 import type { TaskResponseDto } from '@/lib/types/tasks';
 import type { UserResponseDto } from '@/lib/api/users';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -19,12 +20,12 @@ const selectClass =
 interface TaskPropertiesPanelProps {
   task: TaskResponseDto;
   users: UserResponseDto[];
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
   updating: boolean;
   onChange: (data: { assignedToId?: string; priority?: string }) => void;
 }
 
-export default function TaskPropertiesPanel({ task, users, getUserEmail, updating, onChange }: TaskPropertiesPanelProps) {
+export default function TaskPropertiesPanel({ task, users, getUserName, updating, onChange }: TaskPropertiesPanelProps) {
   const assignable = users.filter((u) => u.isActive || u.id === task.assignedToId);
 
   return (
@@ -37,7 +38,7 @@ export default function TaskPropertiesPanel({ task, users, getUserEmail, updatin
         className={selectClass}
       >
         {assignable.map((u) => (
-          <option key={u.id} value={u.id}>{u.email}</option>
+          <option key={u.id} value={u.id}>{userDisplayName(u)}</option>
         ))}
       </select>
 
@@ -60,7 +61,7 @@ export default function TaskPropertiesPanel({ task, users, getUserEmail, updatin
       {task.startDate && <Row label="Start" value={formatDateTime(task.startDate)} />}
       {task.completedAt && <Row label="Completed" value={formatDateTime(task.completedAt)} />}
       <Row label="Created" value={formatDateTime(task.createdAt)} />
-      <Row label="Created by" value={getUserEmail(task.createdById)} />
+      <Row label="Created by" value={getUserName(task.createdById)} />
       <Row label="Updated" value={formatDateTime(task.updatedAt)} />
 
       <div className="border-b border-[var(--border)] my-4" />

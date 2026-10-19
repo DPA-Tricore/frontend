@@ -9,7 +9,7 @@ import type { TaskResponseDto } from '@/lib/types/tasks';
 
 interface TaskHeroProps {
   task: TaskResponseDto;
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
   updating: boolean;
   onStatusChange: (status: string) => void;
   onComplete: () => void;
@@ -19,7 +19,7 @@ interface TaskHeroProps {
 
 export default function TaskHero({
   task,
-  getUserEmail,
+  getUserName,
   updating,
   onStatusChange,
   onComplete,
@@ -33,8 +33,8 @@ export default function TaskHero({
   const isOverdue = !isDone && new Date(task.dueDate) < new Date();
   const TypeIcon = TASK_TYPE_ICONS[task.type];
 
-  const assigneeEmail = getUserEmail(task.assignedToId);
-  const assigneeInitial = assigneeEmail[0]?.toUpperCase() ?? '?';
+  const assigneeName = getUserName(task.assignedToId);
+  const assigneeInitial = assigneeName[0]?.toUpperCase() ?? '?';
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -155,7 +155,7 @@ export default function TaskHero({
           <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
             <span className="text-white text-xs font-bold">{assigneeInitial}</span>
           </div>
-          <span className="text-subtle">{assigneeEmail}</span>
+          <span className="text-subtle">{assigneeName}</span>
         </div>
 
         <span className="text-[var(--border)]">·</span>

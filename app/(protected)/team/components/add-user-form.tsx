@@ -21,6 +21,8 @@ interface AddUserFormProps {
 }
 
 export default function AddUserForm({ teams, onChanged }: AddUserFormProps) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<AssignableRole>('AGENT');
@@ -28,7 +30,8 @@ export default function AddUserForm({ teams, onChanged }: AddUserFormProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isValid = email.trim().length > 0 && password.length >= 6;
+  const isValid =
+    firstName.trim().length > 0 && lastName.trim().length > 0 && email.trim().length > 0 && password.length >= 6;
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,11 +40,15 @@ export default function AddUserForm({ teams, onChanged }: AddUserFormProps) {
     setIsCreating(true);
     try {
       await usersApi.createUser({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         email: email.trim(),
         password,
         role,
         teamId: teamId || undefined,
       });
+      setFirstName('');
+      setLastName('');
       setEmail('');
       setPassword('');
       setRole('AGENT');
@@ -65,6 +72,20 @@ export default function AddUserForm({ teams, onChanged }: AddUserFormProps) {
       )}
 
       <form onSubmit={handleCreate} className="flex flex-wrap items-center gap-2">
+        <input
+          type="text"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          placeholder="First name"
+          className="flex-1 min-w-[120px] px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+        />
+        <input
+          type="text"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          placeholder="Last name"
+          className="flex-1 min-w-[120px] px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+        />
         <input
           type="email"
           value={email}

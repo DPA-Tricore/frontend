@@ -80,6 +80,7 @@ export const taskNoteKeys = {
 
 export const userKeys = {
   all: ['orgUsers'] as const,
+  me: ['orgUsers', 'me'] as const,
 };
 
 export const dashboardKeys = {

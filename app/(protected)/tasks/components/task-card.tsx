@@ -8,11 +8,11 @@ import type { TaskResponseDto } from '@/lib/types/tasks';
 
 interface TaskCardProps {
   task: TaskResponseDto;
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
   isOverlay?: boolean;
 }
 
-export default function TaskCard({ task, getUserEmail, isOverlay = false }: TaskCardProps) {
+export default function TaskCard({ task, getUserName, isOverlay = false }: TaskCardProps) {
   const router = useRouter();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
@@ -24,8 +24,8 @@ export default function TaskCard({ task, getUserEmail, isOverlay = false }: Task
     task.status !== 'CANCELLED' &&
     new Date(task.dueDate) < new Date();
 
-  const assigneeEmail = getUserEmail(task.assignedToId);
-  const assigneeInitial = assigneeEmail[0]?.toUpperCase() ?? '?';
+  const assigneeName = getUserName(task.assignedToId);
+  const assigneeInitial = assigneeName[0]?.toUpperCase() ?? '?';
 
   return (
     <div
@@ -65,7 +65,7 @@ export default function TaskCard({ task, getUserEmail, isOverlay = false }: Task
           <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
             <span className="text-white text-xs font-bold" style={{ fontSize: '9px' }}>{assigneeInitial}</span>
           </div>
-          <span className="text-xs text-subtle truncate">{assigneeEmail}</span>
+          <span className="text-xs text-subtle truncate">{assigneeName}</span>
         </div>
       </div>
     </div>

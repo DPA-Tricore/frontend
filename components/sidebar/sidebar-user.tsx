@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation';
 import { Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
+import { useMe } from '@/lib/hooks/use-me';
+import { userDisplayName } from '@/lib/utils/user-name';
 import SidebarItem from './sidebar-item';
 import LogoutButton from './logout-button';
 
@@ -13,6 +15,8 @@ interface SidebarUserProps {
 
 export default function SidebarUser({ isCollapsed }: SidebarUserProps) {
   const { user } = useAuth();
+  const { data: me } = useMe();
+  const displayName = me ? userDisplayName(me) : user?.email;
   const pathname = usePathname();
 
   return (
@@ -28,16 +32,16 @@ export default function SidebarUser({ isCollapsed }: SidebarUserProps) {
       <div className="flex items-center gap-2 h-10 px-1.5 whitespace-nowrap">
         <div
           className="w-7 h-7 flex-shrink-0 rounded-full bg-[var(--accent)] flex items-center justify-center"
-          title={isCollapsed ? user?.email : undefined}
+          title={isCollapsed ? displayName : undefined}
         >
-          <span className="text-white font-semibold text-xs">{user?.email?.charAt(0).toUpperCase()}</span>
+          <span className="text-white font-semibold text-xs">{displayName?.charAt(0).toUpperCase()}</span>
         </div>
         <div
           className={`flex flex-1 min-w-0 items-center gap-2 transition-opacity duration-200 ${
             isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 delay-75'
           }`}
         >
-          <p className="flex-1 min-w-0 text-sm truncate text-[var(--fg)]">{user?.email}</p>
+          <p className="flex-1 min-w-0 text-sm truncate text-[var(--fg)]" title={user?.email}>{displayName}</p>
           <LogoutButton iconOnly />
         </div>
       </div>

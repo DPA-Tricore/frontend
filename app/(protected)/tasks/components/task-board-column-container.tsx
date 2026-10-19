@@ -6,13 +6,13 @@ import TaskBoardColumn from './task-board-column';
 interface TaskBoardColumnContainerProps {
   status: string;
   label: string;
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
 }
 
 export default function TaskBoardColumnContainer({
   status,
   label,
-  getUserEmail,
+  getUserName,
 }: TaskBoardColumnContainerProps) {
   const { tasks, total, isLoading, hasMore, loadMore } = useTaskBoardColumn(status);
 
@@ -24,7 +24,7 @@ export default function TaskBoardColumnContainer({
       totalCount={total}
       isLoading={isLoading}
       hasMore={hasMore}
-      getUserEmail={getUserEmail}
+      getUserName={getUserName}
       onLoadMore={loadMore}
     />
   );

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usersApi } from '@/lib/api/users';
 import type { OrgUserResponseDto, AssignableRole } from '@/lib/types/users';
 import type { TeamResponseDto } from '@/lib/types/teams';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 const ASSIGNABLE_ROLES: AssignableRole[] = ['MANAGER', 'AGENT', 'VIEWER'];
 
@@ -82,7 +83,10 @@ export default function UserRoleTable({ users, teams, currentUserId, onChanged }
               const isSaving = savingId === u.id;
               return (
                 <tr key={u.id}>
-                  <td className="py-3 pr-4 text-primary">{u.email}</td>
+                  <td className="py-3 pr-4">
+                    <p className="text-primary">{userDisplayName(u)}</p>
+                    {(u.firstName || u.lastName) && <p className="text-xs text-muted">{u.email}</p>}
+                  </td>
                   <td className="py-3 pr-4">
                     {isLocked ? (
                       <span className="text-muted">{ROLE_LABELS[u.role]}</span>

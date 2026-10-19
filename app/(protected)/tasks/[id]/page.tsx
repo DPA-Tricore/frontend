@@ -18,6 +18,7 @@ import TaskRemindersTab from './components/task-reminders-tab';
 import TaskEditModal from './components/task-edit-modal';
 import TaskCompleteModal from './components/task-complete-modal';
 import TaskDeleteDialog from './components/task-delete-dialog';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 type Tab = 'activity' | 'notes' | 'documents' | 'reminders';
 
@@ -45,8 +46,10 @@ export default function TaskDetailPage() {
     if (isError) router.push('/tasks');
   }, [isError, router]);
 
-  const getUserEmail = (userId: string) =>
-    users.find((u) => u.id === userId)?.email ?? 'Unknown';
+  const getUserName = (userId: string) => {
+    const user = users.find((u) => u.id === userId);
+    return user ? userDisplayName(user) : 'Unknown';
+  };
 
   const handleUpdate = (data: Partial<CreateTaskRequest>) => updateTask.mutateAsync(data);
 
@@ -64,7 +67,7 @@ export default function TaskDetailPage() {
       <div className="px-8 py-10 max-w-6xl mx-auto">
         <TaskHero
           task={task}
-          getUserEmail={getUserEmail}
+          getUserName={getUserName}
           updating={updateTask.isPending}
           onStatusChange={handleStatusChange}
           onComplete={() => setShowCompleteModal(true)}
@@ -102,7 +105,7 @@ export default function TaskDetailPage() {
               </nav>
             </div>
 
-            {activeTab === 'activity' && <TaskActivityTab task={task} getUserEmail={getUserEmail} />}
+            {activeTab === 'activity' && <TaskActivityTab task={task} getUserName={getUserName} />}
             {activeTab === 'notes' && <TaskNotesTab taskId={id} />}
             {activeTab === 'documents' && <TaskDocumentsTab taskId={id} />}
             {activeTab === 'reminders' && <TaskRemindersTab taskId={id} />}
@@ -111,7 +114,7 @@ export default function TaskDetailPage() {
           <TaskPropertiesPanel
             task={task}
             users={users}
-            getUserEmail={getUserEmail}
+            getUserName={getUserName}
             updating={updateTask.isPending}
             onChange={handleUpdate}
           />

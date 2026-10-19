@@ -8,10 +8,10 @@ import { TASK_STATUS_COLOR } from '@/lib/constants/tasks';
 
 interface TaskListItemProps {
   task: TaskResponseDto;
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
 }
 
-export default function TaskListItem({ task, getUserEmail }: TaskListItemProps) {
+export default function TaskListItem({ task, getUserName }: TaskListItemProps) {
   const router = useRouter();
 
   return (
@@ -44,7 +44,7 @@ export default function TaskListItem({ task, getUserEmail }: TaskListItemProps) 
         <span className="text-sm text-muted">{formatDate(task.dueDate)}</span>
       </td>
       <td className="px-6 py-4">
-        <span className="text-sm text-muted">{getUserEmail(task.assignedToId)}</span>
+        <span className="text-sm text-muted">{getUserName(task.assignedToId)}</span>
       </td>
     </tr>
   );

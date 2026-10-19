@@ -5,6 +5,7 @@ import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { useAuth } from '@/context/auth-context';
 import { useAssignLead } from '@/lib/hooks/use-leads';
 import { useUsers } from '@/lib/hooks/use-users';
+import { userDisplayName } from '@/lib/utils/user-name';
 import { contactHref } from '@/lib/utils/contact-links';
 import { CONTACT_ICONS, ASSIGNABLE_ROLES, CAN_ASSIGN_ROLES } from '@/lib/constants/leads';
 
@@ -28,7 +29,8 @@ export default function LeadPropertiesPanel({ lead }: LeadPropertiesPanelProps) 
   const agents = users.filter((u) => u.isActive && ASSIGNABLE_ROLES.includes(u.role));
   const assignLead = useAssignLead();
   const canAssign = !!user?.role && CAN_ASSIGN_ROLES.includes(user.role);
-  const assignedAgentEmail = agents.find((a) => a.id === lead.assignedAgentId)?.email;
+  const assignedAgent = agents.find((a) => a.id === lead.assignedAgentId);
+  const assignedAgentName = assignedAgent ? userDisplayName(assignedAgent) : undefined;
 
   const handleAssigneeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     assignLead.mutate({ id: lead.id, agentId: e.target.value || null });
@@ -94,11 +96,11 @@ export default function LeadPropertiesPanel({ lead }: LeadPropertiesPanelProps) 
         >
           <option value="">Unassigned</option>
           {agents.map((a) => (
-            <option key={a.id} value={a.id}>{a.email}</option>
+            <option key={a.id} value={a.id}>{userDisplayName(a)}</option>
           ))}
         </select>
       ) : (
-        <p className="text-xs text-primary font-medium">{assignedAgentEmail ?? 'Unassigned'}</p>
+        <p className="text-xs text-primary font-medium">{assignedAgentName ?? 'Unassigned'}</p>
       )}
 
       {/* Qualification */}

@@ -14,7 +14,7 @@ interface TaskBoardColumnProps {
   totalCount: number;
   isLoading: boolean;
   hasMore: boolean;
-  getUserEmail: (id: string) => string;
+  getUserName: (id: string) => string;
   onLoadMore: () => void;
 }
 
@@ -25,7 +25,7 @@ export default function TaskBoardColumn({
   totalCount,
   isLoading,
   hasMore,
-  getUserEmail,
+  getUserName,
   onLoadMore,
 }: TaskBoardColumnProps) {
   const { setNodeRef, isOver, active } = useDroppable({ id: status });
@@ -77,7 +77,7 @@ export default function TaskBoardColumn({
           <>
             <BoardDropSlot isOver={isOver} isSourceColumn={sourceStatus === status} />
             {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} getUserEmail={getUserEmail} />
+              <TaskCard key={task.id} task={task} getUserName={getUserName} />
             ))}
             {isLoading && (
               <div className="flex justify-center py-2">

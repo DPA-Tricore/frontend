@@ -14,6 +14,7 @@ import {
   AUTOMATION_STATUSES,
 } from '@/lib/types/search';
 import type { SearchPageState as PageState } from '@/lib/hooks/useSearchPage';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 interface Props {
   tab: SearchEntityType | 'all';
@@ -143,7 +144,7 @@ export default function SearchFilters({ tab, filters, hasActiveFilters, onFilter
               >
                 <option value="">Anyone</option>
                 {users.map((u) => (
-                  <option key={u.id} value={u.id}>{u.email}</option>
+                  <option key={u.id} value={u.id}>{userDisplayName(u)}</option>
                 ))}
               </select>
             </div>

@@ -18,6 +18,7 @@ import TaskListView from './components/task-list-view';
 import TaskBoardView from './components/task-board-view';
 import TaskCreateModal from './components/task-create-modal';
 import ViewToggle, { type ViewMode } from './components/view-toggle';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 type SortField = 'title' | 'createdAt' | 'dueDate' | 'status' | 'priority' | 'type';
 
@@ -85,8 +86,10 @@ export default function TasksPage() {
     setPage(1);
   };
 
-  const getUserEmail = (userId: string) =>
-    users.find((u) => u.id === userId)?.email ?? 'Unknown User';
+  const getUserName = (userId: string) => {
+    const user = users.find((u) => u.id === userId);
+    return user ? userDisplayName(user) : 'Unknown User';
+  };
 
   return (
     <div className="p-8">
@@ -146,7 +149,7 @@ export default function TasksPage() {
               sortOrder={sortOrder}
               onSort={handleSort}
               onPageChange={setPage}
-              getUserEmail={getUserEmail}
+              getUserName={getUserName}
             />
           )}
         </motion.div>

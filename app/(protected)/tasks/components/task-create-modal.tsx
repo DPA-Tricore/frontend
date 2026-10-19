@@ -7,6 +7,7 @@ import type { UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
 import VoiceRecorder from '@/components/voice-recorder';
 import { colors } from '@/lib/theme/colors';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 const REMINDER_PRESETS = [
   { label: 'At due time', offset: 0 },
@@ -186,7 +187,7 @@ export default function TaskCreateModal({
           >
             <option value="">Select a user</option>
             {users.map((user) => (
-              <option key={user.id} value={user.id}>{user.email}</option>
+              <option key={user.id} value={user.id}>{userDisplayName(user)}</option>
             ))}
           </select>
         </div>

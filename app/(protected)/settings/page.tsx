@@ -3,6 +3,7 @@
 import { useTheme } from '@/context/theme-context';
 import { Moon, Sun } from 'lucide-react';
 import PageHeader from '@/components/page-header';
+import ProfileSection from './components/profile-section';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -13,7 +14,9 @@ export default function SettingsPage() {
         <PageHeader title="Settings" />
 
         {/* Settings Card */}
-        <div className="surface rounded-xl border border-[var(--border)] shadow-sm">
+        <div className="surface rounded-xl border border-[var(--border)] shadow-sm divide-y divide-[var(--border)]">
+          <ProfileSection />
+
           {/* Appearance Section */}
           <div className="p-6">
               <h2 className="text-lg font-semibold text-primary mb-6">
