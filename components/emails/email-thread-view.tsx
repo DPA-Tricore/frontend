@@ -54,6 +54,9 @@ export default function EmailThreadView({ threadId, canSend, onBack, onReply }: 
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <EmailStatusBadge status={m.status} />
+                {m.firstOpenedAt && (
+                  <span className="text-xs text-subtle" title={`First opened ${formatDateTime(m.firstOpenedAt)}`}>Opened</span>
+                )}
                 <span className="text-xs text-subtle">{formatDateTime(m.sentAt ?? m.createdAt)}</span>
               </div>
             </header>

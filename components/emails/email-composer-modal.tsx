@@ -41,8 +41,11 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
   // Reset every time the composer opens: a reply starts from the thread, a new email from the primary contact.
   useEffect(() => {
     if (!isOpen) return;
-    const firstUsable = emailContacts.find((c) => c.isPrimary && !c.doNotContact) ?? emailContacts.find((c) => !c.doNotContact);
-    setTo(reply ? reply.to : firstUsable ? [firstUsable.value] : []);
+    const usable = emailContacts.filter((c) => !c.doNotContact && !c.bouncedAt);
+    const firstUsable = usable.find((c) => c.isPrimary) ?? usable[0];
+    // A reply can only go to the record's own addresses — someone cc'd on the thread isn't one.
+    const replyTo = reply ? usable.filter((c) => reply.to.some((a) => a.toLowerCase() === c.value.toLowerCase())).map((c) => c.value) : [];
+    setTo(replyTo.length ? replyTo : firstUsable ? [firstUsable.value] : []);
     setSubject(reply?.subject ?? '');
     setBodyText('');
     setTemplateId('');
@@ -97,16 +100,17 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
           ) : (
             <div className="space-y-2">
               {emailContacts.map((c) => (
-                <label key={c.id} className={`flex items-center gap-2 text-sm ${c.doNotContact ? 'opacity-50' : ''}`}>
+                <label key={c.id} className={`flex items-center gap-2 text-sm ${c.doNotContact || c.bouncedAt ? 'opacity-50' : ''}`}>
                   <input
                     type="checkbox"
                     checked={to.includes(c.value)}
-                    disabled={c.doNotContact}
+                    disabled={c.doNotContact || !!c.bouncedAt}
                     onChange={() => toggleRecipient(c.value)}
                   />
                   <span className="text-primary">{c.value}</span>
                   {c.isPrimary && <span className="text-xs text-subtle">Primary</span>}
                   {c.doNotContact && <span className="text-xs text-subtle">Do not contact</span>}
+                  {c.bouncedAt && <span className="text-xs text-red-600">Bounced — check the address</span>}
                 </label>
               ))}
             </div>

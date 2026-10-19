@@ -21,6 +21,9 @@ export interface EmailMessageResponseDto {
   bodyText: string;
   bodyHtml: string;
   error: string | null;
+  /** Rough — Apple Mail opens every email automatically. Only counted when open tracking is on. */
+  openCount: number;
+  firstOpenedAt: string | null;
   sentAt: string | null;
   createdAt: string;
   sentBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;

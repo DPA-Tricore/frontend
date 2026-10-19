@@ -21,6 +21,8 @@ export interface ContactResponseDto {
   isPrimary: boolean;
   isVerified: boolean;
   doNotContact: boolean;
+  /** Set when an email to this address hard-bounced. */
+  bouncedAt?: string | null;
   lastUsedAt?: string;
   createdAt: string;
   updatedAt: string;
