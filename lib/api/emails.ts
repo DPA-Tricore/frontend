@@ -22,6 +22,17 @@ export const emailsApi = {
     return response.data;
   },
 
+  /** Downloads through the API (it needs the login token), then saves it in the browser. */
+  async downloadAttachment(id: string, fileName: string): Promise<void> {
+    const res = await axiosClient.get(`/email-attachments/${id}/download`, { responseType: 'blob' });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
   async send(data: SendEmailRequest): Promise<EmailMessageResponseDto> {
     const response = await axiosClient.post<EmailMessageResponseDto>('/emails', data);
     return response.data;

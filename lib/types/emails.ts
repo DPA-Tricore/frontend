@@ -27,6 +27,14 @@ export interface EmailMessageResponseDto {
   sentAt: string | null;
   createdAt: string;
   sentBy: { id: string; email: string; firstName: string | null; lastName: string | null } | null;
+  attachments: EmailAttachmentDto[];
+}
+
+export interface EmailAttachmentDto {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
 }
 
 export interface EmailThreadSummaryDto {
@@ -61,6 +69,7 @@ export interface SendEmailRequest {
   subject: string;
   bodyText: string;
   templateId?: string;
+  documentIds?: string[];
 }
 
 export interface EmailTemplateResponseDto {

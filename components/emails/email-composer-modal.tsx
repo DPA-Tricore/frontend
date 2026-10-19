@@ -1,11 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Send } from 'lucide-react';
+import { Paperclip, Send } from 'lucide-react';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
-import { EMAIL_BODY_MAX_LENGTH, EMAIL_SUBJECT_MAX_LENGTH } from '@/lib/constants/emails';
+import {
+  EMAIL_BODY_MAX_LENGTH, EMAIL_MAX_ATTACHMENT_BYTES, EMAIL_MAX_ATTACHMENTS, EMAIL_SUBJECT_MAX_LENGTH,
+} from '@/lib/constants/emails';
+import { useLeadDocuments } from '@/lib/hooks/use-lead-detail';
+import { formatBytes } from '@/lib/utils/format';
 import { useSendEmail } from '@/lib/hooks/use-emails';
 import { useEmailTemplates, useRenderEmailTemplate } from '@/lib/hooks/use-email-templates';
 import { unfilledMergeFields } from '@/lib/utils/merge-fields';
@@ -33,6 +37,9 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
   const renderTemplate = useRenderEmailTemplate();
   const { data: templates = [] } = useEmailTemplates(false, { enabled: isOpen });
   const [templateId, setTemplateId] = useState('');
+  // Only leads have a Documents tab, so only lead emails can attach.
+  const { data: documents = [] } = useLeadDocuments(isOpen && party.type === 'lead' ? party.id : '');
+  const [documentIds, setDocumentIds] = useState<string[]>([]);
   const emailContacts = contacts.filter((c) => c.type === 'EMAIL');
   const [to, setTo] = useState<string[]>([]);
   const [subject, setSubject] = useState('');
@@ -49,6 +56,7 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
     setSubject(reply?.subject ?? '');
     setBodyText('');
     setTemplateId('');
+    setDocumentIds([]);
     sendEmail.reset();
     renderTemplate.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,8 +77,13 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
     setBodyText(rendered.bodyText);
   };
 
+  const toggleDocument = (id: string) =>
+    setDocumentIds((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]));
+  const attachedBytes = documents.filter((d) => documentIds.includes(d.id)).reduce((sum, d) => sum + d.fileSize, 0);
+  const tooBig = attachedBytes > EMAIL_MAX_ATTACHMENT_BYTES;
+
   const unfilled = unfilledMergeFields(subject, bodyText);
-  const isValid = to.length > 0 && subject.trim().length > 0 && bodyText.trim().length > 0 && unfilled.length === 0;
+  const isValid = to.length > 0 && subject.trim().length > 0 && bodyText.trim().length > 0 && unfilled.length === 0 && !tooBig;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +96,7 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
       subject: subject.trim(),
       bodyText,
       ...(templateId ? { templateId } : {}),
+      ...(documentIds.length ? { documentIds } : {}),
     });
     onSent?.(message.threadId);
     onClose();
@@ -156,6 +170,31 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
             className={`${FORM_INPUT_CLASS} resize-y`}
           />
         </div>
+
+        {documents.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">Attach from Documents</label>
+            <div className="space-y-2">
+              {documents.map((d) => {
+                const checked = documentIds.includes(d.id);
+                const atLimit = !checked && documentIds.length >= EMAIL_MAX_ATTACHMENTS;
+                return (
+                  <label key={d.id} className={`flex items-center gap-2 text-sm ${atLimit ? 'opacity-50' : ''}`}>
+                    <input type="checkbox" checked={checked} disabled={atLimit} onChange={() => toggleDocument(d.id)} />
+                    <Paperclip size={14} className="text-subtle flex-shrink-0" />
+                    <span className="text-primary truncate">{d.originalName}</span>
+                    <span className="text-xs text-subtle flex-shrink-0">{formatBytes(d.fileSize)}</span>
+                  </label>
+                );
+              })}
+            </div>
+            {tooBig && (
+              <p className="text-xs text-red-600 mt-2">
+                Attachments add up to {formatBytes(attachedBytes)} — keep them under {formatBytes(EMAIL_MAX_ATTACHMENT_BYTES)}.
+              </p>
+            )}
+          </div>
+        )}
 
         {unfilled.length > 0 && (
           <div className="callout p-3 rounded-lg text-sm">

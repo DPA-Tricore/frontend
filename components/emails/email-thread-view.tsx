@@ -1,6 +1,8 @@
 'use client';
 
-import { ArrowLeft, Reply } from 'lucide-react';
+import { ArrowLeft, Paperclip, Reply } from 'lucide-react';
+import { emailsApi } from '@/lib/api/emails';
+import { formatBytes } from '@/lib/utils/format';
 import { colors } from '@/lib/theme/colors';
 import { formatDateTime } from '@/lib/utils/date';
 import { userDisplayName } from '@/lib/utils/user-name';
@@ -61,6 +63,23 @@ export default function EmailThreadView({ threadId, canSend, onBack, onReply }: 
               </div>
             </header>
             <p className="text-sm text-primary whitespace-pre-wrap break-words">{m.bodyText}</p>
+            {m.attachments.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {m.attachments.map((a) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => emailsApi.downloadAttachment(a.id, a.fileName)}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-[var(--border)] text-xs text-primary interactive max-w-full"
+                    title={`Download ${a.fileName}`}
+                  >
+                    <Paperclip size={12} className="flex-shrink-0" />
+                    <span className="truncate">{a.fileName}</span>
+                    <span className="text-subtle flex-shrink-0">{formatBytes(a.fileSize)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             {m.status === 'FAILED' && m.error && <p className="mt-3 text-xs text-red-600">{m.error}</p>}
           </article>
         ))}

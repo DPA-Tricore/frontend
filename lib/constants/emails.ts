@@ -47,3 +47,7 @@ export const MERGE_FIELDS: MergeFieldInfo[] = [
 export const MERGE_FIELD_PATTERN = /\{\{\s*([a-zA-Z]+)\s*\}\}/g;
 
 export const EMAIL_TEMPLATE_FORM_DEFAULTS = { name: '', subject: '', body: '', isActive: true };
+
+/** Must match backend EMAIL_MAX_ATTACHMENTS / EMAIL_MAX_ATTACHMENT_BYTES. */
+export const EMAIL_MAX_ATTACHMENTS = 5;
+export const EMAIL_MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024;

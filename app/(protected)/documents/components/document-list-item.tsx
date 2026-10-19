@@ -3,12 +3,7 @@
 import { useState } from 'react';
 import { documentsApi, DocumentResponseDto } from '@/lib/api/documents';
 import { formatDate } from '@/lib/utils/date';
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+import { formatBytes } from '@/lib/utils/format';
 
 function mimeLabel(mimeType: string): string {
   if (mimeType.startsWith('image/')) return mimeType.split('/')[1].toUpperCase();
