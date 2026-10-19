@@ -7,6 +7,8 @@ import type { AutomationStepResponseDto } from '@/lib/types/automations';
 import SlideModal from '@/components/slide-modal';
 import RichTextEditor from '@/components/rich-text-editor';
 import { colors } from '@/lib/theme/colors';
+import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
+import { useEmailTemplates } from '@/lib/hooks/use-email-templates';
 
 // Fields that should render as a textarea instead of a single-line input
 const TEXTAREA_KEYS = new Set(['description', 'message']);
@@ -24,7 +26,7 @@ const ACTION_TYPES = [
 
 const ACTION_CONFIG_FIELDS: Record<AutomationActionType, { key: string; label: string; placeholder: string }[]> = {
   [AutomationActionType.EMAIL]: [
-    { key: 'subject', label: 'Subject', placeholder: "e.g., [[Lead's First Name]], we'll be in touch soon" },
+    { key: 'subject', label: 'Subject', placeholder: "e.g., {{firstName}}, we'll be in touch soon" },
     { key: 'body', label: 'Body', placeholder: 'Email body...' },
   ],
   [AutomationActionType.SMS]: [
@@ -69,6 +71,9 @@ export default function StepFormModal({
   const [configValues, setConfigValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { data: templates = [] } = useEmailTemplates(false, { enabled: isOpen });
+  // An email step either uses a saved template or its own subject/body.
+  const templateId = actionType === AutomationActionType.EMAIL ? configValues.templateId ?? '' : '';
 
   useEffect(() => {
     if (existingStep) {
@@ -101,7 +106,7 @@ export default function StepFormModal({
         ...(existingStep ? { id: existingStep.id } : {}),
         dayOffset: parseInt(dayOffset),
         actionType,
-        actionConfig: configValues,
+        actionConfig: templateId ? { templateId } : configValues,
         order: existingStep?.order ?? nextOrder,
       });
       onSaved();
@@ -113,7 +118,7 @@ export default function StepFormModal({
     }
   };
 
-  const fields = ACTION_CONFIG_FIELDS[actionType];
+  const fields = templateId ? [] : ACTION_CONFIG_FIELDS[actionType];
 
   return (
     <SlideModal
@@ -162,6 +167,32 @@ export default function StepFormModal({
 
         <div className="space-y-4">
           <label className="block text-sm font-medium text-muted">Configuration</label>
+          {actionType === AutomationActionType.EMAIL && (
+            <div>
+              <label className="block text-xs text-subtle mb-1">Content</label>
+              <select
+                value={templateId}
+                onChange={(e) =>
+                  setConfigValues((prev) => {
+                    const { templateId: _drop, ...rest } = prev;
+                    return e.target.value ? { ...rest, templateId: e.target.value } : rest;
+                  })
+                }
+                className={`${FORM_INPUT_CLASS} text-sm`}
+              >
+                <option value="">Write it here</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>Template: {t.name}</option>
+                ))}
+              </select>
+              {templateId && (
+                <p className="text-xs text-subtle mt-1">
+                  Uses the template as it is when each email goes out. If a lead has no value for one of its fields,
+                  that lead is skipped.
+                </p>
+              )}
+            </div>
+          )}
           {fields.map(({ key, label, placeholder }) => (
             <div key={key}>
               <label className="block text-xs text-subtle mb-1">{label}</label>

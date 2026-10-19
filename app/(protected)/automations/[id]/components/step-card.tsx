@@ -1,6 +1,8 @@
 'use client';
 
 import type { AutomationStepResponseDto } from '@/lib/types/automations';
+import type { EmailTemplateResponseDto } from '@/lib/types/emails';
+import { useEmailTemplates } from '@/lib/hooks/use-email-templates';
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
   EMAIL: 'Email',
@@ -20,8 +22,12 @@ const ACTION_TYPE_COLORS: Record<string, string> = {
   TAG: 'bg-gray-100 text-gray-800',
 };
 
-function configSummary(step: AutomationStepResponseDto): string {
+function configSummary(step: AutomationStepResponseDto, templates: EmailTemplateResponseDto[]): string {
   const c = step.actionConfig;
+  if (c.templateId) {
+    const template = templates.find((t) => t.id === c.templateId);
+    return template ? `Template: ${template.name}` : 'Template (deleted or inactive — this step will be skipped)';
+  }
   if (c.subject) return c.subject;
   if (c.message) return c.message;
   if (c.title) return c.title;
@@ -42,6 +48,7 @@ export default function StepCard({
   onEdit,
   onDelete,
 }: StepCardProps) {
+  const { data: templates = [] } = useEmailTemplates();
   return (
     <div className="surface border border-[var(--border)] rounded-lg px-5 py-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -49,7 +56,7 @@ export default function StepCard({
           {ACTION_TYPE_LABELS[step.actionType]}
         </span>
         <div className="flex-1 min-w-0">
-          <div className="text-sm text-primary font-medium truncate">{configSummary(step)}</div>
+          <div className="text-sm text-primary font-medium truncate">{configSummary(step, templates)}</div>
           {step.actionConfig.body && (
             <div
               className="text-xs text-subtle mt-0.5 truncate"

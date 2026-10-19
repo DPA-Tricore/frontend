@@ -5,16 +5,11 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useCallback } from 'react';
+import { MERGE_FIELDS } from '@/lib/constants/emails';
 
-// ─── Merge tags available for email templates ───────────────────────────────
-const MERGE_TAGS = [
-  { label: 'First Name', value: '[[First Name]]' },
-  { label: 'Last Name', value: '[[Last Name]]' },
-  { label: 'Full Name', value: '[[Full Name]]' },
-  { label: 'Lead Status', value: '[[Lead Status]]' },
-  { label: 'Lead Type', value: '[[Lead Type]]' },
-  { label: 'Source', value: '[[Source]]' },
-];
+// Same {{field}} merge fields as email templates — filled in when the email is sent.
+const MERGE_TAGS = MERGE_FIELDS.map((f) => ({ label: f.description, value: `{{${f.name}}}` }));
+
 
 // ─── Toolbar button ──────────────────────────────────────────────────────────
 function ToolbarButton({
