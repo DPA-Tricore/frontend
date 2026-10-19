@@ -1,4 +1,4 @@
-import type { EmailStatus } from '@/lib/types/emails';
+import type { EmailStatus, MergeFieldInfo } from '@/lib/types/emails';
 import type { UserRole } from '@/lib/types/users';
 
 /** How often an open thread re-checks while an email is still sending. */
@@ -28,3 +28,22 @@ export const EMAIL_STATUS_STYLES: Record<EmailStatus, string> = {
   FAILED: 'bg-red-500/15 text-red-600 dark:text-red-400',
   RECEIVED: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
 };
+
+export const EMAIL_TEMPLATE_MANAGER_ROLES: UserRole[] = ['ORG_ADMIN', 'MANAGER'];
+export const EMAIL_TEMPLATE_NAME_MAX_LENGTH = 100;
+
+/** Must match backend/src/modules/emails/constants/merge-fields.constants.ts. */
+export const MERGE_FIELDS: MergeFieldInfo[] = [
+  { name: 'firstName', description: "Client's first name" },
+  { name: 'lastName', description: "Client's last name" },
+  { name: 'agentName', description: 'Your name' },
+  { name: 'agentEmail', description: 'Your email' },
+  { name: 'agencyName', description: 'Agency name' },
+  { name: 'policyName', description: 'Their soonest-renewing active policy' },
+  { name: 'renewalDate', description: 'When that policy renews' },
+];
+
+/** Matches {{ field }} with optional spaces. */
+export const MERGE_FIELD_PATTERN = /\{\{\s*([a-zA-Z]+)\s*\}\}/g;
+
+export const EMAIL_TEMPLATE_FORM_DEFAULTS = { name: '', subject: '', body: '', isActive: true };

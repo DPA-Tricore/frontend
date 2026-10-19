@@ -104,3 +104,8 @@ export const emailKeys = {
   threads: (filters: EmailThreadFilters) => [...emailKeys.all, 'threads', filters] as const,
   thread: (id: string) => [...emailKeys.all, 'thread', id] as const,
 };
+
+export const emailTemplateKeys = {
+  all: ['emailTemplates'] as const,
+  list: (includeInactive: boolean) => [...emailTemplateKeys.all, 'list', includeInactive] as const,
+};

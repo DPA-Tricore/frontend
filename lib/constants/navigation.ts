@@ -13,9 +13,11 @@ import {
   CreditCard,
   Package,
   FileText,
+  Mail,
 } from 'lucide-react';
 import type { NavGroup } from '@/lib/types/navigation';
 import { PRODUCT_MANAGER_ROLES } from '@/lib/constants/products';
+import { EMAIL_TEMPLATE_MANAGER_ROLES } from '@/lib/constants/emails';
 
 export const NAV_GROUPS: NavGroup[] = [
   {
@@ -51,6 +53,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Admin',
     items: [
       { name: 'Products', icon: Package, href: '/products', roles: PRODUCT_MANAGER_ROLES },
+      { name: 'Email Templates', icon: Mail, href: '/email-templates', roles: EMAIL_TEMPLATE_MANAGER_ROLES },
       { name: 'Team', icon: Users, href: '/team', roles: ['ORG_ADMIN'] },
       { name: 'Audit Log', icon: ShieldCheck, href: '/audit-log', roles: ['ORG_ADMIN'] },
       { name: 'Billing', icon: CreditCard, href: '/billing', roles: ['ORG_ADMIN'] },

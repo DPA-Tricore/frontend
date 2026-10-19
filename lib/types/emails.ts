@@ -57,4 +57,36 @@ export interface SendEmailRequest {
   to: string[];
   subject: string;
   bodyText: string;
+  templateId?: string;
+}
+
+export interface EmailTemplateResponseDto {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEmailTemplateRequest {
+  name: string;
+  subject: string;
+  body: string;
+  isActive?: boolean;
+}
+
+export type UpdateEmailTemplateRequest = Partial<CreateEmailTemplateRequest>;
+
+export interface RenderedEmailTemplateDto {
+  templateId: string;
+  subject: string;
+  bodyText: string;
+  missingFields: string[];
+}
+
+export interface MergeFieldInfo {
+  name: string;
+  description: string;
 }

@@ -7,6 +7,8 @@ import { colors } from '@/lib/theme/colors';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
 import { EMAIL_BODY_MAX_LENGTH, EMAIL_SUBJECT_MAX_LENGTH } from '@/lib/constants/emails';
 import { useSendEmail } from '@/lib/hooks/use-emails';
+import { useEmailTemplates, useRenderEmailTemplate } from '@/lib/hooks/use-email-templates';
+import { unfilledMergeFields } from '@/lib/utils/merge-fields';
 import type { ContactResponseDto } from '@/lib/types/leads';
 import type { EmailParty } from '@/lib/types/emails';
 
@@ -28,6 +30,9 @@ interface EmailComposerModalProps {
 
 export default function EmailComposerModal({ isOpen, onClose, party, contacts, reply, onSent }: EmailComposerModalProps) {
   const sendEmail = useSendEmail();
+  const renderTemplate = useRenderEmailTemplate();
+  const { data: templates = [] } = useEmailTemplates(false, { enabled: isOpen });
+  const [templateId, setTemplateId] = useState('');
   const emailContacts = contacts.filter((c) => c.type === 'EMAIL');
   const [to, setTo] = useState<string[]>([]);
   const [subject, setSubject] = useState('');
@@ -40,14 +45,29 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
     setTo(reply ? reply.to : firstUsable ? [firstUsable.value] : []);
     setSubject(reply?.subject ?? '');
     setBodyText('');
+    setTemplateId('');
     sendEmail.reset();
+    renderTemplate.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, reply]);
 
   const toggleRecipient = (address: string) =>
     setTo((prev) => (prev.includes(address) ? prev.filter((a) => a !== address) : [...prev, address]));
 
-  const isValid = to.length > 0 && subject.trim().length > 0 && bodyText.trim().length > 0;
+  // Picking a template fills it in for this client. A reply keeps the thread's subject.
+  const handlePickTemplate = async (id: string) => {
+    setTemplateId(id);
+    if (!id) return;
+    const rendered = await renderTemplate.mutateAsync({
+      id,
+      party: party.type === 'lead' ? { leadId: party.id } : { customerId: party.id },
+    });
+    if (!reply) setSubject(rendered.subject);
+    setBodyText(rendered.bodyText);
+  };
+
+  const unfilled = unfilledMergeFields(subject, bodyText);
+  const isValid = to.length > 0 && subject.trim().length > 0 && bodyText.trim().length > 0 && unfilled.length === 0;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +79,7 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
       to,
       subject: subject.trim(),
       bodyText,
+      ...(templateId ? { templateId } : {}),
     });
     onSent?.(message.threadId);
     onClose();
@@ -92,6 +113,23 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
           )}
         </div>
 
+        {templates.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">Template</label>
+            <select
+              value={templateId}
+              onChange={(e) => handlePickTemplate(e.target.value)}
+              disabled={renderTemplate.isPending}
+              className={FORM_INPUT_CLASS}
+            >
+              <option value="">No template</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-muted mb-2">Subject</label>
           <input
@@ -114,6 +152,13 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
             className={`${FORM_INPUT_CLASS} resize-y`}
           />
         </div>
+
+        {unfilled.length > 0 && (
+          <div className="callout p-3 rounded-lg text-sm">
+            Fill in or remove {unfilled.map((n) => `{{${n}}}`).join(', ')} before sending — this client has no value for{' '}
+            {unfilled.length === 1 ? 'it' : 'them'}.
+          </div>
+        )}
 
         {apiError && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
