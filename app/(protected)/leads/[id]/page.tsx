@@ -15,11 +15,13 @@ import LeadRemindersTab from './components/lead-reminders-tab';
 import LeadDocumentsTab from './components/lead-documents-tab';
 import LeadNotesTab from './components/lead-notes-tab';
 import EntityInvoicesTab from '@/components/invoices/entity-invoices-tab';
+import EntityEmailsTab from '@/components/emails/entity-emails-tab';
 
-type Tab = 'activity' | 'tasks' | 'reminders' | 'documents' | 'notes' | 'invoices';
+type Tab = 'activity' | 'emails' | 'tasks' | 'reminders' | 'documents' | 'notes' | 'invoices';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'activity', label: 'Activity' },
+  { id: 'emails', label: 'Emails' },
   { id: 'tasks', label: 'Tasks' },
   { id: 'reminders', label: 'Reminders' },
   { id: 'documents', label: 'Documents' },
@@ -78,6 +80,12 @@ export default function LeadDetailPage() {
 
             {/* Tab content */}
             {activeTab === 'activity' && <LeadActivityTab leadId={id} />}
+            {activeTab === 'emails' && (
+              <EntityEmailsTab
+                party={{ type: 'lead', id, name: `${lead.firstName} ${lead.lastName}` }}
+                contacts={lead.contacts ?? []}
+              />
+            )}
             {activeTab === 'tasks' && <LeadTasksTab leadId={id} />}
             {activeTab === 'reminders' && <LeadRemindersTab leadId={id} />}
             {activeTab === 'documents' && <LeadDocumentsTab leadId={id} />}

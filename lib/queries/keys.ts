@@ -1,3 +1,4 @@
+import type { EmailThreadFilters } from '@/lib/types/emails';
 import type { ListLeadsParams } from '@/lib/types/leads';
 import type { ListRemindersParams } from '@/lib/types/reminders';
 import type { ListCustomersParams } from '@/lib/types/customers';
@@ -96,4 +97,10 @@ export const invoiceKeys = {
   all: ['customerInvoices'] as const,
   list: (filters: CustomerInvoiceFilters) => [...invoiceKeys.all, 'list', filters] as const,
   detail: (id: string) => [...invoiceKeys.all, 'detail', id] as const,
+};
+
+export const emailKeys = {
+  all: ['emails'] as const,
+  threads: (filters: EmailThreadFilters) => [...emailKeys.all, 'threads', filters] as const,
+  thread: (id: string) => [...emailKeys.all, 'thread', id] as const,
 };
