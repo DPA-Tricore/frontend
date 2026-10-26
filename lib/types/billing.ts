@@ -8,6 +8,8 @@ export interface PlanDto {
   id: string;
   name: string;
   amountCents: number;
+  includedUsers: number | null;
+  extraUserAmountCents: number | null;
   currency: string;
   interval: BillingInterval;
   isActive: boolean;
@@ -25,6 +27,7 @@ export interface BillingScheduleResponseDto {
   status: BillingScheduleStatus;
   stripeCustomerId: string | null;
   effectiveAmountCents: number;
+  activeUserCount: number;
   plan: PlanDto | null;
 }
 

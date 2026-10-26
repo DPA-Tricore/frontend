@@ -149,6 +149,14 @@ export default function BillingPage() {
                   </p>
                   <div className="text-sm text-muted space-y-1">
                     <p>Plan: {schedule.plan ? schedule.plan.name : 'Custom'}</p>
+                    {schedule.customAmountCents == null &&
+                      schedule.plan?.includedUsers != null &&
+                      schedule.plan.extraUserAmountCents != null && (
+                        <p>
+                          Users: {schedule.activeUserCount} ({schedule.plan.includedUsers} included,{' '}
+                          {formatCentsAsMoney(schedule.plan.extraUserAmountCents)} for each extra user)
+                        </p>
+                      )}
                     {schedule.discountPercent != null && <p>Discount: {schedule.discountPercent}% off</p>}
                     {schedule.freeUntil && <p>Free until {formatDate(schedule.freeUntil)}</p>}
                     {schedule.status === 'ACTIVE' && <p>Next billing date: {formatDate(schedule.nextBillingDate)}</p>}
