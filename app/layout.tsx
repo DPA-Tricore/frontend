@@ -6,6 +6,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
 import { ThemeProvider } from "@/context/theme-context";
 import { QueryProvider } from "@/context/query-provider";
+import Toaster from "@/components/toaster";
 import { APP_NAME } from "@/lib/constants/brand";
 
 const geistSans = Geist({
@@ -38,6 +39,7 @@ export default function RootLayout({
           <AuthProvider>
             <QueryProvider>{children}</QueryProvider>
           </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

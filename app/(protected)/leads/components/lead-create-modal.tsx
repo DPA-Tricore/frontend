@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import { useCreateLead } from '@/lib/hooks/use-leads';
@@ -28,6 +31,10 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const [reminderTimeInput, setReminderTimeInput] = useState('');
   const [demoMode, setDemoMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Local state, not createLead.isPending: the mutation's pending state reaches React a tick
+  // late, so a fast double-click would get through and create the lead twice.
+  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
   const createLead = useCreateLead();
 
   const reset = () => {
@@ -61,9 +68,11 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSubmitting(true);
     try {
       const { email, phone, ...rest } = formData;
-      await createLead.mutateAsync({
+      const lead = await createLead.mutateAsync({
         ...rest,
         // Blank fields are left out — the backend makes each one the lead's primary contact.
         ...(email.trim() && { email: email.trim() }),
@@ -76,8 +85,14 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
       reset();
       onClose();
       onCreated();
+      toast.success('Lead created', {
+        description: `${lead.firstName} ${lead.lastName}`,
+        action: { label: 'View', onClick: () => router.push(`/leads/${lead.id}`) },
+      });
     } catch {
       setError('Failed to create lead');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -235,8 +250,13 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
           <button type="button" onClick={handleClose} className={colors.button.secondary}>
             Cancel
           </button>
-          <button type="submit" className={colors.button.primary}>
-            Create Lead
+          <button
+            type="submit"
+            disabled={submitting}
+            className={`${colors.button.primary} flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {submitting && <Loader2 size={16} className="animate-spin" />}
+            {submitting ? 'Creating…' : 'Create Lead'}
           </button>
         </div>
       </form>

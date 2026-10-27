@@ -1,7 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { tasksApi } from '@/lib/api/tasks';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { notesApi } from '@/lib/api/notes';
+import { useCreateTask } from '@/lib/hooks/use-tasks';
 import { formatDateTime } from '@/lib/utils/date';
 import type { UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
@@ -48,6 +52,11 @@ export default function TaskCreateModal({
   const [demoMode, setDemoMode] = useState(false);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Local state, not createTask.isPending: it also covers the voice-note upload, and the
+  // mutation's pending state reaches React a tick late, letting a fast double-click through.
+  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
+  const createTask = useCreateTask();
 
   const reset = () => {
     setFormData({ title: '', description: '', type: 'CALL', priority: 'MEDIUM', assignedToId: '', dueDate: '' });
@@ -91,8 +100,9 @@ export default function TaskCreateModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSubmitting(true);
     try {
-      await tasksApi.createTask({
+      const task = await createTask.mutateAsync({
         ...formData,
         dueDate: new Date(formData.dueDate),
         ...(selectedOffsets.length > 0 && { reminderOffsets: selectedOffsets }),
@@ -101,10 +111,26 @@ export default function TaskCreateModal({
         }),
         ...(demoMode && { demoMode: true }),
       });
+      // The task exists at this point, so a failed upload only warns. Throwing would show
+      // "Failed to create task" and invite a retry that creates the task twice.
+      const voiceNoteFailed =
+        voiceBlob !== null &&
+        (await notesApi.createTaskVoice(task.id, voiceBlob).then(() => false, () => true));
       reset();
       onCreated();
+      const view = { label: 'View', onClick: () => router.push(`/tasks/${task.id}`) };
+      if (voiceNoteFailed) {
+        toast.warning("Task created, but the voice note didn't upload", {
+          description: 'Open the task to record it again.',
+          action: view,
+        });
+      } else {
+        toast.success('Task created', { description: task.title, action: view });
+      }
     } catch {
       setError('Failed to create task');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -286,8 +312,13 @@ export default function TaskCreateModal({
           <button type="button" onClick={handleClose} className={colors.button.secondary}>
             Cancel
           </button>
-          <button type="submit" className={colors.button.primary}>
-            Create Task
+          <button
+            type="submit"
+            disabled={submitting}
+            className={`${colors.button.primary} flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {submitting && <Loader2 size={16} className="animate-spin" />}
+            {submitting ? 'Creating…' : 'Create Task'}
           </button>
         </div>
       </form>

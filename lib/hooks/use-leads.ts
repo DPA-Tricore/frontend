@@ -12,7 +12,7 @@ import {
   type PaginatedLeadResponse,
   type ConvertLeadRequest,
 } from '@/lib/api/leads';
-import { leadKeys, type LeadListFilters } from '@/lib/queries/keys';
+import { dashboardKeys, leadKeys, reminderKeys, type LeadListFilters } from '@/lib/queries/keys';
 
 /** getLeads returns a bare array when the server doesn't paginate — normalize to one shape. */
 export function normalizeLeadsResponse(
@@ -69,12 +69,20 @@ export function useLeadsBoardSummary() {
   });
 }
 
+/**
+ * Stays pending until the board and lists have refetched, so the create form
+ * can keep its "Creating…" state and close with the new lead already on screen.
+ */
 export function useCreateLead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateLeadRequest) => leadsApi.createLead(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: leadKeys.all });
+    onSuccess: (_created, data) => {
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.summary() });
+      if (data.reminderTimes?.length) {
+        queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+      }
+      return queryClient.invalidateQueries({ queryKey: leadKeys.all });
     },
   });
 }

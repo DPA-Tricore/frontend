@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { tasksApi } from '@/lib/api/tasks';
-import type { PaginatedTaskResponse, TaskResponseDto } from '@/lib/types/tasks';
-import { taskKeys } from '@/lib/queries/keys';
+import type { CreateTaskRequest, PaginatedTaskResponse, TaskResponseDto } from '@/lib/types/tasks';
+import { dashboardKeys, reminderKeys, taskKeys } from '@/lib/queries/keys';
 
 /** getTasks returns a bare array when the server doesn't paginate — normalize to one shape. */
 export function normalizeTasksResponse(
@@ -43,6 +43,21 @@ export function useTasksBoardSummary() {
         );
       });
       return board;
+    },
+  });
+}
+
+/** Same contract as useCreateLead: stays pending until the board has refetched with the new task. */
+export function useCreateTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateTaskRequest) => tasksApi.createTask(data),
+    onSuccess: (_created, data) => {
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.summary() });
+      if (data.reminderOffsets?.length || data.customReminderTimes?.length) {
+        queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+      }
+      return queryClient.invalidateQueries({ queryKey: taskKeys.all });
     },
   });
 }
