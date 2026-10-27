@@ -36,7 +36,9 @@ export default function LeadPropertiesPanel({ lead }: LeadPropertiesPanelProps) 
     assignLead.mutate({ id: lead.id, agentId: e.target.value || null });
   };
 
-  const hasQualification = lead.source || lead.budgetRange || lead.coverageAmount || lead.riskProfile;
+  const interestedIn = lead.interestedProducts?.map((p) => p.name).join(', ');
+  const hasQualification =
+    lead.source || lead.budgetRange || lead.coverageAmount || lead.riskProfile || interestedIn;
   const hasAttribution = lead.utmSource || lead.utmMedium || lead.utmCampaign || lead.campaignId;
 
   return (
@@ -68,6 +70,7 @@ export default function LeadPropertiesPanel({ lead }: LeadPropertiesPanelProps) 
           <div className="border-b border-[var(--border)] my-4" />
           <p className="text-xs font-semibold text-subtle uppercase tracking-wide mb-1">Qualification</p>
           <Row label="Source" value={lead.source} />
+          <Row label="Interested In" value={interestedIn} />
           <Row label="Budget" value={lead.budgetRange} />
           <Row label="Coverage" value={lead.coverageAmount ? `$${lead.coverageAmount}` : null} />
           <Row label="Risk Profile" value={lead.riskProfile} />

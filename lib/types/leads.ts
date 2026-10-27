@@ -51,6 +51,13 @@ export interface LeadResponseDto {
   createdAt: string;
   updatedAt: string;
   contacts?: ContactResponseDto[];
+  /** Only on the single-lead fetch and the create response. */
+  interestedProducts?: InterestedProduct[];
+}
+
+export interface InterestedProduct {
+  id: string;
+  name: string;
 }
 
 export interface PaginatedLeadResponse {
@@ -91,6 +98,7 @@ export interface CreateLeadRequest {
   coverageAmount?: number;
   budgetRange?: string;
   assignedAgentId?: string;
+  interestedProductIds?: string[];
   reminderTimes?: string[];
   demoMode?: boolean;
 }

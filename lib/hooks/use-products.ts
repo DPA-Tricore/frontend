@@ -2,10 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { productsApi, type CreateProductRequest, type UpdateProductRequest } from '@/lib/api/products';
 import { productKeys } from '@/lib/queries/keys';
 
-export function useProducts(includeInactive = false) {
+export function useProducts(includeInactive = false, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: productKeys.list(includeInactive),
     queryFn: () => productsApi.getProducts(includeInactive),
+    enabled: options?.enabled ?? true,
   });
 }
 

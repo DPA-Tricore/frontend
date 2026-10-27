@@ -10,6 +10,7 @@ import { useAuth } from '@/context/auth-context';
 import { colors } from '@/lib/theme/colors';
 import { useCreateLead } from '@/lib/hooks/use-leads';
 import { useMe } from '@/lib/hooks/use-me';
+import { useProducts } from '@/lib/hooks/use-products';
 import { useUsers } from '@/lib/hooks/use-users';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
 import {
@@ -32,6 +33,7 @@ interface LeadCreateModalProps {
 
 export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCreateModalProps) {
   const [formData, setFormData] = useState(NEW_LEAD_FORM);
+  const [productIds, setProductIds] = useState<string[]>([]);
   const [reminderTimes, setReminderTimes] = useState<string[]>([]);
   const [reminderTimeInput, setReminderTimeInput] = useState('');
   const [demoMode, setDemoMode] = useState(false);
@@ -48,6 +50,7 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const canAssign = !!user?.role && CAN_ASSIGN_ROLES.includes(user.role);
   const { data: me } = useMe();
   const { data: users = [] } = useUsers({ enabled: isOpen && canAssign });
+  const { data: products = [], isLoading: productsLoading } = useProducts(false, { enabled: isOpen });
   const assignees = users.filter(
     (u) =>
       u.isActive &&
@@ -57,6 +60,7 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
 
   const reset = () => {
     setFormData(NEW_LEAD_FORM);
+    setProductIds([]);
     setReminderTimes([]);
     setReminderTimeInput('');
     setDemoMode(false);
@@ -79,6 +83,12 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
     setReminderTimes((prev) => prev.filter((t) => t !== time));
   };
 
+  const toggleProduct = (productId: string) => {
+    setProductIds((prev) =>
+      prev.includes(productId) ? prev.filter((p) => p !== productId) : [...prev, productId],
+    );
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -99,6 +109,7 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
         ...(coverageAmount && { coverageAmount: Number(coverageAmount) }),
         ...(budgetRange.trim() && { budgetRange: budgetRange.trim() }),
         ...(assignedAgentId && { assignedAgentId }),
+        ...(productIds.length > 0 && { interestedProductIds: productIds }),
         ...(reminderTimes.length > 0 && {
           reminderTimes: reminderTimes.map((t) => new Date(t).toISOString()),
         }),
@@ -274,6 +285,35 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
                   placeholder="e.g. $100–200 a month"
                 />
               </div>
+            </div>
+            <div>
+              <p className="block text-sm font-medium text-muted mb-1.5">Products of interest</p>
+              {productsLoading ? (
+                <p className="text-sm text-subtle">Loading products…</p>
+              ) : products.length === 0 ? (
+                <p className="text-sm text-subtle">No products set up yet.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {products.map((product) => {
+                    const active = productIds.includes(product.id);
+                    return (
+                      <button
+                        key={product.id}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => toggleProduct(product.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          active
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'border-[var(--border)] text-muted hover:border-blue-400 hover:text-blue-600'
+                        }`}
+                      >
+                        {product.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </FormSection>
 
