@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { notesApi } from '@/lib/api/notes';
 import { useCreateTask } from '@/lib/hooks/use-tasks';
+import { SHOW_REMINDER_DEMO_MODE } from '@/lib/constants/reminders';
 import { formatDateTime } from '@/lib/utils/date';
 import type { UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
@@ -287,7 +288,7 @@ export default function TaskCreateModal({
             </div>
           )}
 
-          {(selectedOffsets.length > 0 || customReminderTimes.length > 0) && (
+          {SHOW_REMINDER_DEMO_MODE && (selectedOffsets.length > 0 || customReminderTimes.length > 0) && (
             <label className="inline-flex items-center gap-2 mt-3 cursor-pointer select-none">
               <input
                 type="checkbox"

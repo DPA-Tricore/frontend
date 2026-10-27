@@ -1,16 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import SlideModal from '@/components/slide-modal';
+import FormSection from '@/components/form-section';
+import { useAuth } from '@/context/auth-context';
 import { colors } from '@/lib/theme/colors';
 import { useCreateLead } from '@/lib/hooks/use-leads';
-
-function formatDateTime(isoString: string): string {
-  return new Date(isoString).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
-}
+import { useMe } from '@/lib/hooks/use-me';
+import { useUsers } from '@/lib/hooks/use-users';
+import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
+import {
+  ASSIGNABLE_ROLES,
+  CAN_ASSIGN_ROLES,
+  LEAD_SOURCE_SUGGESTIONS,
+  LEAD_TYPE_OPTIONS,
+  NEW_LEAD_FORM,
+} from '@/lib/constants/leads';
+import { SHOW_REMINDER_DEMO_MODE } from '@/lib/constants/reminders';
+import { apiErrorMessage } from '@/lib/utils/api-error';
+import { formatDateTime } from '@/lib/utils/date';
+import { userDisplayName } from '@/lib/utils/user-name';
 
 interface LeadCreateModalProps {
   isOpen: boolean;
@@ -19,14 +31,7 @@ interface LeadCreateModalProps {
 }
 
 export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCreateModalProps) {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    leadType: 'PROSPECT',
-    status: 'NEW',
-  });
+  const [formData, setFormData] = useState(NEW_LEAD_FORM);
   const [reminderTimes, setReminderTimes] = useState<string[]>([]);
   const [reminderTimeInput, setReminderTimeInput] = useState('');
   const [demoMode, setDemoMode] = useState(false);
@@ -36,9 +41,22 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
   const createLead = useCreateLead();
+  const id = useId();
+
+  // Same rule as the lead page: admins and managers assign, and managers only within their team.
+  const { user } = useAuth();
+  const canAssign = !!user?.role && CAN_ASSIGN_ROLES.includes(user.role);
+  const { data: me } = useMe();
+  const { data: users = [] } = useUsers({ enabled: isOpen && canAssign });
+  const assignees = users.filter(
+    (u) =>
+      u.isActive &&
+      ASSIGNABLE_ROLES.includes(u.role) &&
+      (user?.role !== 'MANAGER' || u.teamId === me?.teamId),
+  );
 
   const reset = () => {
-    setFormData({ firstName: '', lastName: '', email: '', phone: '', leadType: 'PROSPECT', status: 'NEW' });
+    setFormData(NEW_LEAD_FORM);
     setReminderTimes([]);
     setReminderTimeInput('');
     setDemoMode(false);
@@ -71,12 +89,16 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
     setError(null);
     setSubmitting(true);
     try {
-      const { email, phone, ...rest } = formData;
+      const { email, phone, source, coverageAmount, budgetRange, assignedAgentId, ...rest } = formData;
       const lead = await createLead.mutateAsync({
         ...rest,
-        // Blank fields are left out — the backend makes each one the lead's primary contact.
+        // Blank fields are left out. Email and phone become the lead's primary contacts.
         ...(email.trim() && { email: email.trim() }),
         ...(phone.trim() && { phone: phone.trim() }),
+        ...(source.trim() && { source: source.trim() }),
+        ...(coverageAmount && { coverageAmount: Number(coverageAmount) }),
+        ...(budgetRange.trim() && { budgetRange: budgetRange.trim() }),
+        ...(assignedAgentId && { assignedAgentId }),
         ...(reminderTimes.length > 0 && {
           reminderTimes: reminderTimes.map((t) => new Date(t).toISOString()),
         }),
@@ -89,164 +111,256 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
         description: `${lead.firstName} ${lead.lastName}`,
         action: { label: 'View', onClick: () => router.push(`/leads/${lead.id}`) },
       });
-    } catch {
-      setError('Failed to create lead');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Failed to create lead'));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <SlideModal isOpen={isOpen} onClose={handleClose} title="Create New Lead">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <SlideModal isOpen={isOpen} onClose={handleClose} title="Create New Lead" size="wide">
+      <form onSubmit={handleSubmit} className="min-h-full flex flex-col">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
             {error}
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">First Name</label>
-          <input
-            type="text"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
-            placeholder="John"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">Last Name</label>
-          <input
-            type="text"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
-            placeholder="Doe"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted mb-2">
-              Email <span className="text-subtle font-normal">(optional)</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
-              placeholder="john@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted mb-2">
-              Phone <span className="text-subtle font-normal">(optional)</span>
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
-              placeholder="+1 555 0100"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">Lead Type</label>
-          <select
-            name="leadType"
-            value={formData.leadType}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
-          >
-            <option value="PROSPECT">Prospect</option>
-            <option value="WARM_LEAD">Warm Lead</option>
-            <option value="QUALIFIED_LEAD">Qualified Lead</option>
-            <option value="OPPORTUNITY">Opportunity</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-muted mb-2">Status</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
-          >
-            <option value="NEW">New</option>
-            <option value="CONTACTED">Contacted</option>
-            <option value="QUALIFIED">Qualified</option>
-            <option value="IN_NEGOTIATION">In Negotiation</option>
-            <option value="CONVERTED">Converted</option>
-            <option value="LOST">Lost</option>
-            <option value="UNRESPONSIVE">Unresponsive</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-muted mb-3">
-            Follow-up Reminders{' '}
-            <span className="text-xs text-subtle font-normal">(optional)</span>
-          </label>
-          <div className="flex gap-2 items-center">
-            <input
-              type="datetime-local"
-              value={reminderTimeInput}
-              onChange={(e) => setReminderTimeInput(e.target.value)}
-              className="flex-1 px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
-            />
-            <button
-              type="button"
-              onClick={addReminderTime}
-              disabled={!reminderTimeInput}
-              className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] text-muted hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              + Add
-            </button>
-          </div>
-
-          {reminderTimes.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {reminderTimes.map((time) => (
-                <span
-                  key={time}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white"
-                >
-                  {formatDateTime(time)}
-                  <button
-                    type="button"
-                    onClick={() => removeReminderTime(time)}
-                    className="hover:opacity-70 ml-0.5"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
+        <div className="space-y-6 pb-6">
+          <FormSection title="Basic info">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor={`${id}-firstName`} className="block text-sm font-medium text-muted mb-1.5">
+                  First name *
+                </label>
+                <input
+                  id={`${id}-firstName`}
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  className={FORM_INPUT_CLASS}
+                  placeholder="John"
+                />
+              </div>
+              <div>
+                <label htmlFor={`${id}-lastName`} className="block text-sm font-medium text-muted mb-1.5">
+                  Last name *
+                </label>
+                <input
+                  id={`${id}-lastName`}
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  className={FORM_INPUT_CLASS}
+                  placeholder="Doe"
+                />
+              </div>
             </div>
-          )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor={`${id}-leadType`} className="block text-sm font-medium text-muted mb-1.5">
+                  Lead type
+                </label>
+                <select
+                  id={`${id}-leadType`}
+                  name="leadType"
+                  value={formData.leadType}
+                  onChange={handleInputChange}
+                  className={FORM_INPUT_CLASS}
+                >
+                  {LEAD_TYPE_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor={`${id}-source`} className="block text-sm font-medium text-muted mb-1.5">
+                  Source
+                </label>
+                <input
+                  id={`${id}-source`}
+                  type="text"
+                  name="source"
+                  list={`${id}-sources`}
+                  value={formData.source}
+                  onChange={handleInputChange}
+                  className={FORM_INPUT_CLASS}
+                  placeholder="e.g. Referral"
+                />
+                <datalist id={`${id}-sources`}>
+                  {LEAD_SOURCE_SUGGESTIONS.map((source) => (
+                    <option key={source} value={source} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+          </FormSection>
 
-          {reminderTimes.length > 0 && (
-            <label className="inline-flex items-center gap-2 mt-3 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={demoMode}
-                onChange={(e) => setDemoMode(e.target.checked)}
-                className="w-4 h-4 rounded accent-orange-500"
-              />
-              <span className="text-xs text-orange-600 font-medium">
-                Fire immediately (demo mode)
-              </span>
-            </label>
-          )}
+          <FormSection title="Contact">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor={`${id}-email`} className="block text-sm font-medium text-muted mb-1.5">
+                  Email
+                </label>
+                <input
+                  id={`${id}-email`}
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={FORM_INPUT_CLASS}
+                  placeholder="john@example.com"
+                />
+              </div>
+              <div>
+                <label htmlFor={`${id}-phone`} className="block text-sm font-medium text-muted mb-1.5">
+                  Phone
+                </label>
+                <input
+                  id={`${id}-phone`}
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className={FORM_INPUT_CLASS}
+                  placeholder="+1 555 0100"
+                />
+              </div>
+            </div>
+          </FormSection>
+
+          <FormSection title="Insurance interest">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor={`${id}-coverage`} className="block text-sm font-medium text-muted mb-1.5">
+                  Coverage amount
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-subtle">
+                    $
+                  </span>
+                  <input
+                    id={`${id}-coverage`}
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="any"
+                    name="coverageAmount"
+                    value={formData.coverageAmount}
+                    onChange={handleInputChange}
+                    className={`${FORM_INPUT_CLASS} pl-7`}
+                    placeholder="50000"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor={`${id}-budget`} className="block text-sm font-medium text-muted mb-1.5">
+                  Budget
+                </label>
+                <input
+                  id={`${id}-budget`}
+                  type="text"
+                  name="budgetRange"
+                  value={formData.budgetRange}
+                  onChange={handleInputChange}
+                  className={FORM_INPUT_CLASS}
+                  placeholder="e.g. $100–200 a month"
+                />
+              </div>
+            </div>
+          </FormSection>
+
+          <FormSection title={canAssign ? 'Assignment & follow-up' : 'Follow-up'}>
+            {canAssign && (
+              <div>
+                <label htmlFor={`${id}-assignee`} className="block text-sm font-medium text-muted mb-1.5">
+                  Assigned to
+                </label>
+                <select
+                  id={`${id}-assignee`}
+                  name="assignedAgentId"
+                  value={formData.assignedAgentId}
+                  onChange={handleInputChange}
+                  className={FORM_INPUT_CLASS}
+                >
+                  <option value="">Unassigned</option>
+                  {assignees.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {userDisplayName(u)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label htmlFor={`${id}-reminder`} className="block text-sm font-medium text-muted mb-1.5">
+                Follow-up reminders
+              </label>
+              <div className="flex gap-2 items-center">
+                <input
+                  id={`${id}-reminder`}
+                  type="datetime-local"
+                  value={reminderTimeInput}
+                  onChange={(e) => setReminderTimeInput(e.target.value)}
+                  className="flex-1 px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent surface text-primary"
+                />
+                <button
+                  type="button"
+                  onClick={addReminderTime}
+                  disabled={!reminderTimeInput}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] text-muted hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  + Add
+                </button>
+              </div>
+
+              {reminderTimes.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {reminderTimes.map((time) => (
+                    <span
+                      key={time}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white"
+                    >
+                      {formatDateTime(time)}
+                      <button
+                        type="button"
+                        onClick={() => removeReminderTime(time)}
+                        className="hover:opacity-70 ml-0.5"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {SHOW_REMINDER_DEMO_MODE && reminderTimes.length > 0 && (
+                <label className="inline-flex items-center gap-2 mt-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={demoMode}
+                    onChange={(e) => setDemoMode(e.target.checked)}
+                    className="w-4 h-4 rounded accent-orange-500"
+                  />
+                  <span className="text-xs text-orange-600 font-medium">
+                    Fire immediately (demo mode)
+                  </span>
+                </label>
+              )}
+            </div>
+          </FormSection>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        {/* Pinned to the bottom of the panel, so the buttons stay in reach on a long form. */}
+        <div className="mt-auto sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-[var(--border)] surface flex justify-end gap-3">
           <button type="button" onClick={handleClose} className={colors.button.secondary}>
             Cancel
           </button>

@@ -83,10 +83,14 @@ export interface CreateLeadRequest {
   firstName: string;
   lastName: string;
   leadType: string;
-  status: string;
+  /** Leaving it out starts the lead at NEW. */
+  status?: string;
   email?: string;
   phone?: string;
   source?: string;
+  coverageAmount?: number;
+  budgetRange?: string;
+  assignedAgentId?: string;
   reminderTimes?: string[];
   demoMode?: boolean;
 }

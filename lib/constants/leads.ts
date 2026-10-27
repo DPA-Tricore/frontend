@@ -25,6 +25,37 @@ export const AVATAR_COLORS = [
 export const ASSIGNABLE_ROLES = ['AGENT', 'MANAGER'];
 export const CAN_ASSIGN_ROLES = ['ORG_ADMIN', 'MANAGER'];
 
+export const LEAD_TYPE_OPTIONS = [
+  { value: 'PROSPECT', label: 'Prospect' },
+  { value: 'WARM_LEAD', label: 'Warm Lead' },
+  { value: 'QUALIFIED_LEAD', label: 'Qualified Lead' },
+  { value: 'OPPORTUNITY', label: 'Opportunity' },
+];
+
+/** Offered as suggestions only — source is free text, so agencies can use their own. */
+export const LEAD_SOURCE_SUGGESTIONS = [
+  'Referral',
+  'Walk-in',
+  'Phone call',
+  'Website',
+  'Facebook',
+  'Event',
+  'Existing customer',
+];
+
+/** Blank create-lead form. Coverage stays a string until submit, so the input can be empty. */
+export const NEW_LEAD_FORM = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  leadType: 'PROSPECT',
+  source: '',
+  coverageAmount: '',
+  budgetRange: '',
+  assignedAgentId: '',
+};
+
 /** Forward pipeline stages, in order. LOST/UNRESPONSIVE are branch states, shown separately. */
 export const LEAD_STAGES = ['NEW', 'CONTACTED', 'QUALIFIED', 'IN_NEGOTIATION', 'CONVERTED'] as const;
 

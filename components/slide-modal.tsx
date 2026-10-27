@@ -7,6 +7,8 @@ interface SlideModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  /** "wide" fits forms with fields side by side. */
+  size?: 'default' | 'wide';
   children: React.ReactNode;
 }
 
@@ -14,6 +16,7 @@ export default function SlideModal({
   isOpen,
   onClose,
   title,
+  size = 'default',
   children,
 }: SlideModalProps) {
   return (
@@ -46,7 +49,9 @@ export default function SlideModal({
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto relative w-96 surface shadow-2xl flex flex-col">
+                <Dialog.Panel
+                  className={`pointer-events-auto relative ${size === 'wide' ? 'w-screen max-w-[36rem]' : 'w-96'} surface shadow-2xl flex flex-col`}
+                >
                   {/* Header */}
                   <div className="flex-shrink-0 border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-primary">{title}</h2>
