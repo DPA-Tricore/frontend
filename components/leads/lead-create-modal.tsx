@@ -15,7 +15,7 @@ function formatDateTime(isoString: string): string {
 interface LeadCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreated: () => void;
+  onCreated?: () => void;
 }
 
 export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCreateModalProps) {
@@ -84,7 +84,7 @@ export default function LeadCreateModal({ isOpen, onClose, onCreated }: LeadCrea
       });
       reset();
       onClose();
-      onCreated();
+      onCreated?.();
       toast.success('Lead created', {
         description: `${lead.firstName} ${lead.lastName}`,
         action: { label: 'View', onClick: () => router.push(`/leads/${lead.id}`) },

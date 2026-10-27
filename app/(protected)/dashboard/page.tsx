@@ -1,18 +1,25 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { useDashboardSummary } from '@/lib/hooks/use-dashboard';
 import { formatMoney } from '@/lib/utils/format';
 import { getDisplayNameFromEmail } from '@/lib/utils/dashboard';
 import { useReminders } from '@/lib/hooks/use-reminders';
+import { useUsers } from '@/lib/hooks/use-users';
+import LeadCreateModal from '@/components/leads/lead-create-modal';
+import TaskCreateModal from '@/components/tasks/task-create-modal';
 import DashboardRecentLeads from './components/dashboard-recent-leads';
 import DashboardActionQueue from './components/dashboard-action-queue';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { pendingCount } = useReminders();
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  // Only the task form needs the user list (for "Assign To"), so don't fetch it until then.
+  const { data: users = [], isLoading: usersLoading } = useUsers({ enabled: showTaskForm });
 
   const { data: summary, isLoading: loading, isError } = useDashboardSummary();
   const error = isError ? 'Failed to load dashboard data' : null;
@@ -30,7 +37,7 @@ export default function DashboardPage() {
     [],
   );
 
-  const skeleton = <div className="animate-pulse bg-[var(--border)] rounded-lg min-h-[120px]" />;
+  const skeleton = <div className="flex-1 animate-pulse bg-[var(--border)] rounded-lg min-h-[120px]" />;
 
   return (
     <div className="p-8">
@@ -78,23 +85,41 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Main content */}
+      {/* Main content — side by side, the cards keep a steady minimum height, so a short
+          list gets an "add more" prompt instead of shrinking to a strip. */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="lg:col-span-2 surface rounded-lg border border-[var(--border)] p-6">
+        <section className="lg:col-span-2 lg:min-h-[30rem] flex flex-col surface rounded-lg border border-[var(--border)] p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-semibold text-primary">Recent Leads</h2>
             <Link href="/leads" className="text-xs text-muted hover:text-primary transition-colors">
               View all →
             </Link>
           </div>
-          {loading ? skeleton : <DashboardRecentLeads leads={summary?.recentLeads ?? []} />}
+          {loading ? (
+            skeleton
+          ) : (
+            <DashboardRecentLeads leads={summary?.recentLeads ?? []} onAddLead={() => setShowLeadForm(true)} />
+          )}
         </section>
 
-        <section className="surface rounded-lg border border-[var(--border)] p-6">
+        <section className="lg:min-h-[30rem] flex flex-col surface rounded-lg border border-[var(--border)] p-6">
           <h2 className="text-base font-semibold text-primary mb-5">Today's Actions</h2>
-          {loading ? skeleton : <DashboardActionQueue dueTasks={summary?.dueTasks ?? []} />}
+          {loading ? (
+            skeleton
+          ) : (
+            <DashboardActionQueue dueTasks={summary?.dueTasks ?? []} onAddTask={() => setShowTaskForm(true)} />
+          )}
         </section>
       </div>
+
+      <LeadCreateModal isOpen={showLeadForm} onClose={() => setShowLeadForm(false)} />
+      <TaskCreateModal
+        isOpen={showTaskForm}
+        onClose={() => setShowTaskForm(false)}
+        onCreated={() => setShowTaskForm(false)}
+        users={users}
+        usersLoading={usersLoading}
+      />
     </div>
   );
 }

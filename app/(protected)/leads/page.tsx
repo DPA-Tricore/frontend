@@ -14,7 +14,7 @@ import PageHeader from '@/components/page-header';
 import PaginationSummary from '@/components/pagination-summary';
 import LeadBoardView from './components/lead-board-view';
 import LeadListView from './components/lead-list-view';
-import LeadCreateModal from './components/lead-create-modal';
+import LeadCreateModal from '@/components/leads/lead-create-modal';
 import LeadFilters from './components/lead-filters';
 import LeadExportButton from './components/lead-export-button';
 import ViewToggle, { type ViewMode } from './components/view-toggle';

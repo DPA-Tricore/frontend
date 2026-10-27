@@ -70,19 +70,24 @@ export function useLeadsBoardSummary() {
 }
 
 /**
- * Stays pending until the board and lists have refetched, so the create form
- * can keep its "Creating…" state and close with the new lead already on screen.
+ * Stays pending until whatever shows leads on screen (board, list, dashboard) has
+ * refetched, so the create form can keep its "Creating…" state and close with the
+ * new lead already there. Queries not on screen are only marked stale, so waiting
+ * on them costs nothing.
  */
 export function useCreateLead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateLeadRequest) => leadsApi.createLead(data),
     onSuccess: (_created, data) => {
-      queryClient.invalidateQueries({ queryKey: dashboardKeys.summary() });
+      const refetches = [
+        queryClient.invalidateQueries({ queryKey: leadKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardKeys.summary() }),
+      ];
       if (data.reminderTimes?.length) {
-        queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+        refetches.push(queryClient.invalidateQueries({ queryKey: reminderKeys.all }));
       }
-      return queryClient.invalidateQueries({ queryKey: leadKeys.all });
+      return Promise.all(refetches);
     },
   });
 }

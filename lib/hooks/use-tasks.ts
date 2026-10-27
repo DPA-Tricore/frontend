@@ -47,17 +47,20 @@ export function useTasksBoardSummary() {
   });
 }
 
-/** Same contract as useCreateLead: stays pending until the board has refetched with the new task. */
+/** Same contract as useCreateLead: stays pending until the board or dashboard on screen shows the new task. */
 export function useCreateTask() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateTaskRequest) => tasksApi.createTask(data),
     onSuccess: (_created, data) => {
-      queryClient.invalidateQueries({ queryKey: dashboardKeys.summary() });
+      const refetches = [
+        queryClient.invalidateQueries({ queryKey: taskKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardKeys.summary() }),
+      ];
       if (data.reminderOffsets?.length || data.customReminderTimes?.length) {
-        queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+        refetches.push(queryClient.invalidateQueries({ queryKey: reminderKeys.all }));
       }
-      return queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      return Promise.all(refetches);
     },
   });
 }

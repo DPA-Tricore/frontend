@@ -16,7 +16,7 @@ import PaginationSummary from '@/components/pagination-summary';
 import TaskFilters from './components/task-filters';
 import TaskListView from './components/task-list-view';
 import TaskBoardView from './components/task-board-view';
-import TaskCreateModal from './components/task-create-modal';
+import TaskCreateModal from '@/components/tasks/task-create-modal';
 import ViewToggle, { type ViewMode } from './components/view-toggle';
 import { userDisplayName } from '@/lib/utils/user-name';
 

@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { AlertCircle, CheckSquare, Clock } from 'lucide-react';
+import { AlertCircle, CalendarCheck, CheckSquare, Clock, Plus } from 'lucide-react';
 import { useReminders } from '@/lib/hooks/use-reminders';
 import type { TaskResponseDto } from '@/lib/types/tasks';
+import { ACTIONS_PROMPT_BELOW } from '@/lib/constants/dashboard';
+import DashboardPrompt from './dashboard-prompt';
 
 interface Props {
   dueTasks: TaskResponseDto[];
+  onAddTask: () => void;
 }
 
 function relativeLabel(dateStr: string): string {
@@ -33,7 +36,7 @@ function taskDueLabel(dueDate: Date | string): string {
   return `Due in ${diffDays}d`;
 }
 
-export default function DashboardActionQueue({ dueTasks }: Props) {
+export default function DashboardActionQueue({ dueTasks, onAddTask }: Props) {
   const { reminders } = useReminders();
 
   const { overdueReminders, upcomingReminders } = useMemo(() => {
@@ -51,19 +54,29 @@ export default function DashboardActionQueue({ dueTasks }: Props) {
     };
   }, [reminders]);
 
-  const isEmpty =
-    overdueReminders.length === 0 &&
-    dueTasks.length === 0 &&
-    upcomingReminders.length === 0;
+  const itemCount = overdueReminders.length + dueTasks.length + upcomingReminders.length;
 
-  if (isEmpty) {
+  const addTaskButton = (
+    <button
+      type="button"
+      onClick={onAddTask}
+      className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg text-primary transition-colors hover:opacity-70"
+    >
+      <Plus size={14} />
+      Add task
+    </button>
+  );
+
+  if (itemCount === 0) {
     return (
-      <p className="text-sm text-muted text-center py-8">All caught up!</p>
+      <DashboardPrompt icon={CalendarCheck} title="All caught up" message="Nothing is due today.">
+        {addTaskButton}
+      </DashboardPrompt>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex-1 flex flex-col gap-5">
       {overdueReminders.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-2">
@@ -138,6 +151,12 @@ export default function DashboardActionQueue({ dueTasks }: Props) {
             ))}
           </div>
         </section>
+      )}
+
+      {itemCount < ACTIONS_PROMPT_BELOW && (
+        <DashboardPrompt icon={CalendarCheck} message="Add a task for your next follow-up.">
+          {addTaskButton}
+        </DashboardPrompt>
       )}
     </div>
   );
