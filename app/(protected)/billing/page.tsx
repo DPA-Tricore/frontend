@@ -122,6 +122,15 @@ export default function BillingPage() {
     <div className="p-8">
       <PageHeader title="Billing" error={error} />
 
+      {schedule?.organizationBillingStatus === 'SUSPENDED' && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {schedule.status === 'PENDING_PAYMENT_METHOD'
+            ? `Your free trial has ended, so your agency's access to ${APP_NAME} is paused. Add a payment method to get it back.`
+            : `A payment didn't go through, so your agency's access to ${APP_NAME} is paused. Pay the open invoice or update your card to get it back.`}{' '}
+          Your data is safe.
+        </div>
+      )}
+
       {isLoading ? (
         <LoadingSpinner message="Loading billing information..." />
       ) : !hasSchedule ? (

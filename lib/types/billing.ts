@@ -3,6 +3,7 @@ import type { PaginationMeta } from './common';
 export type BillingInterval = 'MONTH' | 'QUARTER' | 'YEAR';
 export type BillingScheduleStatus = 'PENDING_PAYMENT_METHOD' | 'ACTIVE' | 'SUSPENDED' | 'SUPERSEDED';
 export type InvoiceStatus = 'PENDING' | 'PAID' | 'FAILED' | 'OVERDUE';
+export type OrganizationBillingStatus = 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED';
 
 export interface PlanDto {
   id: string;
@@ -29,6 +30,7 @@ export interface BillingScheduleResponseDto {
   effectiveAmountCents: number;
   activeUserCount: number;
   plan: PlanDto | null;
+  organizationBillingStatus: OrganizationBillingStatus;
 }
 
 export interface InvoiceResponseDto {
