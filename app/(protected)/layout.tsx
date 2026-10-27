@@ -26,8 +26,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     }
   }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading) return <LoadingSpinner fullPage />;
-  if (!isAuthenticated) return null;
+  // Keep the spinner up while redirecting, so a signed-out visit never flashes a blank page.
+  if (isLoading || !isAuthenticated) return <LoadingSpinner fullPage />;
 
   return (
     <div className="flex h-screen">

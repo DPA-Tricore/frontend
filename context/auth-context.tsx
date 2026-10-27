@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { authAPI } from '@/lib/api/auth';
 import { SignupRequest, LoginRequest } from '@/lib/api/types/auth-request';
 import { storageService } from '@/lib/services/storage';
+import { decodeJwt, isJwtExpired } from '@/lib/utils/jwt';
 
 export interface User {
   id: string;
@@ -38,9 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedUser = storageService.getUser();
         const token = storageService.getAccessToken();
 
-        // Only restore session if both user and token exist
-        if (storedUser && token) {
+        // Only restore a session the server will still accept. An expired token
+        // would render the app for a moment, then bounce to login on the first 401.
+        if (storedUser && token && !isJwtExpired(token)) {
           setUser(storedUser);
+        } else {
+          storageService.clearAuth();
         }
       } catch (err) {
         console.error('Failed to restore session:', err);
@@ -93,9 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Decode JWT to get user info (simple decoding without verification)
-      const decoded = JSON.parse(atob(accessToken.split('.')[1]));
+      const decoded = decodeJwt(accessToken);
+      if (!decoded?.sub) throw new Error('Invalid access token');
       const userData: User = {
-        id: decoded.sub || decoded.id,
+        id: decoded.sub,
         email: decoded.email || data.email,
         role: decoded.role ?? 'AGENT',
         createdAt: new Date().toISOString(),
