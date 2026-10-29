@@ -2,13 +2,16 @@
 
 import { useTheme } from '@/context/theme-context';
 import Link from 'next/link';
-import { Bell, ChevronRight, Moon, Sun } from 'lucide-react';
+import { Bell, ChevronRight, Moon, Sun, UserRound } from 'lucide-react';
 import PageHeader from '@/components/page-header';
+import { useMe } from '@/lib/hooks/use-me';
 import { NOTIFICATION_SETTINGS_PATH } from '@/lib/constants/notifications';
-import ProfileSection from './components/profile-section';
+import { PROFILE_SETTINGS_PATH } from '@/lib/constants/profile';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { data: me } = useMe();
+  const hasNoName = !!me && !me.firstName && !me.lastName;
 
   return (
     <div className="min-h-screen p-8">
@@ -17,7 +20,29 @@ export default function SettingsPage() {
 
         {/* Settings Card */}
         <div className="surface rounded-xl border border-[var(--border)] shadow-sm divide-y divide-[var(--border)]">
-          <ProfileSection />
+          {/* Account Section */}
+          <div className="p-6">
+            <h2 className="text-lg font-semibold text-primary mb-6">
+              Account
+            </h2>
+
+            <Link href={PROFILE_SETTINGS_PATH} className="group flex items-center justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <UserRound size={24} className="text-blue-500" />
+                <div>
+                  <p className="font-medium text-primary">
+                    Profile
+                  </p>
+                  <p className="text-sm text-muted">
+                    {hasNoName
+                      ? "Add your name so clients know who they're hearing from"
+                      : 'Your name on tasks, leads and client emails'}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={20} className="text-muted group-hover:text-primary" />
+            </Link>
+          </div>
 
           {/* Notifications Section */}
           <div className="p-6">

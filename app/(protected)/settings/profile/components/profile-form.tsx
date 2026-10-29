@@ -5,7 +5,7 @@ import { useMe, useUpdateMe } from '@/lib/hooks/use-me';
 import { colors } from '@/lib/theme/colors';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
 
-export default function ProfileSection() {
+export default function ProfileForm() {
   const { data: me } = useMe();
   const updateMe = useUpdateMe();
   const [firstName, setFirstName] = useState('');
@@ -32,10 +32,10 @@ export default function ProfileSection() {
   const error = (updateMe.error as any)?.response?.data?.message;
 
   return (
-    <form onSubmit={handleSave} className="p-6 space-y-4">
+    <form onSubmit={handleSave} className="surface rounded-xl border border-[var(--border)] shadow-sm p-6 space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Profile</h2>
-        <p className="text-sm text-muted">Your name shows on tasks and leads, and on emails you send to clients.</p>
+        <h2 className="text-lg font-semibold text-primary">Your name</h2>
+        <p className="text-sm text-muted">It shows on tasks and leads, and on emails you send to clients.</p>
       </div>
 
       {me && !me.firstName && !me.lastName && (
