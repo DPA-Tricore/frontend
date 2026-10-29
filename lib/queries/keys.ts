@@ -109,3 +109,11 @@ export const emailTemplateKeys = {
   all: ['emailTemplates'] as const,
   list: (includeInactive: boolean) => [...emailTemplateKeys.all, 'list', includeInactive] as const,
 };
+
+export const notificationKeys = {
+  all: ['notifications'] as const,
+  list: () => [...notificationKeys.all, 'list'] as const,
+  unreadCount: () => [...notificationKeys.all, 'unread-count'] as const,
+  preferences: () => [...notificationKeys.all, 'preferences'] as const,
+  pushPublicKey: () => [...notificationKeys.all, 'push-public-key'] as const,
+};

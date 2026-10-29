@@ -1,8 +1,10 @@
 'use client';
 
 import { useTheme } from '@/context/theme-context';
-import { Moon, Sun } from 'lucide-react';
+import Link from 'next/link';
+import { Bell, ChevronRight, Moon, Sun } from 'lucide-react';
 import PageHeader from '@/components/page-header';
+import { NOTIFICATION_SETTINGS_PATH } from '@/lib/constants/notifications';
 import ProfileSection from './components/profile-section';
 
 export default function SettingsPage() {
@@ -16,6 +18,28 @@ export default function SettingsPage() {
         {/* Settings Card */}
         <div className="surface rounded-xl border border-[var(--border)] shadow-sm divide-y divide-[var(--border)]">
           <ProfileSection />
+
+          {/* Notifications Section */}
+          <div className="p-6">
+            <h2 className="text-lg font-semibold text-primary mb-6">
+              Notifications
+            </h2>
+
+            <Link href={NOTIFICATION_SETTINGS_PATH} className="group flex items-center justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <Bell size={24} className="text-blue-500" />
+                <div>
+                  <p className="font-medium text-primary">
+                    Notification settings
+                  </p>
+                  <p className="text-sm text-muted">
+                    Pick what you get told about, and turn on browser alerts
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={20} className="text-muted group-hover:text-primary" />
+            </Link>
+          </div>
 
           {/* Appearance Section */}
           <div className="p-6">

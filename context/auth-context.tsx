@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { authAPI } from '@/lib/api/auth';
 import { SignupRequest, LoginRequest } from '@/lib/api/types/auth-request';
 import { storageService } from '@/lib/services/storage';
+import { pushService } from '@/lib/services/push';
 import { decodeJwt, isJwtExpired } from '@/lib/utils/jwt';
 
 export interface User {
@@ -122,6 +123,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
+      // While the token still works, so the server can drop this browser's alerts.
+      await pushService.forgetThisBrowser();
       await authAPI.logout();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Logout failed';
