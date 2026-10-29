@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -12,19 +12,21 @@ interface SidebarNavProps {
   isCollapsed: boolean;
 }
 
+function readFolded(): string[] {
+  try {
+    const saved = localStorage.getItem(SIDEBAR_FOLDED_GROUPS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    // Storage blocked or corrupt — every group starts open.
+    return [];
+  }
+}
+
 export default function SidebarNav({ isCollapsed }: SidebarNavProps) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [folded, setFolded] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(SIDEBAR_FOLDED_GROUPS_KEY);
-      if (saved) setFolded(JSON.parse(saved));
-    } catch {
-      // Storage blocked or corrupt — every group starts open.
-    }
-  }, []);
+  // Only mounted once auth has loaded on the client, so reading storage here can't break hydration.
+  const [folded, setFolded] = useState<string[]>(readFolded);
 
   const toggleGroup = (label: string) => {
     const next = folded.includes(label) ? folded.filter((l) => l !== label) : [...folded, label];

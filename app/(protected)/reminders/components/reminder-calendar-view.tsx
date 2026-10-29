@@ -174,9 +174,16 @@ export default function ReminderCalendarView({
     return () => window.removeEventListener('keydown', onKey);
   }, [contextMenu]);
 
-  useEffect(() => {
+  // Every way of moving the calendar goes through these, so the menu closes with it.
+  const navigateTo = useCallback((next: Date | ((prev: Date) => Date)) => {
+    setDate(next);
     setContextMenu(null);
-  }, [view, date]);
+  }, []);
+
+  const changeView = useCallback((next: View) => {
+    setView(next);
+    setContextMenu(null);
+  }, []);
 
   // Month-view cells only carry a date (midnight), so default to a sensible
   // time of day; week/day time slots carry the exact time the user right-clicked.
@@ -246,15 +253,15 @@ export default function ReminderCalendarView({
 
       if (view === Views.MONTH && Math.abs(e.deltaY) > WHEEL_THRESHOLD) {
         wheelCooldown.current = true;
-        setDate((d) => addMonths(d, e.deltaY > 0 ? 1 : -1));
+        navigateTo((d) => addMonths(d, e.deltaY > 0 ? 1 : -1));
         setTimeout(() => { wheelCooldown.current = false; }, COOLDOWN_MS);
       } else if (view === Views.WEEK && Math.abs(e.deltaX) > WHEEL_THRESHOLD) {
         wheelCooldown.current = true;
-        setDate((d) => addWeeks(d, e.deltaX > 0 ? 1 : -1));
+        navigateTo((d) => addWeeks(d, e.deltaX > 0 ? 1 : -1));
         setTimeout(() => { wheelCooldown.current = false; }, COOLDOWN_MS);
       }
     },
-    [view]
+    [view, navigateTo]
   );
 
   const events = useMemo<CalendarEvent[]>(
@@ -300,9 +307,9 @@ export default function ReminderCalendarView({
           localizer={localizer}
           events={events}
           date={date}
-          onNavigate={setDate}
+          onNavigate={navigateTo}
           view={view}
-          onView={setView}
+          onView={changeView}
           views={[Views.MONTH, Views.WEEK, Views.DAY]}
           popup
           resizable={false}

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { isAxiosError } from 'axios';
 import { reportsApi } from '@/lib/api/reports';
-import type { AgentPerformanceReport, AgentMetrics } from '@/lib/types/reports';
+import type { AgentPerformanceReport, AgentSortKey } from '@/lib/types/reports';
 import LoadingSpinner from '@/components/loading-spinner';
 import DateRangeFilter from '../components/date-range-filter';
 import ExportButton from '../components/export-button';
-
-type SortKey = keyof Pick<AgentMetrics, 'totalLeads' | 'convertedLeads' | 'lostLeads' | 'conversionRate' | 'tasksCompleted'>;
+import SortHeader from '../components/sort-header';
 
 export default function AgentPerformancePage() {
   const [data, setData] = useState<AgentPerformanceReport | null>(null);
@@ -15,7 +15,7 @@ export default function AgentPerformancePage() {
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [sortKey, setSortKey] = useState<SortKey>('totalLeads');
+  const [sortKey, setSortKey] = useState<AgentSortKey>('totalLeads');
   const [sortDesc, setSortDesc] = useState(true);
 
   useEffect(() => {
@@ -26,9 +26,9 @@ export default function AgentPerformancePage() {
       try {
         const res = await reportsApi.getAgentPerformance({ startDate: startDate || undefined, endDate: endDate || undefined });
         if (!cancelled) setData(res);
-      } catch (err: any) {
+      } catch (err) {
         if (!cancelled) {
-          setError(err?.response?.status === 403 ? 'You do not have permission to view agent performance.' : 'Failed to load agent performance.');
+          setError(isAxiosError(err) && err.response?.status === 403 ? 'You do not have permission to view agent performance.' : 'Failed to load agent performance.');
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -42,19 +42,12 @@ export default function AgentPerformancePage() {
     ? [...data.agents].sort((a, b) => sortDesc ? b[sortKey] - a[sortKey] : a[sortKey] - b[sortKey])
     : [];
 
-  const toggleSort = (key: SortKey) => {
+  const toggleSort = (key: AgentSortKey) => {
     if (sortKey === key) setSortDesc(!sortDesc);
     else { setSortKey(key); setSortDesc(true); }
   };
 
-  const SortHeader = ({ label, k }: { label: string; k: SortKey }) => (
-    <th
-      className="px-4 py-3 font-medium text-right cursor-pointer select-none hover:text-primary"
-      onClick={() => toggleSort(k)}
-    >
-      {label} {sortKey === k ? (sortDesc ? '↓' : '↑') : ''}
-    </th>
-  );
+  const sortProps = { sortKey, sortDesc, onSort: toggleSort };
 
   return (
     <div className="space-y-6">
@@ -72,11 +65,11 @@ export default function AgentPerformancePage() {
             <thead>
               <tr className="border-b border-[var(--border)] text-left text-xs text-[var(--muted)]">
                 <th className="px-4 py-3 font-medium">Agent</th>
-                <SortHeader label="Total Leads" k="totalLeads" />
-                <SortHeader label="Converted" k="convertedLeads" />
-                <SortHeader label="Lost" k="lostLeads" />
-                <SortHeader label="Conv. Rate" k="conversionRate" />
-                <SortHeader label="Tasks Done" k="tasksCompleted" />
+                <SortHeader label="Total Leads" column="totalLeads" {...sortProps} />
+                <SortHeader label="Converted" column="convertedLeads" {...sortProps} />
+                <SortHeader label="Lost" column="lostLeads" {...sortProps} />
+                <SortHeader label="Conv. Rate" column="conversionRate" {...sortProps} />
+                <SortHeader label="Tasks Done" column="tasksCompleted" {...sortProps} />
               </tr>
             </thead>
             <tbody>

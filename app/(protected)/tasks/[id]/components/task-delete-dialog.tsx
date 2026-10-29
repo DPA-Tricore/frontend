@@ -32,7 +32,7 @@ export default function TaskDeleteDialog({ isOpen, task, onCancel, onDeleted }: 
         <h3 className="text-base font-semibold text-primary mb-2">Delete Task</h3>
         <p className="text-sm text-subtle mb-6">
           Are you sure you want to delete{' '}
-          <span className="font-medium text-primary">"{task.title}"</span>? This cannot be undone.
+          <span className="font-medium text-primary">&ldquo;{task.title}&rdquo;</span>? This cannot be undone.
         </p>
         <div className="flex gap-3">
           <button

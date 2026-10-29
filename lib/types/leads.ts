@@ -75,11 +75,13 @@ export interface LeadBoardResponse {
   columns: LeadBoardColumn[];
 }
 
+export type LeadSortField = 'firstName' | 'lastName' | 'createdAt' | 'status' | 'leadType';
+
 export interface ListLeadsParams {
   page?: number;
   limit?: number;
   search?: string;
-  sortBy?: 'firstName' | 'lastName' | 'createdAt' | 'status' | 'leadType';
+  sortBy?: LeadSortField;
   sortOrder?: 'asc' | 'desc';
   status?: string;
   leadType?: string;

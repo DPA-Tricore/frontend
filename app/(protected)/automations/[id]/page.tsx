@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { automationsApi } from '@/lib/api/automations';
+import { useAutomation } from '@/lib/hooks/use-automations';
+import { automationKeys } from '@/lib/queries/keys';
 import type { AutomationResponseDto, AutomationStepResponseDto } from '@/lib/types/automations';
 import { getStatusColor, getScopeColor } from '@/lib/theme/colors';
 import { colors } from '@/lib/theme/colors';
@@ -15,33 +18,22 @@ export default function AutomationDetailPage() {
   const router = useRouter();
   const id = params.id as string;
 
-  const [automation, setAutomation] = useState<AutomationResponseDto | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: automation, isLoading: loading } = useAutomation(id);
   const [error, setError] = useState<string | null>(null);
   const [showStepModal, setShowStepModal] = useState(false);
   const [editingStep, setEditingStep] = useState<AutomationStepResponseDto | null>(null);
   const [deletingStepId, setDeletingStepId] = useState<string | null>(null);
 
-  const fetchAutomation = useCallback(async () => {
-    try {
-      setLoading(true);
-      setAutomation(await automationsApi.getAutomation(id));
-      setError(null);
-    } catch {
-      setError('Failed to load automation');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => { fetchAutomation(); }, [fetchAutomation]);
+  // Also marks the list stale, so it shows the change when you go back.
+  const refreshAutomation = () => queryClient.invalidateQueries({ queryKey: automationKeys.all });
 
   const handleDeleteStep = async (stepId: string) => {
     if (!confirm('Remove this step?')) return;
     setDeletingStepId(stepId);
     try {
       await automationsApi.deleteStep(id, stepId);
-      setAutomation((prev) =>
+      queryClient.setQueryData<AutomationResponseDto>(automationKeys.detail(id), (prev) =>
         prev ? { ...prev, steps: prev.steps?.filter((s) => s.id !== stepId) } : prev,
       );
     } catch {
@@ -107,7 +99,7 @@ export default function AutomationDetailPage() {
         automationId={id}
         existingStep={editingStep}
         nextOrder={(automation.steps?.length ?? 0) + 1}
-        onSaved={fetchAutomation}
+        onSaved={refreshAutomation}
       />
     </div>
   );

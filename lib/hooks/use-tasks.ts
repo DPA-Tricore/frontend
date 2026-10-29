@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { tasksApi } from '@/lib/api/tasks';
-import type { CreateTaskRequest, PaginatedTaskResponse, TaskResponseDto } from '@/lib/types/tasks';
+import type { CreateTaskRequest, ListTasksParams, PaginatedTaskResponse, TaskResponseDto } from '@/lib/types/tasks';
 import { dashboardKeys, reminderKeys, taskKeys } from '@/lib/queries/keys';
 
 /** getTasks returns a bare array when the server doesn't paginate — normalize to one shape. */
@@ -21,6 +21,15 @@ export function normalizeTasksResponse(
     };
   }
   return response;
+}
+
+export function useTasksList(filters: ListTasksParams, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: taskKeys.list(filters),
+    queryFn: async () => normalizeTasksResponse(await tasksApi.getTasks(filters)),
+    enabled: options?.enabled ?? true,
+    placeholderData: keepPreviousData,
+  });
 }
 
 /**

@@ -1,14 +1,16 @@
 'use client';
 
+import type { LeadSortField } from '@/lib/types/leads';
+
 interface LeadFiltersProps {
   search: string;
   statusFilter: string;
   leadTypeFilter: string;
-  sortBy: string;
+  sortBy: LeadSortField;
   onSearch: (value: string) => void;
   onStatusFilter: (value: string) => void;
   onLeadTypeFilter: (value: string) => void;
-  onSortChange: (value: string) => void;
+  onSortChange: (value: LeadSortField) => void;
 }
 
 export default function LeadFilters({
@@ -58,7 +60,7 @@ export default function LeadFilters({
         </select>
         <select
           value={sortBy}
-          onChange={(e) => onSortChange(e.target.value)}
+          onChange={(e) => onSortChange(e.target.value as LeadSortField)}
           className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm surface text-primary"
         >
           <option value="createdAt">Sort</option>

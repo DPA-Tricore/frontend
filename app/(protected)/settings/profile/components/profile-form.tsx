@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMe, useUpdateMe } from '@/lib/hooks/use-me';
 import { colors } from '@/lib/theme/colors';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
+import { apiErrorMessage } from '@/lib/utils/api-error';
 
 export default function ProfileForm() {
   const { data: me } = useMe();
@@ -12,11 +13,13 @@ export default function ProfileForm() {
   const [lastName, setLastName] = useState('');
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    if (!me) return;
+  // Fill the fields whenever the profile loads or changes (e.g. after a save).
+  const [filledFrom, setFilledFrom] = useState<typeof me>(undefined);
+  if (me && me !== filledFrom) {
+    setFilledFrom(me);
     setFirstName(me.firstName ?? '');
     setLastName(me.lastName ?? '');
-  }, [me]);
+  }
 
   const isDirty = !!me && (firstName.trim() !== (me.firstName ?? '') || lastName.trim() !== (me.lastName ?? ''));
   const isValid = firstName.trim().length > 0 && lastName.trim().length > 0;
@@ -29,7 +32,7 @@ export default function ProfileForm() {
     setSaved(true);
   };
 
-  const error = (updateMe.error as any)?.response?.data?.message;
+  const error = updateMe.error ? apiErrorMessage(updateMe.error, 'Failed to save') : null;
 
   return (
     <form onSubmit={handleSave} className="surface rounded-xl border border-[var(--border)] shadow-sm p-6 space-y-4">
@@ -74,7 +77,7 @@ export default function ProfileForm() {
           {updateMe.isPending ? 'Saving…' : 'Save'}
         </button>
         {saved && !isDirty && <span className="text-sm text-muted">Saved</span>}
-        {error && <span className="text-sm text-red-600">{Array.isArray(error) ? error[0] : error}</span>}
+        {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
 
       {me && <p className="text-xs text-muted">Signed in as {me.email}</p>}

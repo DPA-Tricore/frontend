@@ -6,6 +6,7 @@ import { usersApi } from '@/lib/api/users';
 import type { AssignableRole } from '@/lib/types/users';
 import type { TeamResponseDto } from '@/lib/types/teams';
 import { colors } from '@/lib/theme/colors';
+import { apiErrorMessage } from '@/lib/utils/api-error';
 
 const ASSIGNABLE_ROLES: AssignableRole[] = ['MANAGER', 'AGENT', 'VIEWER'];
 
@@ -54,8 +55,8 @@ export default function AddUserForm({ teams, onChanged }: AddUserFormProps) {
       setRole('AGENT');
       setTeamId('');
       await onChanged();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to add person');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Failed to add person'));
     } finally {
       setIsCreating(false);
     }

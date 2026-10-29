@@ -3,6 +3,11 @@ import type { ListLeadsParams } from '@/lib/types/leads';
 import type { ListRemindersParams } from '@/lib/types/reminders';
 import type { ListCustomersParams } from '@/lib/types/customers';
 import type { CustomerInvoiceFilters } from '@/lib/types/invoices';
+import type { ListTasksParams } from '@/lib/types/tasks';
+import type { ListDocumentsParams } from '@/lib/types/documents';
+import type { ListReviewsParams } from '@/lib/types/reviews';
+import type { ListAuditLogParams } from '@/lib/types/activities';
+import type { ListInvoicesParams } from '@/lib/types/billing';
 
 export type LeadListFilters = Omit<ListLeadsParams, 'status'> & { status?: string };
 export type CustomerListFilters = Omit<ListCustomersParams, 'status'> & { status?: string };
@@ -60,6 +65,7 @@ export const taskKeys = {
   all: ['tasks'] as const,
   boardSummary: () => [...taskKeys.all, 'board-summary'] as const,
   boardColumn: (status: string) => [...taskKeys.all, 'board', status] as const,
+  list: (filters: ListTasksParams) => [...taskKeys.all, 'list', filters] as const,
   detail: (id: string) => [...taskKeys.all, 'detail', id] as const,
 };
 
@@ -116,4 +122,36 @@ export const notificationKeys = {
   unreadCount: () => [...notificationKeys.all, 'unread-count'] as const,
   preferences: () => [...notificationKeys.all, 'preferences'] as const,
   pushPublicKey: () => [...notificationKeys.all, 'push-public-key'] as const,
+};
+
+export const automationKeys = {
+  all: ['automations'] as const,
+  list: () => [...automationKeys.all, 'list'] as const,
+  detail: (id: string) => [...automationKeys.all, 'detail', id] as const,
+};
+
+export const documentKeys = {
+  all: ['documents'] as const,
+  list: (filters: ListDocumentsParams) => [...documentKeys.all, 'list', filters] as const,
+};
+
+export const reviewKeys = {
+  all: ['reviews'] as const,
+  list: (filters: ListReviewsParams) => [...reviewKeys.all, 'list', filters] as const,
+  summary: () => [...reviewKeys.all, 'summary'] as const,
+};
+
+export const teamKeys = {
+  all: ['teams'] as const,
+};
+
+export const auditLogKeys = {
+  all: ['auditLog'] as const,
+  list: (params: ListAuditLogParams) => [...auditLogKeys.all, 'list', params] as const,
+};
+
+export const billingKeys = {
+  all: ['billing'] as const,
+  schedule: () => [...billingKeys.all, 'schedule'] as const,
+  invoices: (params: ListInvoicesParams) => [...billingKeys.all, 'invoices', params] as const,
 };

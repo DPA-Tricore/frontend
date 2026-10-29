@@ -26,13 +26,16 @@ export enum ScheduledActionStatus {
   CANCELLED = 'CANCELLED',
 }
 
+/** Text fields per action type (templateId, subject, body, title, message, tagName); the worker reads them as strings. */
+export type AutomationActionConfig = Record<string, string>;
+
 export interface AutomationStepResponseDto {
   id: string;
   automationId: string;
   dayOffset: number;
   actionType: AutomationActionType;
-  actionConfig: Record<string, any>;
-  condition: Record<string, any> | null;
+  actionConfig: AutomationActionConfig;
+  condition: Record<string, unknown> | null;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -63,7 +66,7 @@ export interface UpsertStepRequest {
   id?: string;
   dayOffset: number;
   actionType: AutomationActionType;
-  actionConfig: Record<string, any>;
-  condition?: Record<string, any>;
+  actionConfig: AutomationActionConfig;
+  condition?: Record<string, unknown>;
   order: number;
 }

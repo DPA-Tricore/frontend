@@ -2,10 +2,11 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download, UploadCloud, ArrowLeft, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Download, UploadCloud, ArrowLeft, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { leadsApi } from '@/lib/api/leads';
 import type { ImportResultDto, ImportRowResultDto, ImportRowStatus } from '@/lib/types/leads';
 import { colors } from '@/lib/theme/colors';
+import { apiErrorMessage } from '@/lib/utils/api-error';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 
@@ -76,8 +77,8 @@ export default function LeadImportPage() {
       const dryRunResult = await leadsApi.importLeads(selected, true);
       setResult(dryRunResult);
       setStep('review');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to validate this file.');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Failed to validate this file.'));
     } finally {
       setValidating(false);
     }
@@ -104,8 +105,8 @@ export default function LeadImportPage() {
       const commitResult = await leadsApi.importLeads(file, false);
       setResult(commitResult);
       setStep('result');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Import failed.');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Import failed.'));
     } finally {
       setCommitting(false);
     }

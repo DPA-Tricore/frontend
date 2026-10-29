@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { automationsApi } from '@/lib/api/automations';
+import { useAutomations } from '@/lib/hooks/use-automations';
+import { automationKeys } from '@/lib/queries/keys';
 import type { AutomationResponseDto } from '@/lib/types/automations';
-import { colors, getStatusColor } from '@/lib/theme/colors';
+import { colors } from '@/lib/theme/colors';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -22,26 +25,16 @@ const LEAD_STAGES = [
 ];
 
 export default function AutomationsPage() {
-  const [automations, setAutomations] = useState<AutomationResponseDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { data: automations = [], isLoading: loading, isError } = useAutomations();
+  const [actionError, setError] = useState<string | null>(null);
+  const error = actionError ?? (isError ? 'Failed to fetch automations' : null);
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
 
-  const fetchAutomations = useCallback(async () => {
-    try {
-      setLoading(true);
-      setAutomations(await automationsApi.getAutomations());
-      setError(null);
-    } catch {
-      setError('Failed to fetch automations');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchAutomations(); }, [fetchAutomations]);
+  const setAutomations = (update: (prev: AutomationResponseDto[]) => AutomationResponseDto[]) =>
+    queryClient.setQueryData<AutomationResponseDto[]>(automationKeys.list(), (prev) => update(prev ?? []));
 
   const handleToggleActive = async (automation: AutomationResponseDto) => {
     try {

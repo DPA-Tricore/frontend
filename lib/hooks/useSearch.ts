@@ -23,8 +23,8 @@ export function useSearch() {
     try {
       const data = await searchApi.search(q.trim());
       setResults(data);
-    } catch (err: any) {
-      setError(err.message ?? 'Search failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
       setIsLoading(false);
     }

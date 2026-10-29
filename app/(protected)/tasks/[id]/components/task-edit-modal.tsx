@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { CreateTaskRequest, TaskResponseDto } from '@/lib/types/tasks';
 import type { UserResponseDto } from '@/lib/api/users';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import { userDisplayName } from '@/lib/utils/user-name';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 
 interface TaskEditModalProps {
   isOpen: boolean;
@@ -37,7 +38,8 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onSave }: 
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  // Each opening starts from the task as it is now, e.g. after an earlier save.
+  useResetOnOpen(isOpen, () => {
     setFormData({
       title: task.title,
       description: task.description ?? '',
@@ -50,7 +52,7 @@ export default function TaskEditModal({ isOpen, task, users, onClose, onSave }: 
       resultType: task.resultType ?? '',
     });
     setError(null);
-  }, [task]);
+  });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,

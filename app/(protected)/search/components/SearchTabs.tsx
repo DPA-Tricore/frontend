@@ -1,7 +1,6 @@
 'use client';
 
 import type { SearchTabType, SearchEntityType, SearchResponse } from '@/lib/types/search';
-import { ENTITY_LABELS } from '@/lib/types/search';
 
 const TABS: { key: SearchTabType; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -17,7 +16,7 @@ const TABS: { key: SearchTabType; label: string }[] = [
 function countForTab(key: SearchEntityType, allResults: SearchResponse | null): number | null {
   if (!allResults) return null;
   const groupKey = `${key}s` as keyof SearchResponse;
-  return (allResults[groupKey] as any[]).length;
+  return allResults[groupKey].length;
 }
 
 interface Props {

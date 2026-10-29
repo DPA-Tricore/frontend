@@ -7,16 +7,12 @@ import { CONTACT_EDITOR_ROLES, CONTACT_ICONS, CONTACT_TYPE_LABELS } from '@/lib/
 import { contactHref } from '@/lib/utils/contact-links';
 import { useAddContact, useRemoveContact, useUpdateContact } from '@/lib/hooks/use-contacts';
 import type { ContactOwner, ContactResponseDto } from '@/lib/types/leads';
+import { apiErrorMessage } from '@/lib/utils/api-error';
 import ContactForm, { type ContactFormValues } from './contact-form';
 
 interface ContactsSectionProps {
   owner: ContactOwner;
   contacts: ContactResponseDto[];
-}
-
-function apiMessage(err: unknown, fallback: string): string {
-  const message = (err as any)?.response?.data?.message;
-  return (Array.isArray(message) ? message[0] : message) || fallback;
 }
 
 // The Contact block at the top of a lead's or customer's side panel.
@@ -41,7 +37,7 @@ export default function ContactsSection({ owner, contacts }: ContactsSectionProp
       await addContact.mutateAsync({ type: v.type, value: v.value, isPrimary: v.isPrimary || undefined, doNotContact: v.doNotContact });
       open(null);
     } catch (err) {
-      setError(apiMessage(err, 'Could not add the contact'));
+      setError(apiErrorMessage(err, 'Could not add the contact'));
     }
   };
 
@@ -58,7 +54,7 @@ export default function ContactsSection({ owner, contacts }: ContactsSectionProp
       });
       open(null);
     } catch (err) {
-      setError(apiMessage(err, 'Could not save the contact'));
+      setError(apiErrorMessage(err, 'Could not save the contact'));
     }
   };
 
@@ -68,7 +64,7 @@ export default function ContactsSection({ owner, contacts }: ContactsSectionProp
       await removeContact.mutateAsync(contact.id);
       open(null);
     } catch (err) {
-      setError(apiMessage(err, 'Could not remove the contact'));
+      setError(apiErrorMessage(err, 'Could not remove the contact'));
     }
   };
 

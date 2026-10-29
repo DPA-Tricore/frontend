@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Paperclip, Send } from 'lucide-react';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
+import { apiErrorMessage } from '@/lib/utils/api-error';
 import {
   EMAIL_BODY_MAX_LENGTH, EMAIL_MAX_ATTACHMENT_BYTES, EMAIL_MAX_ATTACHMENTS, EMAIL_SUBJECT_MAX_LENGTH,
 } from '@/lib/constants/emails';
@@ -12,6 +13,7 @@ import { useLeadDocuments } from '@/lib/hooks/use-lead-detail';
 import { formatBytes } from '@/lib/utils/format';
 import { useSendEmail } from '@/lib/hooks/use-emails';
 import { useEmailTemplates, useRenderEmailTemplate } from '@/lib/hooks/use-email-templates';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 import { unfilledMergeFields } from '@/lib/utils/merge-fields';
 import type { ContactResponseDto } from '@/lib/types/leads';
 import type { EmailParty } from '@/lib/types/emails';
@@ -46,8 +48,7 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
   const [bodyText, setBodyText] = useState('');
 
   // Reset every time the composer opens: a reply starts from the thread, a new email from the primary contact.
-  useEffect(() => {
-    if (!isOpen) return;
+  useResetOnOpen(isOpen, () => {
     const usable = emailContacts.filter((c) => !c.doNotContact && !c.bouncedAt);
     const firstUsable = usable.find((c) => c.isPrimary) ?? usable[0];
     // A reply can only go to the record's own addresses — someone cc'd on the thread isn't one.
@@ -57,10 +58,14 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
     setBodyText('');
     setTemplateId('');
     setDocumentIds([]);
+  });
+
+  // Clear the last send's error and template render on the way out, so the next opening starts clean.
+  const handleClose = () => {
     sendEmail.reset();
     renderTemplate.reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, reply]);
+    onClose();
+  };
 
   const toggleRecipient = (address: string) =>
     setTo((prev) => (prev.includes(address) ? prev.filter((a) => a !== address) : [...prev, address]));
@@ -99,13 +104,13 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
       ...(documentIds.length ? { documentIds } : {}),
     });
     onSent?.(message.threadId);
-    onClose();
+    handleClose();
   };
 
-  const apiError = (sendEmail.error as any)?.response?.data?.message;
+  const apiError = sendEmail.error ? apiErrorMessage(sendEmail.error, 'Failed to send email') : null;
 
   return (
-    <SlideModal isOpen={isOpen} onClose={onClose} title={reply ? 'Reply' : `Email ${party.name}`}>
+    <SlideModal isOpen={isOpen} onClose={handleClose} title={reply ? 'Reply' : `Email ${party.name}`}>
       <form onSubmit={handleSend} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-muted mb-2">To</label>
@@ -210,12 +215,12 @@ export default function EmailComposerModal({ isOpen, onClose, party, contacts, r
 
         {apiError && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            {Array.isArray(apiError) ? apiError[0] : apiError}
+            {apiError}
           </div>
         )}
 
         <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className={colors.button.secondary}>
+          <button type="button" onClick={handleClose} className={colors.button.secondary}>
             Cancel
           </button>
           <button

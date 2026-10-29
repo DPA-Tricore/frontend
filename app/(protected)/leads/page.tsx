@@ -7,6 +7,7 @@ import { Upload } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { colors } from '@/lib/theme/colors';
 import { useLeadsList } from '@/lib/hooks/use-leads';
+import type { LeadSortField } from '@/lib/types/leads';
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -29,9 +30,7 @@ export default function LeadsPage() {
   const [limit] = useState(10);
   const [searchInput, setSearchInput] = useState('');
   const search = useDebouncedValue(searchInput, 300);
-  const [sortBy, setSortBy] = useState<
-    'createdAt' | 'firstName' | 'lastName' | 'status' | 'leadType'
-  >('createdAt');
+  const [sortBy, setSortBy] = useState<LeadSortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState('');
   const [leadTypeFilter, setLeadTypeFilter] = useState('');
@@ -57,11 +56,11 @@ export default function LeadsPage() {
   const meta = data?.meta ?? null;
   const error = isError ? 'Failed to fetch leads' : null;
 
-  const handleSort = (field: string) => {
+  const handleSort = (field: LeadSortField) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortBy(field as any);
+      setSortBy(field);
       setSortOrder('desc');
     }
     setPage(1);
@@ -112,7 +111,7 @@ export default function LeadsPage() {
             onSearch={(v) => { setSearchInput(v); setPage(1); }}
             onStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
             onLeadTypeFilter={(v) => { setLeadTypeFilter(v); setPage(1); }}
-            onSortChange={(v) => setSortBy(v as any)}
+            onSortChange={setSortBy}
           />
           {meta && <PaginationSummary meta={meta} page={page} limit={limit} label="leads" />}
         </>

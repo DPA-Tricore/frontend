@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
 import { useReminders } from '@/lib/hooks/use-reminders';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
+import { apiErrorMessage } from '@/lib/utils/api-error';
+import type { ReminderResponseDto } from '@/lib/types/reminders';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 
 interface ReminderCreateModalProps {
   isOpen: boolean;
@@ -16,7 +19,7 @@ interface ReminderCreateModalProps {
     description?: string;
     dueDate: Date;
   };
-  onSuccess?: (reminder: any) => void;
+  onSuccess?: (reminder: ReminderResponseDto) => void;
 }
 
 const calculateReminderTime = (dueDate: string, dueTime: string, offset: string): string => {
@@ -68,13 +71,10 @@ export default function ReminderCreateModal({
   // useState's initializer above only ever runs once. Re-derive from
   // initialData every time it opens, not just on first mount, so e.g. two
   // different right-clicked dates each prefill correctly.
-  useEffect(() => {
-    if (isOpen) {
-      setFormData(buildFormData(initialData));
-      setError(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  useResetOnOpen(isOpen, () => {
+    setFormData(buildFormData(initialData));
+    setError(null);
+  });
 
   const reset = () => {
     setFormData(buildFormData());
@@ -101,8 +101,8 @@ export default function ReminderCreateModal({
       });
       onSuccess?.(result);
       handleClose();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create reminder');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Failed to create reminder'));
     } finally {
       setIsLoading(false);
     }

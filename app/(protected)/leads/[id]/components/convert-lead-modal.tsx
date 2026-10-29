@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import { useConvertLead } from '@/lib/hooks/use-leads';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 import type { PotentialCustomerMatchDto } from '@/lib/api/leads';
 
 interface ConvertLeadModalProps {
@@ -25,8 +26,8 @@ export default function ConvertLeadModal({ leadId, isOpen, onClose, onConverted 
   const [error, setError] = useState<string | null>(null);
   const firedRef = useRef(false);
 
-  const runConvert = async (data?: { customerId?: string; forceNew?: boolean }) => {
-    setError(null);
+  // State only changes once the request settles, so the effect below can start it.
+  const convert = async (data?: { customerId?: string; forceNew?: boolean }) => {
     try {
       const result = await convertLead.mutateAsync({ id: leadId, data });
       if (result.status === 'CONVERTED' && result.customer) {
@@ -39,16 +40,26 @@ export default function ConvertLeadModal({ leadId, isOpen, onClose, onConverted 
     }
   };
 
+  const runConvert = (data: { customerId?: string; forceNew?: boolean }) => {
+    setError(null);
+    convert(data);
+  };
+
+  useResetOnOpen(isOpen, () => {
+    setMatches(null);
+    setError(null);
+  });
+
+  // Opening the modal is what starts the conversion. The ref stops a second
+  // request when an effect re-runs (e.g. Strict Mode) while it stays open.
   useEffect(() => {
-    if (isOpen && !firedRef.current) {
-      firedRef.current = true;
-      runConvert();
-    }
     if (!isOpen) {
       firedRef.current = false;
-      setMatches(null);
-      setError(null);
+      return;
     }
+    if (firedRef.current) return;
+    firedRef.current = true;
+    convert();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 

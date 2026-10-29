@@ -1,10 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
-import { activitiesApi } from '@/lib/api/activities';
-import type { AuditLogEntryDto } from '@/lib/types/activities';
+import { useAuditLog } from '@/lib/hooks/use-audit-log';
 import LoadingSpinner from '@/components/loading-spinner';
 import { formatDateTime } from '@/lib/utils/date';
 import PageHeader from '@/components/page-header';
@@ -21,36 +20,17 @@ const ENTITY_LABELS: Record<string, string> = {
 export default function AuditLogPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const [entries, setEntries] = useState<AuditLogEntryDto[]>([]);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const isOrgAdmin = user?.role === 'ORG_ADMIN';
-
-  const fetchPage = useCallback(async (pageToFetch: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await activitiesApi.getAuditLog({ page: pageToFetch, limit: 25 });
-      setEntries(result.data);
-      setTotalPages(result.meta.totalPages);
-    } catch {
-      setError('Failed to load audit log');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { data, isLoading, isError } = useAuditLog({ page, limit: 25 }, { enabled: isOrgAdmin });
+  const entries = data?.data ?? [];
+  const totalPages = data?.meta.totalPages ?? 1;
+  const error = isError ? 'Failed to load audit log' : null;
 
   useEffect(() => {
-    if (isAuthLoading) return;
-    if (!isOrgAdmin) {
-      router.replace('/dashboard');
-      return;
-    }
-    fetchPage(page);
-  }, [isAuthLoading, isOrgAdmin, router, fetchPage, page]);
+    if (!isAuthLoading && !isOrgAdmin) router.replace('/dashboard');
+  }, [isAuthLoading, isOrgAdmin, router]);
 
   if (isAuthLoading || !isOrgAdmin) return <LoadingSpinner fullPage />;
 

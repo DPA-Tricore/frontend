@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  type TooltipContentProps,
 } from 'recharts';
 import { reportsApi } from '@/lib/api/reports';
 import type { PipelineReport } from '@/lib/types/reports';
@@ -35,7 +36,7 @@ const formatLabel = (s: string) =>
     .map((w) => w[0] + w.slice(1).toLowerCase())
     .join(' ');
 
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: Partial<TooltipContentProps<number, string>>) => {
   if (!active || !payload?.length) return null;
   const { status, count, pct } = payload[0].payload;
   return (

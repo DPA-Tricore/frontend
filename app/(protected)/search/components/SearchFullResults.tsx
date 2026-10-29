@@ -43,7 +43,7 @@ export default function SearchFullResults({ tab, allResults, fullResults, isLoad
 
     const hasAny = SEARCH_GROUP_ORDER.some((type) => {
       const key = `${type}s` as keyof SearchResponse;
-      return (allResults[key] as any[]).length > 0;
+      return allResults[key].length > 0;
     });
 
     if (!hasAny) {
@@ -58,7 +58,7 @@ export default function SearchFullResults({ tab, allResults, fullResults, isLoad
       <div className="space-y-4">
         {SEARCH_GROUP_ORDER.map((entityType) => {
           const key = `${entityType}s` as keyof SearchResponse;
-          const items = allResults[key] as any[];
+          const items = allResults[key];
           if (!items.length) return null;
           return (
             <SearchResultGroup

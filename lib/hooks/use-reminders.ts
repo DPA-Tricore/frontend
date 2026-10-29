@@ -15,6 +15,7 @@ export const useReminders = () => {
 
   const {
     data: reminders = [],
+    dataUpdatedAt,
     isLoading: loading,
     error: queryError,
   } = useQuery({
@@ -68,6 +69,8 @@ export const useReminders = () => {
 
   return {
     reminders,
+    /** When the list last changed (ms) — a stable "now" for sorting due vs upcoming during render. */
+    updatedAt: dataUpdatedAt,
     pendingCount,
     loading,
     error: queryError instanceof Error ? queryError.message : null,

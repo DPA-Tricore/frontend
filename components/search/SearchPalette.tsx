@@ -16,13 +16,13 @@ interface Props {
 function hasResults(results: SearchResponse): boolean {
   return SEARCH_GROUP_ORDER.some((type) => {
     const key = `${type}s` as keyof SearchResponse;
-    return (results[key] as any[]).length > 0;
+    return results[key].length > 0;
   });
 }
 
 function getGroupItems(results: SearchResponse, entityType: string) {
   const key = `${entityType}s` as keyof SearchResponse;
-  return (results[key] as any[]) ?? [];
+  return results[key] ?? [];
 }
 
 export default function SearchPalette({ isOpen, onClose }: Props) {

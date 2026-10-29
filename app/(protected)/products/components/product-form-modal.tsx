@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import type { BillingInterval } from '@/lib/types/customers';
@@ -8,6 +8,7 @@ import type { ProductResponseDto } from '@/lib/types/products';
 import { BILLING_INTERVAL_OPTIONS, PRODUCT_FORM_DEFAULTS } from '@/lib/constants/products';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
 import { useCreateProduct, useDeleteProduct, useUpdateProduct } from '@/lib/hooks/use-products';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -25,8 +26,7 @@ export default function ProductFormModal({ isOpen, onClose, product }: ProductFo
   const isEdit = !!product;
   const isSaving = createProduct.isPending || updateProduct.isPending;
 
-  useEffect(() => {
-    if (!isOpen) return;
+  useResetOnOpen(isOpen, () => {
     setError(null);
     setForm(
       product
@@ -40,7 +40,7 @@ export default function ProductFormModal({ isOpen, onClose, product }: ProductFo
           }
         : PRODUCT_FORM_DEFAULTS,
     );
-  }, [isOpen, product]);
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -165,7 +165,7 @@ export default function ProductFormModal({ isOpen, onClose, product }: ProductFo
         <label className="flex items-center justify-between cursor-pointer">
           <div>
             <p className="text-sm font-medium text-primary">Active</p>
-            <p className="text-xs text-subtle">Inactive products can't be added to new invoices.</p>
+            <p className="text-xs text-subtle">Inactive products can&apos;t be added to new invoices.</p>
           </div>
           <button
             type="button"

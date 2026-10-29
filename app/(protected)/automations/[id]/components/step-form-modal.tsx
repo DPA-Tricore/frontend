@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { automationsApi } from '@/lib/api/automations';
 import { AutomationActionType } from '@/lib/types/automations';
 import type { AutomationStepResponseDto } from '@/lib/types/automations';
@@ -9,6 +9,7 @@ import RichTextEditor from '@/components/rich-text-editor';
 import { colors } from '@/lib/theme/colors';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
 import { useEmailTemplates } from '@/lib/hooks/use-email-templates';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 
 // Fields that should render as a textarea instead of a single-line input
 const TEXTAREA_KEYS = new Set(['description', 'message']);
@@ -75,7 +76,7 @@ export default function StepFormModal({
   // An email step either uses a saved template or its own subject/body.
   const templateId = actionType === AutomationActionType.EMAIL ? configValues.templateId ?? '' : '';
 
-  useEffect(() => {
+  useResetOnOpen(isOpen, () => {
     if (existingStep) {
       setActionType(existingStep.actionType);
       setDayOffset(String(existingStep.dayOffset));
@@ -90,7 +91,7 @@ export default function StepFormModal({
       setConfigValues({});
     }
     setError(null);
-  }, [existingStep, isOpen]);
+  });
 
   const handleActionTypeChange = (type: AutomationActionType) => {
     setActionType(type);
@@ -174,7 +175,8 @@ export default function StepFormModal({
                 value={templateId}
                 onChange={(e) =>
                   setConfigValues((prev) => {
-                    const { templateId: _drop, ...rest } = prev;
+                    const rest = { ...prev };
+                    delete rest.templateId;
                     return e.target.value ? { ...rest, templateId: e.target.value } : rest;
                   })
                 }

@@ -37,10 +37,9 @@ function taskDueLabel(dueDate: Date | string): string {
 }
 
 export default function DashboardActionQueue({ dueTasks, onAddTask }: Props) {
-  const { reminders } = useReminders();
+  const { reminders, updatedAt: now } = useReminders();
 
   const { overdueReminders, upcomingReminders } = useMemo(() => {
-    const now = Date.now();
     const active = reminders.filter(r => r.status === 'PENDING' || r.status === 'TRIGGERED');
     return {
       overdueReminders: active
@@ -52,7 +51,7 @@ export default function DashboardActionQueue({ dueTasks, onAddTask }: Props) {
         .sort((a, b) => new Date(a.reminderTime).getTime() - new Date(b.reminderTime).getTime())
         .slice(0, 2),
     };
-  }, [reminders]);
+  }, [reminders, now]);
 
   const itemCount = overdueReminders.length + dueTasks.length + upcomingReminders.length;
 

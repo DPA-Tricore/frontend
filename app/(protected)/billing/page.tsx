@@ -1,13 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AxiosError } from 'axios';
+import { useQueryClient } from '@tanstack/react-query';
 import { CreditCard } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { billingApi } from '@/lib/api/billing';
-import type { BillingScheduleResponseDto, InvoiceResponseDto } from '@/lib/types/billing';
-import type { PaginationMeta } from '@/lib/types/common';
+import { useBillingInvoices, useBillingSchedule } from '@/lib/hooks/use-billing';
+import { billingKeys } from '@/lib/queries/keys';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -32,55 +33,24 @@ export default function BillingPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const isOrgAdmin = user?.role === 'ORG_ADMIN';
 
-  const [schedule, setSchedule] = useState<BillingScheduleResponseDto | null>(null);
-  const [hasSchedule, setHasSchedule] = useState(true);
-  const [invoices, setInvoices] = useState<InvoiceResponseDto[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const scheduleQuery = useBillingSchedule({ enabled: isOrgAdmin });
+  const invoicesQuery = useBillingInvoices({ page, limit: LIMIT }, { enabled: isOrgAdmin });
+  const schedule = scheduleQuery.data ?? null;
+  const hasSchedule = scheduleQuery.data !== null;
+  const invoices = invoicesQuery.data?.data ?? [];
+  const meta = invoicesQuery.data?.meta ?? null;
+  const isLoading = scheduleQuery.isLoading || invoicesQuery.isLoading;
+  const [actionError, setError] = useState<string | null>(null);
+  const error =
+    actionError ?? (scheduleQuery.isError || invoicesQuery.isError ? 'Failed to load billing information' : null);
   const [isStartingSetup, setIsStartingSetup] = useState(false);
   const [isPayingNow, setIsPayingNow] = useState(false);
 
-  const fetchData = useCallback(async (pageToFetch: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const [scheduleResult, invoicesResult] = await Promise.allSettled([
-        billingApi.getSchedule(),
-        billingApi.getInvoices({ page: pageToFetch, limit: LIMIT }),
-      ]);
-
-      if (scheduleResult.status === 'fulfilled') {
-        setSchedule(scheduleResult.value);
-        setHasSchedule(true);
-      } else if (scheduleResult.reason instanceof AxiosError && scheduleResult.reason.response?.status === 404) {
-        setHasSchedule(false);
-      } else {
-        throw scheduleResult.reason;
-      }
-
-      if (invoicesResult.status === 'fulfilled') {
-        setInvoices(invoicesResult.value.data);
-        setMeta(invoicesResult.value.meta);
-      } else {
-        throw invoicesResult.reason;
-      }
-    } catch {
-      setError('Failed to load billing information');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    if (isAuthLoading) return;
-    if (!isOrgAdmin) {
-      router.replace('/dashboard');
-      return;
-    }
-    fetchData(page);
-  }, [isAuthLoading, isOrgAdmin, router, fetchData, page]);
+    if (!isAuthLoading && !isOrgAdmin) router.replace('/dashboard');
+  }, [isAuthLoading, isOrgAdmin, router]);
 
   const handleAddPaymentMethod = async () => {
     setIsStartingSetup(true);
@@ -103,7 +73,7 @@ export default function BillingPage() {
       // times so the real outcome shows up here without a manual refresh.
       for (let i = 0; i < 4; i++) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
-        await fetchData(page);
+        await queryClient.invalidateQueries({ queryKey: billingKeys.all });
       }
     } catch (err) {
       const message =

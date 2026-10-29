@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { automationsApi } from '@/lib/api/automations';
+import { automationKeys } from '@/lib/queries/keys';
 import { AutomationScope } from '@/lib/types/automations';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
@@ -24,6 +26,7 @@ interface AutomationCreateModalProps {
 
 export default function AutomationCreateModal({ isOpen, onClose }: AutomationCreateModalProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: '',
     stage: 'NEW',
@@ -56,6 +59,7 @@ export default function AutomationCreateModal({ isOpen, onClose }: AutomationCre
         scope: formData.scope,
         ...(formData.shotClockDays ? { shotClockDays: parseInt(formData.shotClockDays) } : {}),
       });
+      queryClient.invalidateQueries({ queryKey: automationKeys.list() });
       reset();
       onClose();
       router.push(`/automations/${automation.id}`);

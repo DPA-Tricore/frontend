@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Mic, Type, Play, Pencil, Trash2, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
@@ -249,17 +249,19 @@ function VoiceNotePlayer({ noteId }: { noteId: string }) {
     enabled: loaded,
     staleTime: Infinity,
   });
-  const [url, setUrl] = useState<string | null>(null);
+  // The blob URL belongs to the <audio> element: made when it mounts, freed when it goes.
+  const attachAudio = useCallback(
+    (el: HTMLAudioElement | null) => {
+      if (!el || !blob) return;
+      const objectUrl = URL.createObjectURL(blob);
+      el.src = objectUrl;
+      return () => URL.revokeObjectURL(objectUrl);
+    },
+    [blob],
+  );
 
-  useEffect(() => {
-    if (!blob) return;
-    const objectUrl = URL.createObjectURL(blob);
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [blob]);
-
-  if (url) {
-    return <audio controls autoPlay src={url} className="h-9 max-w-[240px]" />;
+  if (blob) {
+    return <audio ref={attachAudio} controls autoPlay className="h-9 max-w-[240px]" />;
   }
 
   return (

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { TASK_RESULT_TYPES } from '@/lib/constants/tasks';
 import type { CreateTaskRequest } from '@/lib/types/tasks';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 
 interface TaskCompleteModalProps {
   isOpen: boolean;
@@ -16,12 +17,10 @@ export default function TaskCompleteModal({ isOpen, saving, onCancel, onConfirm 
   const [resultType, setResultType] = useState('');
   const [outcome, setOutcome] = useState('');
 
-  useEffect(() => {
-    if (isOpen) {
-      setResultType('');
-      setOutcome('');
-    }
-  }, [isOpen]);
+  useResetOnOpen(isOpen, () => {
+    setResultType('');
+    setOutcome('');
+  });
 
   if (!isOpen) return null;
 

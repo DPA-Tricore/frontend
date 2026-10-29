@@ -7,13 +7,9 @@ import Link from 'next/link';
 
 interface ReminderWidgetProps {
   limit?: number;
-  onViewAll?: () => void;
 }
 
-export default function ReminderWidget({
-  limit = 5,
-  onViewAll,
-}: ReminderWidgetProps) {
+export default function ReminderWidget({ limit = 5 }: ReminderWidgetProps) {
   const { reminders } = useReminders();
 
   const { overdue, upcoming } = useMemo(() => {

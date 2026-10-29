@@ -1,7 +1,6 @@
 'use client';
 
 import type { AutomationStepResponseDto } from '@/lib/types/automations';
-import { colors } from '@/lib/theme/colors';
 import StepCard from './step-card';
 
 const DAY_HEIGHT = 80;
@@ -28,7 +27,6 @@ export default function StepTimeline({
   }
 
   const sortedSteps = [...steps].sort((a, b) => a.dayOffset - b.dayOffset || a.order - b.order);
-  const maxDay = Math.max(...sortedSteps.map((s) => s.dayOffset), 0);
   const uniqueDays = Array.from(new Set(sortedSteps.map((s) => s.dayOffset))).sort((a, b) => a - b);
 
   return (

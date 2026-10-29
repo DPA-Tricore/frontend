@@ -1,4 +1,5 @@
 import { axiosClient } from './axios-client';
+import { apiErrorMessage } from '@/lib/utils/api-error';
 import { SignupRequest, LoginRequest } from './types/auth-request';
 import { SignupResponse, LoginResponse } from './types/auth-response';
 
@@ -10,10 +11,8 @@ class AuthAPI {
         data
       );
       return response.data;
-    } catch (error: any) {
-      const message =
-        error.response?.data?.message || error.message || 'Signup failed';
-      throw new Error(message);
+    } catch (error) {
+      throw new Error(apiErrorMessage(error, error instanceof Error ? error.message : 'Signup failed'));
     }
   }
 
@@ -24,10 +23,8 @@ class AuthAPI {
         data
       );
       return response.data;
-    } catch (error: any) {
-      const message =
-        error.response?.data?.message || error.message || 'Login failed';
-      throw new Error(message);
+    } catch (error) {
+      throw new Error(apiErrorMessage(error, error instanceof Error ? error.message : 'Login failed'));
     }
   }
 

@@ -40,7 +40,7 @@ export interface TaskResponseDto {
   reminderAt?: Date;
   reminderSent: boolean;
   tags?: string[];
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
   lead?: TaskLeadSummary;
@@ -87,7 +87,7 @@ export interface CreateTaskRequest {
   resultType?: string;
   reminderAt?: Date | string;
   tags?: string[];
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
   reminderOffsets?: number[];
   customReminderTimes?: string[];
   demoMode?: boolean;

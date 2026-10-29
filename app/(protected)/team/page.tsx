@@ -1,13 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';
-import { teamsApi } from '@/lib/api/teams';
-import type { TeamResponseDto } from '@/lib/types/teams';
+import { useTeams } from '@/lib/hooks/use-teams';
 import { useUsers } from '@/lib/hooks/use-users';
-import { userKeys } from '@/lib/queries/keys';
+import { teamKeys, userKeys } from '@/lib/queries/keys';
 import LoadingSpinner from '@/components/loading-spinner';
 import TeamList from './components/team-list';
 import UserRoleTable from './components/user-role-table';
@@ -18,29 +17,21 @@ export default function TeamPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const queryClient = useQueryClient();
-  const [teams, setTeams] = useState<TeamResponseDto[]>([]);
-  const [teamsLoading, setTeamsLoading] = useState(true);
+  const isOrgAdmin = user?.role === 'ORG_ADMIN';
+  const { data: teams = [], isLoading: teamsLoading } = useTeams({ enabled: isOrgAdmin });
   const { data: users = [], isLoading: usersLoading } = useUsers();
 
-  const isOrgAdmin = user?.role === 'ORG_ADMIN';
-
-  const refetch = useCallback(async () => {
-    const [teamsData] = await Promise.all([
-      teamsApi.getTeams(),
+  // A change to a team or a person can touch both lists (e.g. moving someone between teams).
+  const refetch = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: teamKeys.all }),
       queryClient.invalidateQueries({ queryKey: userKeys.all }),
     ]);
-    setTeams(teamsData);
-  }, [queryClient]);
+  };
 
   useEffect(() => {
-    if (isAuthLoading) return;
-    if (!isOrgAdmin) {
-      router.replace('/dashboard');
-      return;
-    }
-    setTeamsLoading(true);
-    refetch().finally(() => setTeamsLoading(false));
-  }, [isAuthLoading, isOrgAdmin, refetch, router]);
+    if (!isAuthLoading && !isOrgAdmin) router.replace('/dashboard');
+  }, [isAuthLoading, isOrgAdmin, router]);
 
   if (isAuthLoading || !isOrgAdmin) return <LoadingSpinner fullPage />;
 

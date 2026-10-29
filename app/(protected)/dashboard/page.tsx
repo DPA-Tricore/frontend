@@ -103,7 +103,7 @@ export default function DashboardPage() {
         </section>
 
         <section className="lg:min-h-[30rem] flex flex-col surface rounded-lg border border-[var(--border)] p-6">
-          <h2 className="text-base font-semibold text-primary mb-5">Today's Actions</h2>
+          <h2 className="text-base font-semibold text-primary mb-5">Today&apos;s Actions</h2>
           {loading ? (
             skeleton
           ) : (

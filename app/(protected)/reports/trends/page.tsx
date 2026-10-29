@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  type TooltipContentProps,
 } from 'recharts';
 import { reportsApi } from '@/lib/api/reports';
 import type { LeadTrendReport } from '@/lib/types/reports';
@@ -21,7 +22,7 @@ const formatMonth = (m: string) => {
   return new Date(Number(year), Number(month) - 1).toLocaleString('default', { month: 'short', year: '2-digit' });
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: Partial<TooltipContentProps<number, string>>) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 shadow-md text-sm">

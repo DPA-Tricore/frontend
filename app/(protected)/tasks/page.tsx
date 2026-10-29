@@ -1,14 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { tasksApi } from '@/lib/api/tasks';
-import type { TaskResponseDto } from '@/lib/types/tasks';
-import { PaginationMeta } from '@/lib/types/common';
 import { colors } from '@/lib/theme/colors';
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 import { useUsers } from '@/lib/hooks/use-users';
+import { useTasksList } from '@/lib/hooks/use-tasks';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
 import EmptyState from '@/components/empty-state';
@@ -28,11 +26,7 @@ export default function TasksPage() {
   const searchParams = useSearchParams();
   const view: ViewMode = searchParams.get('view') === 'list' ? 'list' : 'board';
 
-  const [tasks, setTasks] = useState<TaskResponseDto[]>([]);
   const { data: users = [], isLoading: usersLoading } = useUsers();
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const [page, setPage] = useState(1);
@@ -44,37 +38,22 @@ export default function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
-  const fetchTasks = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await tasksApi.getTasks({
-        page,
-        limit: LIMIT,
-        ...(search && { search }),
-        sortBy,
-        sortOrder,
-        ...(statusFilter && { status: statusFilter }),
-        ...(priorityFilter && { priority: priorityFilter }),
-        ...(typeFilter && { type: typeFilter }),
-      });
-      if ((response as any).data) {
-        setTasks((response as any).data);
-        setMeta((response as any).meta);
-      } else {
-        setTasks(response as any);
-        setMeta(null);
-      }
-      setError(null);
-    } catch {
-      setError('Failed to fetch tasks');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, sortBy, sortOrder, statusFilter, priorityFilter, typeFilter]);
-
-  useEffect(() => {
-    if (view === 'list') fetchTasks();
-  }, [fetchTasks, view]);
+  const { data, isLoading: loading, isError } = useTasksList(
+    {
+      page,
+      limit: LIMIT,
+      ...(search && { search }),
+      sortBy,
+      sortOrder,
+      ...(statusFilter && { status: statusFilter }),
+      ...(priorityFilter && { priority: priorityFilter }),
+      ...(typeFilter && { type: typeFilter }),
+    },
+    { enabled: view === 'list' },
+  );
+  const tasks = data?.data ?? [];
+  const meta = data?.meta ?? null;
+  const error = isError ? 'Failed to fetch tasks' : null;
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -158,7 +137,7 @@ export default function TasksPage() {
       <TaskCreateModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        onCreated={() => { setShowModal(false); setPage(1); fetchTasks(); }}
+        onCreated={() => { setShowModal(false); setPage(1); }}
         users={users}
         usersLoading={usersLoading}
       />

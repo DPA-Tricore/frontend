@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { documentsApi } from '@/lib/api/documents';
-import type { DocumentResponseDto } from '@/lib/types/documents';
-import { PaginationMeta } from '@/lib/types/common';
-import { colors } from '@/lib/theme/colors';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import type { ListDocumentsParams, PaginatedDocumentResponse } from '@/lib/types/documents';
+import { useDocumentsList } from '@/lib/hooks/use-documents';
+import { documentKeys } from '@/lib/queries/keys';
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 import PageHeader from '@/components/page-header';
 import LoadingSpinner from '@/components/loading-spinner';
@@ -18,40 +18,18 @@ type SortField = 'originalName' | 'fileSize' | 'createdAt';
 const LIMIT = 10;
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState<DocumentResponseDto[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
   const search = useDebouncedValue(searchInput, 300);
   const [sortBy, setSortBy] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const fetchDocuments = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await documentsApi.getDocuments({
-        page,
-        limit: LIMIT,
-        ...(search && { search }),
-        sortBy,
-        sortOrder,
-      });
-      setDocuments(response.data);
-      setMeta(response.meta);
-      setError(null);
-    } catch {
-      setError('Failed to fetch documents');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, sortBy, sortOrder]);
-
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+  const filters: ListDocumentsParams = { page, limit: LIMIT, ...(search && { search }), sortBy, sortOrder };
+  const { data, isLoading: loading, isError } = useDocumentsList(filters);
+  const documents = data?.data ?? [];
+  const meta = data?.meta ?? null;
+  const error = isError ? 'Failed to fetch documents' : null;
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -64,8 +42,12 @@ export default function DocumentsPage() {
   };
 
   const handleDeleted = (id: string) => {
-    setDocuments((prev) => prev.filter((d) => d.id !== id));
-    if (meta) setMeta({ ...meta, total: meta.total - 1 });
+    queryClient.setQueryData<PaginatedDocumentResponse>(documentKeys.list(filters), (prev) =>
+      prev && {
+        data: prev.data.filter((d) => d.id !== id),
+        meta: { ...prev.meta, total: prev.meta.total - 1 },
+      },
+    );
   };
 
   return (

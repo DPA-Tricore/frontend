@@ -1,6 +1,5 @@
 import { axiosClient } from '@/lib/api/axios-client';
 import type {
-  ReviewResponseDto,
   ReviewSummaryDto,
   PaginatedReviewsResponse,
   ListReviewsParams,

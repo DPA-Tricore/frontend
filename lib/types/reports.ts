@@ -57,3 +57,5 @@ export interface ReportQueryParams {
   agentId?: string;
   teamId?: string;
 }
+
+export type AgentSortKey = keyof Pick<AgentMetrics, 'totalLeads' | 'convertedLeads' | 'lostLeads' | 'conversionRate' | 'tasksCompleted'>;

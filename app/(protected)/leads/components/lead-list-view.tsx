@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { LeadResponseDto, ContactResponseDto } from '@/lib/api/leads';
 import { colors, getStatusColor } from '@/lib/theme/colors';
 import { PaginationMeta } from '@/lib/types/common';
+import type { LeadSortField } from '@/lib/types/leads';
 import Pagination from '@/components/pagination';
 import { getPrimaryContact } from './lead-card';
 
@@ -31,9 +32,9 @@ interface LeadListViewProps {
   leads: Lead[];
   meta: PaginationMeta | null;
   page: number;
-  sortBy: string;
+  sortBy: LeadSortField;
   sortOrder: 'asc' | 'desc';
-  onSort: (field: string) => void;
+  onSort: (field: LeadSortField) => void;
   onPageChange: (page: number) => void;
 }
 

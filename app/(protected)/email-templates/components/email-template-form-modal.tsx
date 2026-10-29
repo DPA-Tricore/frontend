@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import SlideModal from '@/components/slide-modal';
 import { colors } from '@/lib/theme/colors';
 import { FORM_INPUT_CLASS } from '@/lib/constants/forms';
+import { apiErrorMessage } from '@/lib/utils/api-error';
 import {
   EMAIL_BODY_MAX_LENGTH,
   EMAIL_SUBJECT_MAX_LENGTH,
@@ -13,6 +14,7 @@ import {
 } from '@/lib/constants/emails';
 import { useCreateEmailTemplate, useDeleteEmailTemplate, useUpdateEmailTemplate } from '@/lib/hooks/use-email-templates';
 import type { EmailTemplateResponseDto } from '@/lib/types/emails';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 
 interface EmailTemplateFormModalProps {
   isOpen: boolean;
@@ -36,8 +38,7 @@ export default function EmailTemplateFormModal({ isOpen, onClose, template }: Em
   const isEdit = !!template;
   const isSaving = createTemplate.isPending || updateTemplate.isPending;
 
-  useEffect(() => {
-    if (!isOpen) return;
+  useResetOnOpen(isOpen, () => {
     setError(null);
     setTarget('body');
     setForm(
@@ -45,7 +46,7 @@ export default function EmailTemplateFormModal({ isOpen, onClose, template }: Em
         ? { name: template.name, subject: template.subject, body: template.body, isActive: template.isActive }
         : EMAIL_TEMPLATE_FORM_DEFAULTS,
     );
-  }, [isOpen, template]);
+  });
 
   const insertField = (name: string) => {
     const el = target === 'subject' ? subjectRef.current : bodyRef.current;
@@ -70,9 +71,8 @@ export default function EmailTemplateFormModal({ isOpen, onClose, template }: Em
         await createTemplate.mutateAsync(data);
       }
       onClose();
-    } catch (err: any) {
-      const message = err?.response?.data?.message;
-      setError((Array.isArray(message) ? message[0] : message) || 'Failed to save template');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Failed to save template'));
     }
   };
 

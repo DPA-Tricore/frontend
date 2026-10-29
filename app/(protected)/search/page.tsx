@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useEffectEvent, useRef, useCallback } from 'react';
 import { searchApi } from '@/lib/api/search';
 import { useSearchPage } from '@/lib/hooks/useSearchPage';
 import type { SearchResponse, SearchFullResponse, SearchEntityType } from '@/lib/types/search';
@@ -60,9 +60,12 @@ export default function SearchPage() {
     }
   }, [state, allResults]);
 
+  // Reads the latest results without making them a reason to search again.
+  const runSearch = useEffectEvent(() => fetch());
+
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(fetch, DEBOUNCE_MS);
+    timerRef.current = setTimeout(runSearch, DEBOUNCE_MS);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [state.q, state.tab, state.page, state.status, state.dateFrom, state.dateTo, state.assignedToId, state.entityTypeFilter]);
 

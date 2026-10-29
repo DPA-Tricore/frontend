@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
 import SlideModal from '@/components/slide-modal';
@@ -12,6 +12,7 @@ import { useCreateInvoice, useUpdateInvoice } from '@/lib/hooks/use-invoices';
 import { formatCentsAsMoney, parseDollarsToCents } from '@/lib/utils/format';
 import type { BillTo, CustomerInvoiceResponseDto, InvoiceLineDraft } from '@/lib/types/invoices';
 import BillToPicker from './bill-to-picker';
+import { useResetOnOpen } from '@/lib/hooks/use-reset-on-open';
 
 interface InvoiceFormModalProps {
   isOpen: boolean;
@@ -54,8 +55,7 @@ export default function InvoiceFormModal({ isOpen, onClose, invoice, billTo: fix
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
+  useResetOnOpen(isOpen, () => {
     setError(null);
     setBillTo(fixedBillTo ?? null);
     if (invoice) {
@@ -77,7 +77,7 @@ export default function InvoiceFormModal({ isOpen, onClose, invoice, billTo: fix
       setTax('');
       setNotes('');
     }
-  }, [isOpen, invoice, fixedBillTo]);
+  });
 
   const subtotalCents = useMemo(() => lines.reduce((sum, line) => sum + lineCents(line), 0), [lines]);
   const taxCents = parseDollarsToCents(tax) ?? 0;
