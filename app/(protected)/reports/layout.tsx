@@ -25,14 +25,15 @@ export default function ReportsLayout({ children }: { children: React.ReactNode 
         <p className="text-sm text-[var(--muted)] mt-1">Track pipeline health, agent performance, and activity metrics.</p>
       </div>
 
-      <div className="border-b border-[var(--border)] flex gap-1">
+      {/* Scrolls sideways on a phone rather than pushing the page wider. */}
+      <div className="border-b border-[var(--border)] flex gap-1 overflow-x-auto">
         {visibleTabs.map(({ label, href, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex flex-shrink-0 items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                 active
                   ? 'border-gray-900 text-gray-900 dark:border-white dark:text-white'
                   : 'border-transparent text-[var(--muted)] hover:text-primary'

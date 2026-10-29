@@ -53,7 +53,7 @@ export default function ChatSidebar() {
 
       {/* Slide-in panel */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 flex flex-col w-96 bg-[var(--surface)] border-l border-[var(--border)] shadow-xl transition-transform duration-300 ${
+        className={`fixed inset-y-0 right-0 z-50 flex flex-col w-full sm:w-96 bg-[var(--surface)] border-l border-[var(--border)] shadow-xl transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

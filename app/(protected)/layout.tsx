@@ -4,7 +4,7 @@
 
 import { useAuth } from '@/context/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/sidebar/sidebar';
 import Header from '@/components/header';
@@ -17,7 +17,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const { isLoading, isAuthenticated } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Phone-width menu drawer only; the desktop sidebar keeps its own collapse state.
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const closeNav = useCallback(() => setIsNavOpen(false), []);
   const { isOpen: isPaletteOpen, open: openPalette, close: closePalette } = useCommandPalette();
 
   useEffect(() => {
@@ -31,9 +33,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} onSearchOpen={openPalette} />
+      <Sidebar isMobileOpen={isNavOpen} onMobileClose={closeNav} />
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        <Header onMenuClick={() => setIsNavOpen(true)} onSearchOpen={openPalette} />
         <SearchPalette isOpen={isPaletteOpen} onClose={closePalette} />
         <main className="flex-1 overflow-auto">
           <motion.div

@@ -8,9 +8,10 @@ interface PageHeaderProps {
 export default function PageHeader({ title, actions, error }: PageHeaderProps) {
   return (
     <>
-      <div className="flex justify-between items-center gap-4 mb-6 min-h-9">
+      {/* On a narrow screen the actions wrap under the title instead of running off the edge. */}
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-6 min-h-9">
         <h1 className="text-xl font-semibold text-primary">{title}</h1>
-        {actions && <div className="flex items-center gap-3">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
       </div>
 
       {error && (

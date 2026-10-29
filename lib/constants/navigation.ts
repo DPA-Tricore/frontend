@@ -63,3 +63,6 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export const SIDEBAR_COLLAPSED_KEY = 'sidebar:collapsed';
 export const SIDEBAR_FOLDED_GROUPS_KEY = 'sidebar:folded-groups';
+
+// Matches Tailwind's `md` breakpoint: below it the sidebar becomes a slide-in drawer.
+export const DESKTOP_NAV_MEDIA_QUERY = '(min-width: 48rem)';
